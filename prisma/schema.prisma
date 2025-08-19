@@ -1,0 +1,237 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ClientAccount {
+  id                      String               @id
+  intermediaryId          String?
+  smeProfileId            String?
+  status                  ClientAccountStatus
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime
+  latestBackendReportId   String?
+  currentGenerationStatus GenerationStatus     @default(Idle)
+  IntermediaryProfile     IntermediaryProfile? @relation(fields: [intermediaryId], references: [id])
+  SMEProfile              SMEProfile?          @relation(fields: [smeProfileId], references: [id])
+  ClientTeamMember        ClientTeamMember[]
+  // Document                Document[]
+}
+
+model ClientTeamMember {
+  id              String         @id
+  clientAccountId String
+  userId          String
+  role            TeamMemberRole
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  ClientAccount   ClientAccount  @relation(fields: [clientAccountId], references: [id])
+  User            User           @relation(fields: [userId], references: [id])
+}
+
+model Document {
+  id               String           @id
+  generationId     String?
+  generationNumber Int?
+  // clientAccountId  String
+  customKey        String           @default("custom_key")
+  smeCompanyId     String
+  uploadedById     String
+  documentType     DocumentType
+  fileName         String
+  uploadThingKey   String           @unique
+  fileSize         Int
+  periodYear       Int?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  basicCheckStatus BasicCheckStatus
+  basicCheckReason String?
+  // ClientAccount    ClientAccount    @relation(fields: [clientAccountId], references: [id])
+  SMECompany       SMECompany       @relation(fields: [smeCompanyId], references: [id])
+  User             User             @relation(fields: [uploadedById], references: [id])
+}
+
+model IntermediaryProfile {
+  id            String           @id
+  userId        String           @unique
+  firmName      String
+  type          IntermediaryType
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime
+  ClientAccount ClientAccount[]
+  SMECompany    SMECompany[]
+  User          User             @relation(fields: [userId], references: [id])
+}
+
+model SMEProfile {
+  id            String          @id
+  userId        String          @unique
+  companyName   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  ClientAccount ClientAccount[]
+  SMECompany    SMECompany[]
+  User          User            @relation(fields: [userId], references: [id])
+}
+
+model SMECompany {
+  id                  String               @id @default(uuid())
+  companyName         String
+  cin                 String?
+  pan                 String?
+  tan                 String?
+  gstin               String?
+  paidUpCapital       Float?
+  turnover            Float?
+  netWorth            Float?
+  yearsOperational    Int?
+  industrySector      String?
+  generationId        String?
+  generationNumber    Int? // Add after migrating to new schema
+  eligibilityStatus   EligibilityStatus
+  complianceStatus    ComplianceStatus
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  smeProfileId        String?
+  intermediaryId      String?
+  Documents           Document[]
+  SMEProfile          SMEProfile?          @relation(fields: [smeProfileId], references: [id])
+  IntermediaryProfile IntermediaryProfile? @relation(fields: [intermediaryId], references: [id])
+}
+
+model User {
+  id                  String               @id
+  email               String               @unique
+  role                UserRole
+  name                String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  ClientTeamMember    ClientTeamMember[]
+  Document            Document[]
+  IntermediaryProfile IntermediaryProfile?
+  SMEProfile          SMEProfile?
+}
+
+enum BasicCheckStatus {
+  Pending
+  Passed
+  Failed
+}
+
+enum ClientAccountStatus {
+  Invited
+  Active
+  Archived
+}
+
+enum DocumentType {
+  // Corporate Structure
+  CompanyConstitution
+  CorporateStructureChart
+  BoardResolutionConstitution
+  BoardResolutionASXContact
+
+  // Financial Documents
+  AuditedFinancialStatements
+  ProFormaStatementOfFinancialPosition
+  InvestigatingAccountantsReport
+  WorkingCapitalStatement
+
+  // Market Integrity
+  ShareholderSpreadAnalysisReport
+  FreeFloatAnalysis
+  RelatedPartiesAndPromotersList
+
+  // Governance & Personnel
+  DirectorConsentForms
+  DirectorQuestionnaires
+  PoliceAndBankruptcyChecks
+  ASXListingRuleCourseCertificate
+  SecuritiesTradingPolicy
+  CorporateGovernanceStatement
+  BoardAndCommitteeCharters
+
+  // Escrow & Restricted Securities
+  ExecutedRestrictionDeeds
+
+  // The Offer
+  FinalProspectusDocument
+  DueDiligenceCommitteeDocuments
+  ExpertConsentLetters
+
+  // Capital Structure
+  OptionAndPerformanceRightTerms
+  CompanyOptionSecurityRegister
+
+  // Legal & Agreements
+  LegalDueDiligenceReport
+  SummaryOfMaterialContracts
+  RelatedPartyAgreements
+  AdvisorMandates
+
+  // Asset Ownership & Tax
+  AssetTitleDocuments
+  IPAssignmentDeeds
+  SpecialistTaxDueDiligenceReport
+  CompanyTaxReturns
+
+  // Sector-Specific
+  IndependentGeologistsReport
+  TherapeuticGoodsAdministrationApprovals
+  AustralianFinancialServicesLicence
+
+  // (Keep original ones if still needed in system)
+  CertificateOfIncorporation
+  MemorandumOfAssociation
+  ArticlesOfAssociation
+  ShareholderAgreements
+  IntellectualPropertyDocuments
+  TaxComplianceCertificates
+  RegulatoryApprovals
+}
+
+enum EligibilityStatus {
+  Failed
+  Pending
+  SME_Eligible
+  Mainboard_Eligible
+  Not_Eligible
+}
+
+enum GenerationStatus {
+  Idle
+  Processing
+  Completed
+  Failed
+}
+
+enum IntermediaryType {
+  MerchantBanker
+  CompanySecretary
+  Auditor
+  Other
+}
+
+enum TeamMemberRole {
+  Admin
+  Editor
+  Viewer
+}
+
+enum UserRole {
+  SME
+  Intermediary
+  TeamMember
+}
+
+enum ComplianceStatus {
+  pending
+  low
+  medium
+  high
+  failed
+}

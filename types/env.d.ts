@@ -1,0 +1,29 @@
+namespace NodeJS {
+  interface ProcessEnv {
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
+    CLERK_SECRET_KEY: string;
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL: string;
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL: string;
+    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: string;
+    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: string;
+
+    CLERK_WEBHOOK_SIGNING_SECRET: string;
+
+    DATABASE_URL: string;
+
+    NEXT_PUBLIC_BACKEND_URL: string;
+
+    BASE_URL: string;
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
+    STRIPE_SECRET_KEY: string;
+    STRIPE_WEBHOOK_SECRET: string;
+
+    NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY: string;
+    PINECONE_API_KEY: string;
+
+    GCS_BUCKET_NAME: string;
+    GCP_PRIVATE_KEY: string;
+    GCP_SERVICE_ACCOUNT_EMAIL: string;
+    GCP_PROJECT_ID: string;
+  }
+}
