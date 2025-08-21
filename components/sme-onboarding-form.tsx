@@ -24,6 +24,104 @@ interface SmeOnboardingFormProps {
   onComplete?: (smeCompanyId?: string) => void;
 }
 
+function ReviewInformationForm({
+  smeData,
+}: {
+  smeData: {
+    industrySector: string;
+    businessDescription: string;
+    legalName: string;
+    cin: string;
+    pan: string;
+    tan: string;
+    gstin: string;
+    paidUpCapital: number;
+    turnover: number;
+    netWorth: number;
+    yearsOperational: number;
+  };
+}) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Review Information</h2>
+      <p className="text-muted-foreground">
+        Please review all the information before submitting.
+      </p>
+      <div className="rounded-md border p-4 mt-4">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Company Details
+            </h3>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Legal Name:</span>
+                {smeData.legalName}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">CIN:</span> {smeData.cin}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">PAN:</span> {smeData.pan}
+              </p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Business Information
+            </h3>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Industry:</span>{" "}
+                {smeData.industrySector}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Years Operational:</span>{" "}
+                {smeData.yearsOperational} year
+                {smeData.yearsOperational > 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Financial Information
+            </h3>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Paid-up Capital:</span>{" "}
+                {!isNaN(Number(smeData.paidUpCapital))
+                  ? Number(smeData.paidUpCapital).toLocaleString("en-AU", {
+                      style: "currency",
+                      currency: "AUD",
+                    })
+                  : "-"}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Annual Turnover:</span>{" "}
+                {!isNaN(Number(smeData.turnover))
+                  ? Number(smeData.turnover).toLocaleString("en-AU", {
+                      style: "currency",
+                      currency: "AUD",
+                    })
+                  : "-"}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Net Worth:</span>{" "}
+                {!isNaN(Number(smeData.netWorth))
+                  ? Number(smeData.netWorth).toLocaleString("en-AU", {
+                      style: "currency",
+                      currency: "AUD",
+                    })
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
   const [smeDetails, setSmeDetails] = useState({
     industrySector: "",
@@ -33,10 +131,10 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
     pan: "",
     tan: "",
     gstin: "",
-    paidUpCapital: 0,
-    turnover: 0,
-    netWorth: 0,
-    yearsOperational: 0,
+    paidUpCapital: NaN,
+    turnover: NaN,
+    netWorth: NaN,
+    yearsOperational: NaN,
   });
   const businessDetailsRef = useRef<BusinessDetailsFormHandle>(null);
   const companyIdentificationRef =
@@ -115,14 +213,18 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
           }) => {
             setSmeDetails((prev) => ({
               ...prev,
-              paidUpCapital: data.paidUpCapital,
-              turnover: data.turnover,
-              netWorth: data.netWorth,
-              yearsOperational: data.yearsOperational,
+              paidUpCapital: Number(data.paidUpCapital),
+              turnover: Number(data.turnover),
+              netWorth: Number(data.netWorth),
+              yearsOperational: Number(data.yearsOperational),
             }));
           }}
         />
       ),
+    },
+    {
+      title: "Review",
+      content: <ReviewInformationForm smeData={smeDetails} />,
     },
   ];
 
@@ -173,6 +275,7 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
             return;
           }
         }}
+        isSubmitting={false}
       />
     </div>
   );

@@ -53,9 +53,9 @@ const getComplianceStatusConfig = (status: ComplianceStatus) => {
 
 const formatCurrency = (amount?: number) => {
   if (!amount) return "N/A";
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat("en-AU", {
     style: "currency",
-    currency: "INR",
+    currency: "AUD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);

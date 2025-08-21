@@ -62,11 +62,12 @@ export async function createOrganizationAction(
     let result: { smeCompanyId?: string; intermediaryId?: string } = {};
 
     if (orgData.orgType === "sme" && swe) {
-      Object.assign(swe, {
+      const { id, userId, ...sweData } = swe;
+      const sweResult = await createSWEAction({
         id: organization.id,
         userId: user.id,
+        ...sweData,
       });
-      const sweResult = await createSWEAction(swe);
       result.smeCompanyId = sweResult.smeCompany.id;
     } else if (orgData.orgType === "intermediary" && intermediary) {
       Object.assign(intermediary, {

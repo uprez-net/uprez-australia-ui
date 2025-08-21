@@ -1,28 +1,37 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { forwardRef, useImperativeHandle } from "react"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { forwardRef, useImperativeHandle } from "react";
 
 const financialFormSchema = z.object({
   paidUpCapital: z.coerce
     .number()
-    .min(100000, {
-      message: "Paid-up capital must be at least ₹1,00,000 for SME IPO eligibility.",
+    .min(1500000, {
+      message:
+        "Paid-up capital must be at least $1,500,000 for SME IPO eligibility in Australia.",
     })
-    .max(25000000000, {
-      message: "Paid-up capital cannot exceed ₹250 crores for SME category.",
+    .max(500000000, {
+      message: "Paid-up capital cannot exceed $500 million for SME category.",
     }),
   turnover: z.coerce
     .number()
     .min(0, {
       message: "Turnover cannot be negative.",
     })
-    .max(50000000000, {
-      message: "Turnover cannot exceed ₹500 crores for SME category.",
+    .max(50000000, {
+      message: "Turnover cannot exceed $50 million for SME IPO eligibility.",
     }),
   netWorth: z.coerce.number().min(0, {
     message: "Net worth cannot be negative.",
@@ -35,55 +44,58 @@ const financialFormSchema = z.object({
     .max(200, {
       message: "Please enter a valid number of years.",
     }),
-})
+});
 
-type FinancialFormValues = z.infer<typeof financialFormSchema>
+type FinancialFormValues = z.infer<typeof financialFormSchema>;
 
-// This can be used to pre-fill the form with existing data
 const defaultValues: Partial<FinancialFormValues> = {
   paidUpCapital: undefined,
   turnover: undefined,
   netWorth: undefined,
   yearsOperational: undefined,
-}
+};
 
-// Helper function to format numbers with commas
+// Format numbers as Australian currency
 const formatNumber = (value: string) => {
-  const number = value.replace(/,/g, "")
-  if (isNaN(Number(number))) return value
-  return Number(number).toLocaleString("en-IN")
-}
+  const number = value.replace(/,/g, "");
+  if (isNaN(Number(number))) return value;
+  return Number(number).toLocaleString("en-AU");
+};
 
 export type FinancialInformationFormHandle = {
-  submit: () => Promise<boolean>
-}
+  submit: () => Promise<boolean>;
+};
 
-export const FinancialInformationForm = forwardRef<FinancialInformationFormHandle, {
-  onSubmitData?: (data: FinancialFormValues) => void
-  data?: FinancialFormValues
-}>(({ data, onSubmitData }, ref) => {
+export const FinancialInformationForm = forwardRef<
+  FinancialInformationFormHandle,
+  {
+    onSubmitData?: (data: FinancialFormValues) => void;
+    data?: FinancialFormValues;
+  }
+>(({ data, onSubmitData }, ref) => {
   const form = useForm<FinancialFormValues>({
     resolver: zodResolver(financialFormSchema),
     defaultValues: data ?? defaultValues,
     mode: "onChange",
-  })
+  });
 
   useImperativeHandle(ref, () => ({
     async submit() {
-      const isValid = await form.trigger()
-      if (!isValid) return false
-      const values = form.getValues()
-      onSubmitData?.(values)
-      return true
+      const isValid = await form.trigger();
+      if (!isValid) return false;
+      const values = form.getValues();
+      onSubmitData?.(values);
+      return true;
     },
-  }))
+  }));
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">Financial Information</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Please provide your company's recent financial figures (self-declared).
+          Please provide your company's recent financial figures
+          (self-declared).
         </p>
       </div>
 
@@ -94,16 +106,13 @@ export const FinancialInformationForm = forwardRef<FinancialInformationFormHandl
             name="paidUpCapital"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Paid-up Capital (₹)</FormLabel>
+                <FormLabel>Paid-up Capital ($)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="e.g., 10000000"
-                    {...field}
-                  />
+                  <Input type="number" placeholder="e.g., 2000000" {...field} />
                 </FormControl>
                 <FormDescription>
-                  The amount of capital that has been paid by shareholders. Minimum ₹1,00,000 required for SME IPO.
+                  The amount of capital that has been paid by shareholders.
+                  Minimum $1,500,000 required for SME IPO.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -115,16 +124,18 @@ export const FinancialInformationForm = forwardRef<FinancialInformationFormHandl
             name="turnover"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Turnover (Last Financial Year - ₹)</FormLabel>
+                <FormLabel>Turnover (Last Financial Year - $)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="e.g., 50000000"
+                    placeholder="e.g., 10000000"
                     {...field}
                   />
                 </FormControl>
                 <FormDescription>
-                  Total revenue generated by your company in the last completed financial year.
+                  Total revenue generated by your company in the last completed
+                  financial year. Must not exceed $50 million for SME
+                  eligibility.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -136,16 +147,13 @@ export const FinancialInformationForm = forwardRef<FinancialInformationFormHandl
             name="netWorth"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Net Worth (Latest Audited - ₹)</FormLabel>
+                <FormLabel>Net Worth (Latest Audited - $)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="e.g., 25000000"
-                    {...field}
-                  />
+                  <Input type="number" placeholder="e.g., 4000000" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Company's net worth as per the latest audited financial statements (Assets - Liabilities).
+                  Company's net worth as per the latest audited financial
+                  statements (Assets - Liabilities).
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -168,37 +176,56 @@ export const FinancialInformationForm = forwardRef<FinancialInformationFormHandl
                   />
                 </FormControl>
                 <FormDescription>
-                  Number of years your company has been in operation since incorporation.
+                  Number of years your company has been in operation since
+                  incorporation.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Display formatted values for readability */}
-          {(form.watch("paidUpCapital") || form.watch("turnover") || form.watch("netWorth")) && (
-            <div className="rounded-md border p-4 bg-muted/50">
-              <h3 className="text-sm font-medium mb-2">Summary (for verification)</h3>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                {form.watch("paidUpCapital") && (
-                  <p>Paid-up Capital: ₹{Number(form.watch("paidUpCapital")).toLocaleString("en-IN")}</p>
-                )}
-                {form.watch("turnover") && (
-                  <p>Turnover: ₹{Number(form.watch("turnover")).toLocaleString("en-IN")}</p>
-                )}
-                {form.watch("netWorth") && (
-                  <p>Net Worth: ₹{Number(form.watch("netWorth")).toLocaleString("en-IN")}</p>
-                )}
-                {form.watch("yearsOperational") && (
-                  <p>Years Operational: {form.watch("yearsOperational")} years</p>
-                )}
+          {(() => {
+            const paidUpCapital = Number(form.watch("paidUpCapital"));
+            const turnover = Number(form.watch("turnover"));
+            const netWorth = Number(form.watch("netWorth"));
+            const yearsOperational = Number(form.watch("yearsOperational"));
+
+            const hasAny =
+              !isNaN(paidUpCapital) ||
+              !isNaN(turnover) ||
+              !isNaN(netWorth) ||
+              !isNaN(yearsOperational);
+
+            if (!hasAny) return null;
+
+            return (
+              <div className="rounded-md border p-4 bg-muted/50">
+                <h3 className="text-sm font-medium mb-2">
+                  Summary (for verification)
+                </h3>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {!isNaN(paidUpCapital) && (
+                    <p>
+                      Paid-up Capital: ${paidUpCapital.toLocaleString("en-AU")}
+                    </p>
+                  )}
+                  {!isNaN(turnover) && (
+                    <p>Turnover: ${turnover.toLocaleString("en-AU")}</p>
+                  )}
+                  {!isNaN(netWorth) && (
+                    <p>Net Worth: ${netWorth.toLocaleString("en-AU")}</p>
+                  )}
+                  {!isNaN(yearsOperational) && (
+                    <p>Years Operational: {yearsOperational} years</p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </form>
       </Form>
     </div>
-  )
-})
+  );
+});
 
-FinancialInformationForm.displayName = "FinancialInformationForm"
+FinancialInformationForm.displayName = "FinancialInformationForm";

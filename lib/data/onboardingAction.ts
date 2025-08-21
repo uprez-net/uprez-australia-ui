@@ -8,6 +8,7 @@ import { currentUser } from "@clerk/nextjs/server";
 export async function onBoardNewSme(sme: SWE) {
     try {
         const { id, userId, ...smeData } = sme;
+        console.log(`Onboarding new SME: ${JSON.stringify(smeData, null, 2)}`);
         const user = await currentUser();
         if (!user) {
             throw new Error("User not authenticated");

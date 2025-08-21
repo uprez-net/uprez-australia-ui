@@ -125,23 +125,23 @@ function ReviewInformationForm({
             <div className="mt-2 space-y-1">
               <p className="text-sm">
                 <span className="font-medium">Paid-up Capital:</span>{" "}
-                {smeData.paidUpCapital.toLocaleString("en-IN", {
+                {smeData.paidUpCapital.toLocaleString("en-AU", {
                   style: "currency",
-                  currency: "INR",
+                  currency: "AUD",
                 })}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Annual Turnover:</span>{" "}
-                {smeData.turnover.toLocaleString("en-IN", {
+                {smeData.turnover.toLocaleString("en-AU", {
                   style: "currency",
-                  currency: "INR",
+                  currency: "AUD",
                 })}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Net Worth:</span>{" "}
-                {smeData.netWorth.toLocaleString("en-IN", {
+                {smeData.netWorth.toLocaleString("en-AU", {
                   style: "currency",
-                  currency: "INR",
+                  currency: "AUD",
                 })}
               </p>
             </div>
