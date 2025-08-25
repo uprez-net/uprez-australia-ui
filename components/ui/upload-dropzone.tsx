@@ -2,16 +2,20 @@
 
 import type React from "react";
 
-import { generateSignedUrl } from "@/lib/data/bucketAction";
+import { deleteJustFile, generateSignedUrl } from "@/lib/data/bucketAction";
 import { useState } from "react";
 import { Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { getContentType } from "@/utils/uploadHelper";
+import { toast } from "sonner";
+
+const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30 MB
 
 interface FileUploadState {
   file: File;
   progress: number;
   status: "pending" | "uploading" | "completed" | "error";
+  path?: string;
   error?: string;
 }
 
@@ -50,12 +54,13 @@ export default function UploadDropzone({
   const setFileStatus = (
     fileName: string,
     status: FileUploadState["status"],
-    error?: string
+    error?: string,
+    path?: string
   ) => {
     setFileStates((prev) =>
       prev.map((fileState) =>
         fileState.file.name === fileName
-          ? { ...fileState, status, error }
+          ? { ...fileState, status, error, path }
           : fileState
       )
     );
@@ -76,7 +81,10 @@ export default function UploadDropzone({
         files.map(async (file) => {
           try {
             const { url: signedUrl, filePath } = await generateSignedUrl(
-              file,
+              {
+                name: file.name,
+                type: file.type,
+              },
               smeCompanyId
             );
 
@@ -84,7 +92,7 @@ export default function UploadDropzone({
               setProgress(file.name, pct)
             );
 
-            setFileStatus(file.name, "completed");
+            setFileStatus(file.name, "completed", undefined, filePath);
 
             return {
               path: filePath,
@@ -190,15 +198,35 @@ export default function UploadDropzone({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      onUpload(files);
+    if (files.length === 0) return;
+
+    const oversized = files.filter((file) => file.size > MAX_FILE_SIZE);
+    const validFiles = files.filter((file) => file.size <= MAX_FILE_SIZE);
+
+    if (oversized.length > 0) {
+      if (oversized.length === files.length) {
+        toast.warning("All selected files must be smaller than 30 MB");
+      } else if (oversized.length === 1) {
+        toast.warning("One file is too large. File size must be less than 30 MB");
+      } else {
+        toast.warning(
+          "Some files are too large. Each file must be less than 30 MB"
+        );
+      }
+    }
+
+    if (validFiles.length > 0) {
+      onUpload(validFiles);
     }
   };
 
-  const removeFile = (fileName: string) => {
+  const removeFile = async (fileName: string, path?: string) => {
     setFileStates((prev) =>
       prev.filter((fileState) => fileState.file.name !== fileName)
     );
+    if (path) {
+      await deleteJustFile(path);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -284,7 +312,7 @@ export default function UploadDropzone({
 
                   {fileState.status !== "uploading" && (
                     <button
-                      onClick={() => removeFile(fileState.file.name)}
+                      onClick={() => removeFile(fileState.file.name, fileState.path)}
                       className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                     >
                       <X className="h-4 w-4" />

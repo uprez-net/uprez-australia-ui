@@ -1,34 +1,71 @@
 import { DocumentType } from "@prisma/client";
 
 const documentLabelMap: Partial<Record<DocumentType, string[]>> = {
-  [DocumentType.AuditedFinancialStatements]: [
-    "audited financial statement",
-    "Audited financial",
-  ],
-  [DocumentType.ProfitAndLossStatement]: ["profit loss"],
-  [DocumentType.BalanceSheet]: ["balance sheet", "Net_tangible_assets"],
-  [DocumentType.CashFlowStatement]: ["cashflow"],
-  [DocumentType.AnnualReport]: ["Annual report"],
-  [DocumentType.ManagementDiscussionAndAnalysis]: [
-    "Management discussion and analysis",
-  ],
-  [DocumentType.CertificateOfIncorporation]: [
-    "COI",
-    "Commencement_of_business_certificate",
-  ],
-  [DocumentType.MemorandumOfAssociation]: ["MOA_AOA"],
-  [DocumentType.ArticlesOfAssociation]: ["MOA_AOA"],
-  [DocumentType.BoardResolutions]: ["Board_Resolutions"],
-  [DocumentType.ShareholderAgreements]: ["Share_Capital"],
-  [DocumentType.MaterialContracts]: ["MATERIAL_CONTRACTS"],
-  [DocumentType.ROCFilings]: ["Shareholding_Pattern"],
-  [DocumentType.TaxComplianceCertificates]: ["Legal_Compliance_Certificates"],
-  [DocumentType.StatutoryAuditReports]: ["Corporate_governance"],
-  [DocumentType.BoardMeetingMinutes]: ["Board_Composition"],
-  [DocumentType.RelatedPartyTransactionPolicy]: [
-    "Declaration_of_Related_Party_Transactions",
-  ],
+  // Corporate Structure
+  [DocumentType.CompanyConstitution]: ["constitution", "company constitution"],
+  [DocumentType.CorporateStructureChart]: ["corporate structure chart", "org chart"],
+  [DocumentType.BoardResolutionConstitution]: ["board resolution constitution"],
+  [DocumentType.BoardResolutionASXContact]: ["board resolution asx contact"],
+
+  // Financial Documents
+  [DocumentType.AuditedFinancialStatements]: ["audited financial statement", "audited financials"],
+  [DocumentType.ProFormaStatementOfFinancialPosition]: ["pro forma financial position"],
+  [DocumentType.InvestigatingAccountantsReport]: ["investigating accountants report", "IAR"],
+  [DocumentType.WorkingCapitalStatement]: ["working capital statement"],
+
+  // Market Integrity
+  [DocumentType.ShareholderSpreadAnalysisReport]: ["shareholder spread analysis", "shareholder analysis"],
+  [DocumentType.FreeFloatAnalysis]: ["free float analysis"],
+  [DocumentType.RelatedPartiesAndPromotersList]: ["related parties", "promoters list"],
+
+  // Governance & Personnel
+  [DocumentType.DirectorConsentForms]: ["director consent form"],
+  [DocumentType.DirectorQuestionnaires]: ["director questionnaire"],
+  [DocumentType.PoliceAndBankruptcyChecks]: ["police check", "bankruptcy check"],
+  [DocumentType.ASXListingRuleCourseCertificate]: ["asx listing rule course certificate"],
+  [DocumentType.SecuritiesTradingPolicy]: ["securities trading policy"],
+  [DocumentType.CorporateGovernanceStatement]: ["corporate governance statement"],
+  [DocumentType.BoardAndCommitteeCharters]: ["board charter", "committee charter"],
+
+  // Escrow & Restricted Securities
+  [DocumentType.ExecutedRestrictionDeeds]: ["restriction deed", "executed restriction"],
+
+  // The Offer
+  [DocumentType.FinalProspectusDocument]: ["final prospectus"],
+  [DocumentType.DueDiligenceCommitteeDocuments]: ["due diligence committee", "ddc documents"],
+  [DocumentType.ExpertConsentLetters]: ["expert consent letter"],
+
+  // Capital Structure
+  [DocumentType.OptionAndPerformanceRightTerms]: ["option terms", "performance right terms"],
+  [DocumentType.CompanyOptionSecurityRegister]: ["option register", "security register"],
+
+  // Legal & Agreements
+  [DocumentType.LegalDueDiligenceReport]: ["legal due diligence report"],
+  [DocumentType.SummaryOfMaterialContracts]: ["material contracts", "summary of material contracts"],
+  [DocumentType.RelatedPartyAgreements]: ["related party agreements"],
+  [DocumentType.AdvisorMandates]: ["advisor mandate"],
+
+  // Asset Ownership & Tax
+  [DocumentType.AssetTitleDocuments]: ["asset title", "title deed"],
+  [DocumentType.IPAssignmentDeeds]: ["ip assignment deed", "intellectual property assignment"],
+  [DocumentType.SpecialistTaxDueDiligenceReport]: ["specialist tax due diligence report"],
+  [DocumentType.CompanyTaxReturns]: ["company tax return"],
+
+  // Sector-Specific
+  [DocumentType.IndependentGeologistsReport]: ["independent geologist report"],
+  [DocumentType.TherapeuticGoodsAdministrationApprovals]: ["tga approval", "therapeutic goods administration"],
+  [DocumentType.AustralianFinancialServicesLicence]: ["afsl", "australian financial services licence"],
+
+  // Legacy / Original types (still in system)
+  [DocumentType.CertificateOfIncorporation]: ["certificate of incorporation", "COI"],
+  [DocumentType.MemorandumOfAssociation]: ["memorandum of association", "moa"],
+  [DocumentType.ArticlesOfAssociation]: ["articles of association", "aoa"],
+  [DocumentType.ShareholderAgreements]: ["shareholder agreement"],
+  [DocumentType.IntellectualPropertyDocuments]: ["intellectual property", "ip documents"],
+  [DocumentType.TaxComplianceCertificates]: ["tax compliance certificate", "legal compliance certificates"],
+  [DocumentType.RegulatoryApprovals]: ["regulatory approval"],
 };
+
 
 // Final function
 export function getAllLabelsForDocumentType(type: DocumentType): string {

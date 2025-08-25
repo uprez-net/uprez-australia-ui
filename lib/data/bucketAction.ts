@@ -4,7 +4,10 @@ import { bucket } from "../bucket";
 import { deleteDocument } from "./clientPageAction";
 
 export const generateSignedUrl = async (
-  file: File,
+  file: {
+    name: string;
+    type: string;
+  },
   smeId: string
 ) => {
   try {
@@ -20,6 +23,16 @@ export const generateSignedUrl = async (
     return { url, filePath };
   } catch (err) {
     console.error("Error generating signed URL:", err);
+    throw err;
+  }
+};
+
+export const deleteJustFile = async (filePath: string) => {
+  try {
+    await bucket.file(filePath).delete();
+    console.log("File deleted successfully:", filePath);
+  } catch (err) {
+    console.error("Error deleting file:", err);
     throw err;
   }
 };
