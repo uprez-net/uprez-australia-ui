@@ -63,7 +63,16 @@ export function ComplianceReportViewer() {
     documentProgress.find((cat) => cat.category === "Overall")?.percentage || 0;
   const categories = [
     {
-      name: "Financial",
+      name: "Corporate Structure",
+      score:
+        documentProgress.find((cat) => cat.category === "Corporate Structure")
+          ?.percentage || 0,
+      findings:
+        documentProgress.find((cat) => cat.category === "Corporate Structure")
+          ?.uploadedCount || 0,
+    },
+    {
+      name: "Financial Documents",
       score:
         documentProgress.find((cat) => cat.category === "Financial Documents")
           ?.percentage || 0,
@@ -72,33 +81,92 @@ export function ComplianceReportViewer() {
           ?.uploadedCount || 0,
     },
     {
-      name: "Governance",
+      name: "Market Integrity",
       score:
-        documentProgress.find((cat) => cat.category === "Corporate Governance")
+        documentProgress.find((cat) => cat.category === "Market Integrity")
           ?.percentage || 0,
       findings:
-        documentProgress.find((cat) => cat.category === "Corporate Governance")
+        documentProgress.find((cat) => cat.category === "Market Integrity")
           ?.uploadedCount || 0,
     },
     {
-      name: "Tax",
+      name: "Governance & Personnel",
       score:
-        documentProgress.find((cat) => cat.category === "Compliance Documents")
+        documentProgress.find(
+          (cat) => cat.category === "Governance & Personnel"
+        )?.percentage || 0,
+      findings:
+        documentProgress.find(
+          (cat) => cat.category === "Governance & Personnel"
+        )?.uploadedCount || 0,
+    },
+    {
+      name: "Escrow & Restricted Securities",
+      score:
+        documentProgress.find(
+          (cat) => cat.category === "Escrow & Restricted Securities"
+        )?.percentage || 0,
+      findings:
+        documentProgress.find(
+          (cat) => cat.category === "Escrow & Restricted Securities"
+        )?.uploadedCount || 0,
+    },
+    {
+      name: "The Offer",
+      score:
+        documentProgress.find((cat) => cat.category === "The Offer")
           ?.percentage || 0,
       findings:
-        documentProgress.find((cat) => cat.category === "Compliance Documents")
+        documentProgress.find((cat) => cat.category === "The Offer")
           ?.uploadedCount || 0,
     },
     {
-      name: "Regulatory",
+      name: "Capital Structure",
       score:
-        documentProgress.find((cat) => cat.category === "Legal Documents")
+        documentProgress.find((cat) => cat.category === "Capital Structure")
           ?.percentage || 0,
       findings:
-        documentProgress.find((cat) => cat.category === "Legal Documents")
+        documentProgress.find((cat) => cat.category === "Capital Structure")
           ?.uploadedCount || 0,
     },
-    // { name: "Sector-Specific", score: 68, findings: 5 },
+    {
+      name: "Legal & Agreements",
+      score:
+        documentProgress.find((cat) => cat.category === "Legal & Agreements")
+          ?.percentage || 0,
+      findings:
+        documentProgress.find((cat) => cat.category === "Legal & Agreements")
+          ?.uploadedCount || 0,
+    },
+    {
+      name: "Asset Ownership & Tax",
+      score:
+        documentProgress.find((cat) => cat.category === "Asset Ownership & Tax")
+          ?.percentage || 0,
+      findings:
+        documentProgress.find((cat) => cat.category === "Asset Ownership & Tax")
+          ?.uploadedCount || 0,
+    },
+    {
+      name: "Sector-Specific",
+      score:
+        documentProgress.find((cat) => cat.category === "Sector-Specific")
+          ?.percentage || 0,
+      findings:
+        documentProgress.find((cat) => cat.category === "Sector-Specific")
+          ?.uploadedCount || 0,
+    },
+    {
+      name: "Legacy / Generic Documents",
+      score:
+        documentProgress.find(
+          (cat) => cat.category === "Legacy / Generic Documents"
+        )?.percentage || 0,
+      findings:
+        documentProgress.find(
+          (cat) => cat.category === "Legacy / Generic Documents"
+        )?.uploadedCount || 0,
+    },
   ];
 
   // Helper function to determine status color based on score
@@ -135,48 +203,6 @@ export function ComplianceReportViewer() {
   const findingsDataFromDocs = useMemo(() => {
     const findings: Record<string, any[]> = {};
 
-    // const statuses = [
-    //   "compliant",
-    //   "partially-compliant",
-    //   "non-compliant",
-    // ] as const;
-
-    // const reasonMap = {
-    //   compliant: [
-    //     "The document meets all compliance requirements.",
-    //     "Reviewed and found in order.",
-    //     "No discrepancies noted in this submission.",
-    //   ],
-    //   "partially-compliant": [
-    //     "Some sections are missing or unclear.",
-    //     "The formatting deviates from standard requirements.",
-    //     "Minor inconsistencies were identified.",
-    //   ],
-    //   "non-compliant": [
-    //     "Critical information is missing.",
-    //     "Fails to meet core compliance standards.",
-    //     "Document appears outdated or unverified.",
-    //   ],
-    // };
-
-    // const recommendationMap = {
-    //   compliant: [
-    //     "No further action required.",
-    //     "Maintain current documentation standards.",
-    //     "Continue regular reviews to ensure consistency.",
-    //   ],
-    //   "partially-compliant": [
-    //     "Update the document and re-upload a revised version.",
-    //     "Conduct an internal review to address the issues.",
-    //     "Clarify and supplement the missing information.",
-    //   ],
-    //   "non-compliant": [
-    //     "Consult with legal or compliance team for corrective steps.",
-    //     "Re-submit the document with all required disclosures.",
-    //     "Replace the document with a valid and complete version.",
-    //   ],
-    // };
-
     const priorities = {
       compliant: "low",
       "partially-compliant": "medium",
@@ -194,11 +220,13 @@ export function ComplianceReportViewer() {
         const categoryName =
           category.name === "Financial Documents"
             ? "Financial"
-            : category.name === "Legal Documents"
+            : category.name === "Legal & Agreements"
             ? "Regulatory"
-            : category.name === "Compliance Documents"
+            : category.name === "Asset Ownership & Tax"
             ? "Tax"
-            : "Governance";
+            : category.name === "Governance & Personnel"
+            ? "Governance"
+            : category.name; // fallback to default name if not mapped
 
         if (!findings[categoryName]) {
           findings[categoryName] = [];
