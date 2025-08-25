@@ -1,8 +1,10 @@
 import { marked } from "marked";
-import html2pdf from "html2pdf.js";
 
 export const convertMarkdownToPDFDownload = async (markdownString: string, fileName = "report.pdf") => {
   // Convert Markdown to HTML
+  if (typeof window === "undefined") return; // prevent SSR execution
+
+  const html2pdf = (await import("html2pdf.js")).default;
   const htmlContent = await marked.parse(markdownString);
 
   // Create a temporary container for HTML content

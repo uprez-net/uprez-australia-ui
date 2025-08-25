@@ -1,13 +1,16 @@
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { marked } from "marked";
-import html2pdf from "html2pdf.js";
+// import html2pdf from "html2pdf.js";
 import { getReports } from "@/lib/data/reportPageAction";
 import { Document } from "@prisma/client";
 
 // You need a function like this (update your existing one if needed)
-async function convertMarkdownToPDFBlob(markdown: string): Promise<Blob> {
+async function convertMarkdownToPDFBlob(markdown: string): Promise<Blob | null> {
   // Convert Markdown to HTML
+  if (typeof window === "undefined") return null; // prevent SSR execution
+
+  const html2pdf = (await import("html2pdf.js")).default;
   const htmlContent = await marked.parse(markdown);
 
   // Create a temporary container for HTML content
@@ -55,7 +58,7 @@ export async function downloadReports(
   await Promise.all(
     reports.map(async (report, index) => {
       const pdfBlob = await convertMarkdownToPDFBlob(stripMarkdownCodeBlock(report));
-      zip.file(`report-${index + 1}.pdf`, pdfBlob);
+      zip.file(`report-${index + 1}.pdf`, pdfBlob as Blob);
     })
   );
 
