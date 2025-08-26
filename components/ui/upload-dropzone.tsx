@@ -30,12 +30,16 @@ interface UploadDropzoneProps {
     }[]
   ) => void;
   onUploadError: (error: Error) => void;
+  heading?: string;
+  subtext?: string;
 }
 
 export default function UploadDropzone({
   smeCompanyId,
   onClientUploadComplete,
   onUploadError,
+  heading,
+  subtext
 }: UploadDropzoneProps) {
   const [fileStates, setFileStates] = useState<FileUploadState[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -55,7 +59,7 @@ export default function UploadDropzone({
     fileName: string,
     status: FileUploadState["status"],
     error?: string,
-    path?: string
+    path?: string,
   ) => {
     setFileStates((prev) =>
       prev.map((fileState) =>
@@ -266,10 +270,10 @@ export default function UploadDropzone({
 
         <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Drop files here or click to browse
+          {heading || "Drop files here or click to browse"}
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Select multiple files to upload simultaneously
+          {subtext || "Select multiple files to upload simultaneously"}
         </p>
       </div>
 

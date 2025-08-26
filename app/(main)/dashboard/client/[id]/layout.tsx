@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppDispatch } from "@/app/redux/use-dispatch";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 import {
   clearClient,
   setClientData as fetchData,

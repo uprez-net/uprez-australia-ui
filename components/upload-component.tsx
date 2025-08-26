@@ -7,6 +7,7 @@ import { BasicCheckStatus, Document, DocumentType } from "@prisma/client";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import UploadDropzone from "./ui/upload-dropzone";
+import { cn } from "@/lib/utils";
 
 interface UploadComponentProps {
   setUploadedFiles?: (file: Document) => void;
@@ -15,6 +16,9 @@ interface UploadComponentProps {
   smeCompanyId: string;
   documentType: DocumentType;
   year?: number;
+  heading?: string;
+  subtext?: string;
+  className?: string;
 }
 
 /**
@@ -40,6 +44,9 @@ export function UploadDropZoneComponent({
   smeCompanyId,
   documentType,
   year,
+  heading,
+  subtext,
+  className
 }: UploadComponentProps) {
   const dispatch = useAppDispatch();
   const { sessionToken } = useSelector((state: RootState) => state.client);
@@ -82,13 +89,15 @@ export function UploadDropZoneComponent({
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className={cn("max-w-md mx-auto", className)}>
       <UploadDropzone
         smeCompanyId={smeCompanyId}
         onClientUploadComplete={(res) => {
           handleUploadComplete(res);
         }}
         onUploadError={(error) => toast.error(`ERROR! ${error.message}`)}
+        heading={heading}
+        subtext={subtext}
       />
     </div>
   );

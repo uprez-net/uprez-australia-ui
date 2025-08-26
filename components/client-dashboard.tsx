@@ -324,7 +324,7 @@ export function ClientDashboard({
         </Card>
 
         {/* Valuation Card (Coming Soon) */}
-        <Card className="bg-muted/50">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Valuation</CardTitle>
             <CardDescription>Automated IPO valuation tools</CardDescription>
@@ -332,19 +332,19 @@ export function ClientDashboard({
           <CardContent>
             <div className="flex flex-col items-center justify-center py-4 space-y-2 text-center">
               <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-2xl font-bold">₹</span>
+                <span className="text-2xl font-bold">$</span>
               </div>
-              <Badge variant="outline" className="border-dashed">
+              {/* <Badge variant="outline" className="border-dashed">
                 Coming Soon
-              </Badge>
+              </Badge> */}
               <p className="text-sm text-muted-foreground">
                 Automated valuation tools to help determine optimal IPO pricing
               </p>
             </div>
           </CardContent>
           <CardFooter className="pt-0">
-            <Button variant="outline" className="w-full" disabled>
-              Join Waitlist
+            <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/client/${encodeURIComponent(clientId!)}/valuation`)}>
+              Check Valuation
             </Button>
           </CardFooter>
         </Card>
