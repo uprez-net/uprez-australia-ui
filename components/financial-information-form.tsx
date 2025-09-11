@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import {
   Form,
@@ -14,37 +14,69 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { forwardRef, useImperativeHandle } from "react";
+import { getYear } from "date-fns";
 
-const financialFormSchema = z.object({
-  paidUpCapital: z.coerce
-    .number()
-    .min(1500000, {
-      message:
-        "Paid-up capital must be at least $1,500,000 for SME IPO eligibility in Australia.",
-    })
-    .max(500000000, {
-      message: "Paid-up capital cannot exceed $500 million for SME category.",
-    }),
-  turnover: z.coerce
-    .number()
-    .min(0, {
-      message: "Turnover cannot be negative.",
-    })
-    .max(50000000, {
-      message: "Turnover cannot exceed $50 million for SME IPO eligibility.",
-    }),
-  netWorth: z.coerce.number().min(0, {
-    message: "Net worth cannot be negative.",
-  }),
-  yearsOperational: z.coerce
-    .number()
-    .min(1, {
-      message: "Company must be operational for at least 1 year.",
-    })
-    .max(200, {
-      message: "Please enter a valid number of years.",
-    }),
-});
+const financialFormSchema = z
+  .object({
+    paidUpCapital: z.coerce
+      .number()
+      .min(1500000, {
+        message:
+          "Paid-up capital must be at least $1,500,000 for SME IPO eligibility in Australia.",
+      })
+      .max(500000000, {
+        message: "Paid-up capital cannot exceed $500 million for SME category.",
+      }),
+
+    turnover: z.coerce
+      .number()
+      .min(0, { message: "Turnover cannot be negative." })
+      .max(50000000, {
+        message: "Turnover cannot exceed $50 million for SME IPO eligibility.",
+      }),
+
+    netWorth: z.coerce
+      .number()
+      .min(0, { message: "Net worth cannot be negative." }),
+
+    last3YearsRevenue: z
+      .array(
+        z.object({
+          year: z
+            .number({ required_error: "Year is required." })
+            .min(2000)
+            .max(getYear(new Date())),
+          revenue: z.coerce
+            .number({ required_error: "Revenue is required." })
+            .min(0),
+        })
+      )
+      .length(3, { message: "You must provide exactly 3 years of revenue." }),
+
+    yearsOperational: z.coerce
+      .number()
+      .min(1, { message: "Company must be operational for at least 1 year." })
+      .max(200, { message: "Please enter a valid number of years." }),
+  })
+  .superRefine((data, ctx) => {
+    const profits = data.last3YearsRevenue.map((p) => p.revenue);
+    const last12MonthsProfit = profits[2]; // assuming most recent year is last
+    const total3YearsProfit = profits.reduce((acc, val) => acc + val, 0);
+
+    // Profit Test Requirement
+    const meetsProfitTest =
+      last12MonthsProfit >= 1000000 ||
+      (total3YearsProfit >= 2000000 && last12MonthsProfit >= 500000);
+
+    if (!meetsProfitTest) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Company must meet profit test: $1M in last 12 months, OR $2M over 3 years with at least $500K in the last 12 months.",
+        path: ["last3YearsProfit"],
+      });
+    }
+  });
 
 type FinancialFormValues = z.infer<typeof financialFormSchema>;
 
@@ -53,6 +85,11 @@ const defaultValues: Partial<FinancialFormValues> = {
   turnover: undefined,
   netWorth: undefined,
   yearsOperational: undefined,
+  last3YearsRevenue: [
+    { year: getYear(new Date()) - 2, revenue: NaN },
+    { year: getYear(new Date()) - 1, revenue: NaN },
+    { year: getYear(new Date()), revenue: NaN },
+  ],
 };
 
 // Format numbers as Australian currency
@@ -162,6 +199,65 @@ export const FinancialInformationForm = forwardRef<
 
           <FormField
             control={form.control}
+            name="last3YearsRevenue"
+            render={({ field }) => {
+              const { fields } = useFieldArray({
+                control: form.control,
+                name: "last3YearsRevenue",
+              });
+
+              return (
+                <div className="space-y-4">
+                  <FormLabel>Last 3 Years Revenue</FormLabel>
+                  {fields.map((item, index) => (
+                    <FormItem
+                      key={item.id}
+                      className="grid grid-cols-2 gap-4 items-end"
+                    >
+                      {/* Year Input */}
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder={`Year ${index + 1}`}
+                          min={2000}
+                          max={getYear(new Date())}
+                          {...form.register(
+                            `last3YearsRevenue.${index}.year` as const,
+                            {
+                              valueAsNumber: true,
+                            }
+                          )}
+                        />
+                      </FormControl>
+
+                      {/* Revenue Input */}
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Revenue (AUD)"
+                          min={0}
+                          {...form.register(
+                            `last3YearsRevenue.${index}.revenue` as const,
+                            {
+                              valueAsNumber: true,
+                            }
+                          )}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  ))}
+                  <FormMessage />
+                  <FormDescription>
+                    Enter your revenue for the last 3 years. Most recent year
+                    last.
+                  </FormDescription>
+                </div>
+              );
+            }}
+          />
+
+          <FormField
+            control={form.control}
             name="yearsOperational"
             render={({ field }) => (
               <FormItem>
@@ -189,12 +285,15 @@ export const FinancialInformationForm = forwardRef<
             const turnover = Number(form.watch("turnover"));
             const netWorth = Number(form.watch("netWorth"));
             const yearsOperational = Number(form.watch("yearsOperational"));
+            const last3YearsRevenue = form.watch("last3YearsRevenue");
 
             const hasAny =
               !isNaN(paidUpCapital) ||
               !isNaN(turnover) ||
               !isNaN(netWorth) ||
-              !isNaN(yearsOperational);
+              !isNaN(yearsOperational) ||
+              (Array.isArray(last3YearsRevenue) &&
+                last3YearsRevenue.some((r) => r.year && r.revenue));
 
             if (!hasAny) return null;
 
@@ -218,6 +317,23 @@ export const FinancialInformationForm = forwardRef<
                   {!isNaN(yearsOperational) && (
                     <p>Years Operational: {yearsOperational} years</p>
                   )}
+
+                  {Array.isArray(last3YearsRevenue) &&
+                    last3YearsRevenue.length > 0 && (
+                      <div>
+                        <p className="font-medium mt-2">
+                          Last 3 Years Revenue:
+                        </p>
+                        <ul className="list-disc ml-5">
+                          {last3YearsRevenue.map((r, idx) => (
+                            <li key={idx}>
+                              {r.year}: $
+                              {Number(r.revenue).toLocaleString("en-AU")}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                 </div>
               </div>
             );

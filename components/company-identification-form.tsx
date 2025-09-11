@@ -1,91 +1,117 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { forwardRef, useImperativeHandle, useState } from "react"
-import { Button } from "./ui/button"
-import { Upload, X } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "./ui/date-picker";
 
 const companyFormSchema = z.object({
   legalName: z.string().min(2, {
     message: "Company name must be at least 2 characters.",
   }),
-  cin: z.string().regex(/^[A-Z]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/, {
-    message: "Please enter a valid 21-character CIN.",
+  acn: z.string().regex(/^\d{9}$/, {
+    message: "Please enter a valid 9-digit ACN.",
   }),
-  pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, {
-    message: "Please enter a valid 10-character PAN.",
+  abn: z.string().regex(/^\d{11}$/, {
+    message: "Please enter a valid 11-digit ABN.",
   }),
-  tan: z.string().regex(/^[A-Z]{4}[0-9]{5}[A-Z]{1}$/, {
-    message: "Please enter a valid 10-character TAN.",
-  }),
-  gstin: z.string().regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/, {
-    message: "Please enter a valid 15-character GSTIN.",
-  }),
-})
+  paygWithholding: z.boolean().default(false),
+  gstRegistered: z.boolean().default(false),
+  austracRegistered: z.boolean().default(false),
+  gstEffectiveDate: z.string().optional(),
+  asicRegistration: z.string().optional(),
+  chessHin: z.string().optional(),
+});
 
-type CompanyFormValues = z.infer<typeof companyFormSchema>
+type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
-// This can be used to pre-fill the form with existing data
-const defaultValues: Partial<CompanyFormValues> = {
+const defaultValues: CompanyFormValues = {
   legalName: "",
-  cin: "",
-  pan: "",
-  tan: "",
-  gstin: "",
-}
+  acn: "",
+  abn: "",
+  paygWithholding: false,
+  gstRegistered: false,
+  gstEffectiveDate: "",
+  asicRegistration: "",
+  austracRegistered: false,
+  chessHin: "",
+};
 
 export type CompanyIdentificationFormHandle = {
-  submit: () => Promise<boolean>
-}
+  submit: () => Promise<boolean>;
+};
 
-const fieldLabels: Record<string, string> = {
+const fieldLabels: Record<keyof CompanyFormValues, string> = {
   legalName: "Legal Company Name",
-  cin: "CIN (Corporate Identification Number)",
-  pan: "PAN (Permanent Account Number)",
-  tan: "TAN (Tax Deduction Account Number)",
-  gstin: "GSTIN (Goods and Services Tax Identification Number)",
-}
+  acn: "ACN (Australian Company Number)",
+  abn: "ABN (Australian Business Number)",
+  paygWithholding: "PAYG Withholding Registration",
+  gstRegistered: "GST Registration",
+  gstEffectiveDate: "GST Registration Effective Date",
+  asicRegistration: "ASIC Registration Details",
+  austracRegistered: "AUSTRAC Registration",
+  chessHin: "CHESS Holding Identification Number (HIN)",
+};
 
-export const CompanyIdentificationForm = forwardRef<CompanyIdentificationFormHandle, {
-  onSubmitData?: (data: CompanyFormValues) => void
-  data?: CompanyFormValues
-}>(({ onSubmitData, data }, ref) => {
-  const form = useForm<CompanyFormValues>({
+export const CompanyIdentificationForm = forwardRef<
+  CompanyIdentificationFormHandle,
+  {
+    onSubmitData?: (data: CompanyFormValues) => void;
+    data?: CompanyFormValues;
+  }
+>(({ onSubmitData, data }, ref) => {
+  const form = useForm({
     resolver: zodResolver(companyFormSchema),
     defaultValues: data ?? defaultValues,
     mode: "onChange",
-  })
+  });
 
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   useImperativeHandle(ref, () => ({
     async submit() {
-      const isValid = await form.trigger()
-      if (!isValid) return false
-      const values = form.getValues()
-      onSubmitData?.(values)
-      return true
+      const isValid = await form.trigger();
+      if (!isValid) return false;
+      const values = form.getValues();
+      const submissionData: CompanyFormValues = {
+        ...values,
+        paygWithholding: values.paygWithholding ?? false,
+        gstRegistered: values.gstRegistered ?? false,
+        austracRegistered: values.austracRegistered ?? false,
+      };
+      onSubmitData?.(submissionData);
+      return true;
     },
-  }))
+  }));
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const removeImage = () => {
-    setLogoPreview(null)
-  }
+    setLogoPreview(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -98,6 +124,7 @@ export const CompanyIdentificationForm = forwardRef<CompanyIdentificationFormHan
 
       <Form {...form}>
         <form className="space-y-6">
+          {/* Logo Upload */}
           <FormField
             name="logo"
             render={() => (
@@ -116,8 +143,12 @@ export const CompanyIdentificationForm = forwardRef<CompanyIdentificationFormHan
                         />
                         <label htmlFor="logo-upload" className="cursor-pointer">
                           <Upload className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm font-medium">Click to upload your organization logo</p>
-                          <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (Max. 2MB)</p>
+                          <p className="text-sm font-medium">
+                            Click to upload your organization logo
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            SVG, PNG, JPG or GIF (Max. 2MB)
+                          </p>
                         </label>
                       </div>
                     ) : (
@@ -147,17 +178,50 @@ export const CompanyIdentificationForm = forwardRef<CompanyIdentificationFormHan
             )}
           />
 
-          {/* Regular fields */}
-          {["legalName", "cin", "pan", "tan", "gstin"].map((fieldName) => (
+          {/* Dynamic Fields */}
+          {(
+            [
+              "legalName",
+              "acn",
+              "abn",
+              "paygWithholding",
+              "gstRegistered",
+              "gstEffectiveDate",
+              "asicRegistration",
+              "austracRegistered",
+              "chessHin",
+            ] as (keyof CompanyFormValues)[]
+          ).map((fieldName) => (
             <FormField
               key={fieldName}
               control={form.control}
-              name={fieldName as keyof CompanyFormValues}
+              name={fieldName}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{fieldLabels[fieldName]}</FormLabel>
                   <FormControl>
-                    <Input placeholder={`Enter your ${fieldLabels[fieldName]}`} {...field} />
+                    {["paygWithholding", "gstRegistered", "austracRegistered"].includes(
+                      fieldName
+                    ) ? (
+                      <Checkbox
+                        checked={field.value as boolean}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 m-4"
+                      />
+                    ) : fieldName === "gstEffectiveDate" ? (
+                      <DatePicker
+                        value={field.value ? new Date(field.value as string) : undefined}
+                        onChange={(date) => field.onChange(date?.toISOString() || '')}
+                        placeholder="Select GST effective date"
+                        error={form.formState.errors.gstEffectiveDate?.message}
+                      />
+                    ) : (
+                      <Input
+                        placeholder={`Enter your ${fieldLabels[fieldName]}`}
+                        {...field}
+                        value={field.value as string}
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -167,7 +231,7 @@ export const CompanyIdentificationForm = forwardRef<CompanyIdentificationFormHan
         </form>
       </Form>
     </div>
-  )
-})
+  );
+});
 
-CompanyIdentificationForm.displayName = "CompanyIdentificationForm"
+CompanyIdentificationForm.displayName = "CompanyIdentificationForm";

@@ -28,18 +28,28 @@ function ReviewInformationForm({
   smeData,
 }: {
   smeData: {
-    industrySector: string;
-    businessDescription: string;
-    legalName: string;
-    cin: string;
-    pan: string;
-    tan: string;
-    gstin: string;
-    paidUpCapital: number;
-    turnover: number;
-    netWorth: number;
-    yearsOperational: number;
-  };
+    industrySector: string
+    legalName: string
+    acn: string
+    abn: string
+    paygWithholding: boolean
+    gstRegistered: boolean
+    gstEffectiveDate: string
+    paidUpCapital: number
+    turnover: number
+    netWorth: number
+    yearsOperational: number
+    last3YearsRevenue: {
+      year: number
+      revenue: number
+    }[]
+    companyType: string
+    stateOfRegistration: string
+    incorporationDate: string
+    asicRegistration: string
+    austracRegistered: boolean
+    chessHin: string
+  }
 }) {
   return (
     <div className="space-y-4">
@@ -47,25 +57,46 @@ function ReviewInformationForm({
       <p className="text-muted-foreground">
         Please review all the information before submitting.
       </p>
+
       <div className="rounded-md border p-4 mt-4">
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Company Details */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
               Company Details
             </h3>
             <div className="mt-2 space-y-1">
               <p className="text-sm">
-                <span className="font-medium">Legal Name:</span>
-                {smeData.legalName}
+                <span className="font-medium">Legal Name:</span> {smeData.legalName}
               </p>
               <p className="text-sm">
-                <span className="font-medium">CIN:</span> {smeData.cin}
+                <span className="font-medium">ACN:</span> {smeData.acn}
               </p>
               <p className="text-sm">
-                <span className="font-medium">PAN:</span> {smeData.pan}
+                <span className="font-medium">ABN:</span> {smeData.abn}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Company Type:</span> {smeData.companyType}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">State of Registration:</span>{" "}
+                {smeData.stateOfRegistration}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Incorporation Date:</span>{" "}
+                {smeData.incorporationDate}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">ASIC Registration:</span>{" "}
+                {smeData.asicRegistration}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">CHESS HIN:</span> {smeData.chessHin}
               </p>
             </div>
           </div>
+
+          {/* Business Information */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
               Business Information
@@ -80,8 +111,14 @@ function ReviewInformationForm({
                 {smeData.yearsOperational} year
                 {smeData.yearsOperational > 1 ? "s" : ""}
               </p>
+              <p className="text-sm">
+                <span className="font-medium">AUSTRAC Registered:</span>{" "}
+                {smeData.austracRegistered ? "Yes" : "No"}
+              </p>
             </div>
           </div>
+
+          {/* Financial Information */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
               Financial Information
@@ -89,52 +126,98 @@ function ReviewInformationForm({
             <div className="mt-2 space-y-1">
               <p className="text-sm">
                 <span className="font-medium">Paid-up Capital:</span>{" "}
-                {!isNaN(Number(smeData.paidUpCapital))
-                  ? Number(smeData.paidUpCapital).toLocaleString("en-AU", {
-                      style: "currency",
-                      currency: "AUD",
-                    })
-                  : "-"}
+                {smeData.paidUpCapital.toLocaleString("en-AU", {
+                  style: "currency",
+                  currency: "AUD",
+                })}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Annual Turnover:</span>{" "}
-                {!isNaN(Number(smeData.turnover))
-                  ? Number(smeData.turnover).toLocaleString("en-AU", {
-                      style: "currency",
-                      currency: "AUD",
-                    })
-                  : "-"}
+                {smeData.turnover.toLocaleString("en-AU", {
+                  style: "currency",
+                  currency: "AUD",
+                })}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Net Worth:</span>{" "}
-                {!isNaN(Number(smeData.netWorth))
-                  ? Number(smeData.netWorth).toLocaleString("en-AU", {
-                      style: "currency",
-                      currency: "AUD",
-                    })
-                  : "-"}
+                {smeData.netWorth.toLocaleString("en-AU", {
+                  style: "currency",
+                  currency: "AUD",
+                })}
               </p>
+
+              {/* Revenue history */}
+              <div className="mt-2">
+                <span className="font-medium">Last 3 Years Revenue:</span>
+                <ul className="ml-4 list-disc text-sm">
+                  {smeData.last3YearsRevenue.map((r) => (
+                    <li key={r.year}>
+                      {r.year}:{" "}
+                      {r.revenue.toLocaleString("en-AU", {
+                        style: "currency",
+                        currency: "AUD",
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Registrations */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Registrations
+            </h3>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">PAYG Withholding:</span>{" "}
+                {smeData.paygWithholding ? "Yes" : "No"}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">GST Registered:</span>{" "}
+                {smeData.gstRegistered ? "Yes" : "No"}
+              </p>
+              {smeData.gstRegistered && smeData.gstEffectiveDate && (
+                <p className="text-sm">
+                  <span className="font-medium">GST Effective Date:</span>{" "}
+                  {smeData.gstEffectiveDate}
+                </p>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
   const [smeDetails, setSmeDetails] = useState({
     industrySector: "",
-    businessDescription: "",
     legalName: "",
-    cin: "",
-    pan: "",
-    tan: "",
-    gstin: "",
+    acn: "", // Australian Company Number
+    abn: "", // Australian Business Number
+    paygWithholding: false, // PAYG Withholding registration (yes/no)
+    gstRegistered: false, // GST registration status
+    gstEffectiveDate: "", // GST registration effective date (ISO string)
     paidUpCapital: NaN,
     turnover: NaN,
     netWorth: NaN,
     yearsOperational: NaN,
+    last3YearsRevenue: [
+      { year: new Date().getFullYear() - 2, revenue: NaN },
+      { year: new Date().getFullYear() - 1, revenue: NaN },
+      { year: new Date().getFullYear(), revenue: NaN },
+    ] as Array<{ year: number; revenue: number }>, // Array of { year: number, revenue: number }
+
+    // Company details
+    companyType: "", // Public / Proprietary Limited
+    stateOfRegistration: "", // State/Territory of registration
+    incorporationDate: "", // Date of incorporation (ISO string)
+    asicRegistration: "", // ASIC registration details
+    austracRegistered: false, // AUSTRAC registration (if applicable)
+    chessHin: "", // CHESS Holding Identification Number
   });
   const businessDetailsRef = useRef<BusinessDetailsFormHandle>(null);
   const companyIdentificationRef =
@@ -147,26 +230,38 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
         <CompanyIdentificationForm
           data={{
             legalName: smeDetails.legalName,
-            cin: smeDetails.cin,
-            pan: smeDetails.pan,
-            tan: smeDetails.tan,
-            gstin: smeDetails.gstin,
+            acn: smeDetails.acn,
+            abn: smeDetails.abn,
+            paygWithholding: smeDetails.paygWithholding,
+            gstRegistered: smeDetails.gstRegistered,
+            gstEffectiveDate: smeDetails.gstEffectiveDate,
+            asicRegistration: smeDetails.asicRegistration,
+            austracRegistered: smeDetails.austracRegistered,
+            chessHin: smeDetails.chessHin,
           }}
           ref={companyIdentificationRef}
           onSubmitData={(data: {
             legalName: string;
-            cin: string;
-            pan: string;
-            tan: string;
-            gstin: string;
+            acn: string;
+            abn: string;
+            paygWithholding: boolean;
+            gstRegistered: boolean;
+            austracRegistered: boolean;
+            gstEffectiveDate?: string;
+            asicRegistration?: string;
+            chessHin?: string;
           }) => {
             setSmeDetails((prev) => ({
               ...prev,
               legalName: data.legalName,
-              cin: data.cin,
-              pan: data.pan,
-              tan: data.tan,
-              gstin: data.gstin,
+              acn: data.acn,
+              abn: data.abn,
+              paygWithholding: data.paygWithholding,
+              gstRegistered: data.gstRegistered,
+              gstEffectiveDate: data.gstEffectiveDate || "",
+              asicRegistration: data.asicRegistration || "",
+              austracRegistered: data.austracRegistered,
+              chessHin: data.chessHin || "",
             }));
           }}
         />
@@ -178,17 +273,23 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
         <BusinessDetailsForm
           data={{
             industrySector: smeDetails.industrySector,
-            businessDescription: smeDetails.businessDescription,
+            companyType: smeDetails.companyType,
+            stateOfRegistration: smeDetails.stateOfRegistration,
+            incorporationDate: smeDetails.incorporationDate,
           }}
           ref={businessDetailsRef}
           onSubmitData={(data: {
             industrySector: string;
-            businessDescription?: string;
+            companyType: string;
+            stateOfRegistration: string;
+            incorporationDate: string;
           }) => {
             setSmeDetails((prev) => ({
               ...prev,
               industrySector: data.industrySector,
-              businessDescription: data.businessDescription!,
+              companyType: data.companyType,
+              stateOfRegistration: data.stateOfRegistration,
+              incorporationDate: data.incorporationDate,
             }));
           }}
         />
@@ -203,6 +304,7 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
             turnover: smeDetails.turnover,
             netWorth: smeDetails.netWorth,
             yearsOperational: smeDetails.yearsOperational,
+            last3YearsRevenue: smeDetails.last3YearsRevenue,
           }}
           ref={financialFormRef}
           onSubmitData={(data: {
@@ -210,13 +312,16 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
             turnover: number;
             netWorth: number;
             yearsOperational: number;
+            last3YearsRevenue: { year: number; revenue: number }[];
           }) => {
+            console.log("Financial data submitted:", data);
             setSmeDetails((prev) => ({
               ...prev,
               paidUpCapital: Number(data.paidUpCapital),
               turnover: Number(data.turnover),
               netWorth: Number(data.netWorth),
               yearsOperational: Number(data.yearsOperational),
+              last3YearsRevenue: data.last3YearsRevenue,
             }));
           }}
         />
@@ -255,6 +360,8 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
                 id: "",
                 userId: "",
                 ...smeDetails,
+                gstEffectiveDate: new Date(smeDetails.gstEffectiveDate),
+                incorporationDate: new Date(smeDetails.incorporationDate),
                 companyName: smeDetails.legalName,
                 eligibilityStatus: EligibilityStatus.Pending,
               },

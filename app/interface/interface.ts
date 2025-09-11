@@ -10,13 +10,24 @@ export interface SWE {
   id: string;
   userId: string;
   companyName: string;
-  cin: string;
-  pan: string;
-  tan: string;
-  gstin: string;
+  acn: string;
+  abn: string;
+  paygWithholding: boolean;
+  gstRegistered: boolean;
+  gstEffectiveDate: Date;
   paidUpCapital: number;
   turnover: number;
   netWorth: number;
+  last3YearsRevenue: {
+    year: number;
+    revenue: number;
+  }[];
+  companyType: string;
+  stateOfRegistration: string;
+  incorporationDate: Date;
+  asicRegistration: string;
+  austracRegistered: boolean;
+  chessHin: string;
   yearsOperational: number;
   industrySector: string;
   eligibilityStatus: EligibilityStatus;

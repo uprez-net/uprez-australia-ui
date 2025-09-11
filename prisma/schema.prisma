@@ -81,27 +81,49 @@ model SMEProfile {
 model SMECompany {
   id                  String               @id @default(uuid())
   companyName         String
-  cin                 String?
-  pan                 String?
-  tan                 String?
-  gstin               String?
+
+  // AU company identifiers
+  acn                 String?   // Australian Company Number (replaces CIN)
+  abn                 String?   // Australian Business Number (replaces PAN)
+
+  paygWithholding     Boolean?  // Replaces TAN - Yes/No if registered for PAYG Withholding
+  gstRegistered       Boolean?  // GST Registration linked to ABN
+  gstEffectiveDate    DateTime? // Effective date of GST registration
+
+  // Financials
   paidUpCapital       Float?
   turnover            Float?
   netWorth            Float?
   yearsOperational    Int?
+  last3YearsRevenue   Json?     // Store as JSON array [{year: 2023, revenue: 1.2M}, ...]
+
+  // Company details
   industrySector      String?
+  companyType         String?   // Public / Proprietary Limited
+  stateOfRegistration String?   // State/Territory of registration
+  incorporationDate   DateTime? // Date of incorporation
+
+  // Registrations
+  asicRegistration    String?   // ASIC registration details (could also be a JSON blob)
+  austracRegistered   Boolean?  // If registered with AUSTRAC
+  chessHin            String?   // CHESS Holding Identification Number (if applicable)
+
+  // Internal system fields
   generationId        String?
-  generationNumber    Int? // Add after migrating to new schema
+  generationNumber    Int?
   eligibilityStatus   EligibilityStatus
   complianceStatus    ComplianceStatus
   createdAt           DateTime             @default(now())
   updatedAt           DateTime
+
+  // Relations
   smeProfileId        String?
   intermediaryId      String?
   Documents           Document[]
   SMEProfile          SMEProfile?          @relation(fields: [smeProfileId], references: [id])
   IntermediaryProfile IntermediaryProfile? @relation(fields: [intermediaryId], references: [id])
 }
+
 
 model User {
   id                  String               @id

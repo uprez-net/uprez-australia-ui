@@ -7,17 +7,21 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { forwardRef, useImperativeHandle } from "react"
+import { DatePicker } from "./ui/date-picker"
 
 const businessFormSchema = z.object({
   industrySector: z.string({
     required_error: "Please select an industry sector.",
   }),
-  businessDescription: z
-    .string()
-    .max(1000, {
-      message: "Business description cannot exceed 1000 characters.",
-    })
-    .optional(),
+  companyType: z.string({
+    required_error: "Please select company type.",
+  }),
+  stateOfRegistration: z.string({
+    required_error: "Please select a state of registration.",
+  }),
+  incorporationDate: z.string({
+    required_error: "Please select the incorporation date.",
+  })
 })
 
 type BusinessFormValues = z.infer<typeof businessFormSchema>
@@ -25,7 +29,9 @@ type BusinessFormValues = z.infer<typeof businessFormSchema>
 // This can be used to pre-fill the form with existing data
 const defaultValues: Partial<BusinessFormValues> = {
   industrySector: "",
-  businessDescription: "",
+  companyType: "",
+  stateOfRegistration: "",
+  incorporationDate: "",
 }
 
 // Industry sectors relevant to Indian SMEs
@@ -52,6 +58,23 @@ const industrySectors = [
   { value: "textiles", label: "Textiles & Apparel" },
   { value: "other", label: "Other" },
 ]
+
+const companyTypes = [
+  { value: "public", label: "Public Company" },
+  { value: "proprietary", label: "Proprietary Limited Company" },
+]
+
+const australianStates = [
+  { value: "nsw", label: "New South Wales" },
+  { value: "vic", label: "Victoria" },
+  { value: "qld", label: "Queensland" },
+  { value: "wa", label: "Western Australia" },
+  { value: "sa", label: "South Australia" },
+  { value: "tas", label: "Tasmania" },
+  { value: "act", label: "Australian Capital Territory" },
+  { value: "nt", label: "Northern Territory" },
+]
+
 
 export type BusinessDetailsFormHandle = {
   submit: () => Promise<boolean>
@@ -116,32 +139,76 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
             )}
           />
 
+          {/* Company Type */}
           <FormField
             control={form.control}
-            name="businessDescription"
+            name="companyType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Brief Business Description (Optional)</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Provide a brief description of your company..."
-                    className="min-h-[120px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  This description will help in preparing your company profile for the DRHP. Maximum 1000 characters.
-                </FormDescription>
+                <FormLabel>Company Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {companyTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {form.watch("businessDescription") && (
-            <div className="text-xs text-muted-foreground text-right">
-              {form.watch("businessDescription")?.length || 0}/1000 characters
-            </div>
-          )}
+          {/* State of Registration */}
+          <FormField
+            control={form.control}
+            name="stateOfRegistration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State of Registration</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {australianStates.map((st) => (
+                      <SelectItem key={st.value} value={st.value}>
+                        {st.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Incorporation Date */}
+          <FormField
+            control={form.control}
+            name="incorporationDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date of Incorporation</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    value={field.value ? new Date(field.value) : undefined}
+                    onChange={(date) => field.onChange(date ? date.toISOString() : '')}
+                    placeholder="Company Incorporation Date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </form>
       </Form>
     </div>
