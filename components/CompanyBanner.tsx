@@ -12,6 +12,11 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
+import {
+  australianStates,
+  companyTypes,
+  industrySectors,
+} from "./business-details-form";
 
 const getEligibilityStatusConfig = (status: EligibilityStatus) => {
   switch (status) {
@@ -63,15 +68,37 @@ const formatCurrency = (amount?: number) => {
 
 interface CompanyData {
   companyName: string;
-  cin?: string;
-  pan?: string;
-  tan?: string;
-  gstin?: string;
+
+  // AU company identifiers
+  acn?: string;
+  abn?: string;
+
+  paygWithholding?: boolean;
+  gstRegistered?: boolean;
+  gstEffectiveDate?: string;
+
+  // Registrations
+  asicRegistration?: string;
+  austracRegistered?: boolean;
+  chessHin?: string;
+
+  // Financials
   paidUpCapital?: number;
   turnover?: number;
   netWorth?: number;
   yearsOperational?: number;
+  last3YearsRevenue?: {
+    year: number;
+    revenue: number;
+  }[];
+
+  // Business Info
   industrySector?: string;
+  companyType?: string;
+  stateOfRegistration?: string;
+  incorporationDate?: string;
+
+  // Status tracking
   eligibilityStatus: EligibilityStatus;
   complianceStatus: ComplianceStatus;
   lastUpdatedAt: string;
@@ -125,27 +152,46 @@ export default function CompanyBanner({ data }: CompanyBannerProps) {
 
         {/* Information Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Legal Information */}
+          {/* Identification & Registrations */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Legal Information
+                Company Identifiers
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-xs">
-                <span className="font-medium">CIN:</span> {data.cin || "N/A"}
+            <CardContent className="space-y-2 text-xs">
+              <div>
+                <span className="font-medium">ACN:</span> {data.acn || "N/A"}
               </div>
-              <div className="text-xs">
-                <span className="font-medium">PAN:</span> {data.pan || "N/A"}
+              <div>
+                <span className="font-medium">ABN:</span> {data.abn || "N/A"}
               </div>
-              <div className="text-xs">
-                <span className="font-medium">TAN:</span> {data.tan || "N/A"}
+              <div>
+                <span className="font-medium">PAYG Withholding:</span>{" "}
+                {data.paygWithholding ? "Yes" : "No"}
               </div>
-              <div className="text-xs">
-                <span className="font-medium">GSTIN:</span>{" "}
-                {data.gstin || "N/A"}
+              <div>
+                <span className="font-medium">GST Registered:</span>{" "}
+                {data.gstRegistered ? "Yes" : "No"}
+                {data.gstEffectiveDate && (
+                  <span className="ml-1 text-muted-foreground">
+                    (since{" "}
+                    {new Date(data.gstEffectiveDate).toLocaleDateString()})
+                  </span>
+                )}
+              </div>
+              <div>
+                <span className="font-medium">ASIC Registration:</span>{" "}
+                {data.asicRegistration || "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">AUSTRAC Registered:</span>{" "}
+                {data.austracRegistered ? "Yes" : "No"}
+              </div>
+              <div>
+                <span className="font-medium">CHESS HIN:</span>{" "}
+                {data.chessHin || "N/A"}
               </div>
             </CardContent>
           </Card>
@@ -158,25 +204,37 @@ export default function CompanyBanner({ data }: CompanyBannerProps) {
                 Financial Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-xs">
+            <CardContent className="space-y-2 text-xs">
+              <div>
                 <span className="font-medium">Paid-up Capital:</span>
                 <div className="font-semibold text-green-600">
                   {formatCurrency(data.paidUpCapital)}
                 </div>
               </div>
-              <div className="text-xs">
+              <div>
                 <span className="font-medium">Turnover:</span>
                 <div className="font-semibold text-blue-600">
                   {formatCurrency(data.turnover)}
                 </div>
               </div>
-              <div className="text-xs">
+              <div>
                 <span className="font-medium">Net Worth:</span>
                 <div className="font-semibold text-purple-600">
                   {formatCurrency(data.netWorth)}
                 </div>
               </div>
+              {data.last3YearsRevenue && (
+                <div>
+                  <span className="font-medium">Last 3 Years Revenue:</span>
+                  <ul className="list-disc list-inside">
+                    {data.last3YearsRevenue.map((r) => (
+                      <li key={r.year}>
+                        {r.year}: {formatCurrency(r.revenue)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -188,22 +246,40 @@ export default function CompanyBanner({ data }: CompanyBannerProps) {
                 Operations
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-xs">
-                <span className="font-medium">Years Operational:</span>
-                <div className="font-semibold text-orange-600">
-                  {data.yearsOperational
-                    ? `${data.yearsOperational} years`
-                    : "N/A"}
-                </div>
+            <CardContent className="space-y-2 text-xs">
+              <div>
+                <span className="font-medium">Company Type:</span>{" "}
+                {companyTypes.find((ct) => ct.value === data.companyType)
+                  ?.label ||
+                  data.companyType ||
+                  "N/A"}
               </div>
-              <div className="text-xs">
-                <span className="font-medium">Industry Sector:</span>
-                <div className="font-medium text-gray-700">
-                  {data.industrySector
-                    ? data.industrySector.charAt(0).toUpperCase() + data.industrySector.slice(1)
-                    : "N/A"}
-                </div>
+              <div>
+                <span className="font-medium">State of Registration:</span>{" "}
+                {australianStates.find(
+                  (as) => as.value === data.stateOfRegistration
+                )?.label ||
+                  data.stateOfRegistration ||
+                  "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Incorporation Date:</span>{" "}
+                {data.incorporationDate
+                  ? new Date(data.incorporationDate).toLocaleDateString()
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Years Operational:</span>{" "}
+                {data.yearsOperational
+                  ? `${data.yearsOperational} years`
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-medium">Industry Sector:</span>{" "}
+                {industrySectors.find((is) => is.value === data.industrySector)
+                  ?.label ||
+                  data.industrySector ||
+                  "N/A"}
               </div>
             </CardContent>
           </Card>

@@ -53,6 +53,7 @@ export function MultiStepForm({ steps, onComplete, businessDetailsRef, financial
           // Handle financial information validation if needed
           if (financialFormRef?.current) {
             const isValid = await financialFormRef.current.submit()
+            console.log(`Form submission valid: ${isValid}`);
             if (!isValid) return
           }
           break

@@ -35,7 +35,7 @@ const defaultValues: Partial<BusinessFormValues> = {
 }
 
 // Industry sectors relevant to Indian SMEs
-const industrySectors = [
+export const industrySectors = [
   { value: "agriculture", label: "Agriculture & Allied Activities" },
   { value: "manufacturing", label: "Manufacturing" },
   { value: "automotive", label: "Automotive & Auto Components" },
@@ -59,12 +59,12 @@ const industrySectors = [
   { value: "other", label: "Other" },
 ]
 
-const companyTypes = [
+export const companyTypes = [
   { value: "public", label: "Public Company" },
   { value: "proprietary", label: "Proprietary Limited Company" },
 ]
 
-const australianStates = [
+export const australianStates = [
   { value: "nsw", label: "New South Wales" },
   { value: "vic", label: "Victoria" },
   { value: "qld", label: "Queensland" },

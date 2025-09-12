@@ -2,8 +2,11 @@
 
 import { useRef, useState } from "react";
 import {
+  australianStates,
   BusinessDetailsForm,
   BusinessDetailsFormHandle,
+  companyTypes,
+  industrySectors,
 } from "./business-details-form";
 import {
   CompanyIdentificationForm,
@@ -28,28 +31,28 @@ function ReviewInformationForm({
   smeData,
 }: {
   smeData: {
-    industrySector: string
-    legalName: string
-    acn: string
-    abn: string
-    paygWithholding: boolean
-    gstRegistered: boolean
-    gstEffectiveDate: string
-    paidUpCapital: number
-    turnover: number
-    netWorth: number
-    yearsOperational: number
+    industrySector: string;
+    legalName: string;
+    acn: string;
+    abn: string;
+    paygWithholding: boolean;
+    gstRegistered: boolean;
+    gstEffectiveDate: string;
+    paidUpCapital: number;
+    turnover: number;
+    netWorth: number;
+    yearsOperational: number;
     last3YearsRevenue: {
-      year: number
-      revenue: number
-    }[]
-    companyType: string
-    stateOfRegistration: string
-    incorporationDate: string
-    asicRegistration: string
-    austracRegistered: boolean
-    chessHin: string
-  }
+      year: number;
+      revenue: number;
+    }[];
+    companyType: string;
+    stateOfRegistration: string;
+    incorporationDate: string;
+    asicRegistration: string;
+    austracRegistered: boolean;
+    chessHin: string;
+  };
 }) {
   return (
     <div className="space-y-4">
@@ -67,7 +70,8 @@ function ReviewInformationForm({
             </h3>
             <div className="mt-2 space-y-1">
               <p className="text-sm">
-                <span className="font-medium">Legal Name:</span> {smeData.legalName}
+                <span className="font-medium">Legal Name:</span>{" "}
+                {smeData.legalName}
               </p>
               <p className="text-sm">
                 <span className="font-medium">ACN:</span> {smeData.acn}
@@ -76,11 +80,15 @@ function ReviewInformationForm({
                 <span className="font-medium">ABN:</span> {smeData.abn}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Company Type:</span> {smeData.companyType}
+                <span className="font-medium">Company Type:</span>{" "}
+                {companyTypes.find((type) => type.value === smeData.companyType)
+                  ?.label || smeData.companyType}
               </p>
               <p className="text-sm">
                 <span className="font-medium">State of Registration:</span>{" "}
-                {smeData.stateOfRegistration}
+                {australianStates.find(
+                  (state) => state.value === smeData.stateOfRegistration
+                )?.label || smeData.stateOfRegistration}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Incorporation Date:</span>{" "}
@@ -91,7 +99,8 @@ function ReviewInformationForm({
                 {smeData.asicRegistration}
               </p>
               <p className="text-sm">
-                <span className="font-medium">CHESS HIN:</span> {smeData.chessHin}
+                <span className="font-medium">CHESS HIN:</span>{" "}
+                {smeData.chessHin}
               </p>
             </div>
           </div>
@@ -104,7 +113,9 @@ function ReviewInformationForm({
             <div className="mt-2 space-y-1">
               <p className="text-sm">
                 <span className="font-medium">Industry:</span>{" "}
-                {smeData.industrySector}
+                {industrySectors.find(
+                  (sector) => sector.value === smeData.industrySector
+                )?.label || smeData.industrySector}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Years Operational:</span>{" "}
@@ -189,7 +200,7 @@ function ReviewInformationForm({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {

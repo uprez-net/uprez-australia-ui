@@ -221,12 +221,22 @@ export const FinancialInformationForm = forwardRef<
                           placeholder={`Year ${index + 1}`}
                           min={2000}
                           max={getYear(new Date())}
-                          {...form.register(
-                            `last3YearsRevenue.${index}.year` as const,
-                            {
-                              valueAsNumber: true,
-                            }
-                          )}
+                          onChange={(e) => {
+                            const formatted = formatNumber(e.target.value);
+                            field.onChange(
+                              field.value.map((val, i) =>
+                                i === index
+                                  ? {
+                                      ...val,
+                                      year: Number(formatted.replace(/,/g, "")),
+                                    }
+                                  : val
+                              )
+                            );
+                          }}
+                          value={
+                            field.value[index]?.year ?? ""
+                          }
                         />
                       </FormControl>
 
@@ -236,12 +246,22 @@ export const FinancialInformationForm = forwardRef<
                           type="number"
                           placeholder="Revenue (AUD)"
                           min={0}
-                          {...form.register(
-                            `last3YearsRevenue.${index}.revenue` as const,
-                            {
-                              valueAsNumber: true,
-                            }
-                          )}
+                          onChange={(e) => {
+                            const formatted = formatNumber(e.target.value);
+                            field.onChange(
+                              field.value.map((val, i) =>
+                                i === index
+                                  ? {
+                                      ...val,
+                                      revenue: Number(formatted.replace(/,/g, "")),
+                                    }
+                                  : val
+                              )
+                            );
+                          }}
+                          value={
+                            field.value[index]?.revenue ?? ""
+                          }
                         />
                       </FormControl>
                     </FormItem>
@@ -325,7 +345,7 @@ export const FinancialInformationForm = forwardRef<
                           Last 3 Years Revenue:
                         </p>
                         <ul className="list-disc ml-5">
-                          {last3YearsRevenue.map((r, idx) => (
+                          {last3YearsRevenue.map((r, idx) => isNaN(r.revenue) ? null : (
                             <li key={idx}>
                               {r.year}: $
                               {Number(r.revenue).toLocaleString("en-AU")}
