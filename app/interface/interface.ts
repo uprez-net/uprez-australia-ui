@@ -154,15 +154,15 @@ export const documentCategories = [
     ],
     optional: [],
   },
-  {
-    name: "Sector-Specific",
-    required: [
-      "Independent Geologists Report",
-      "Therapeutic Goods Administration Approvals",
-      "Australian Financial Services Licence",
-    ],
-    optional: [],
-  },
+  // {
+  //   name: "Sector-Specific",
+  //   required: [
+  //     "Independent Geologists Report",
+  //     "Therapeutic Goods Administration Approvals",
+  //     "Australian Financial Services Licence",
+  //   ],
+  //   optional: [],
+  // },
   {
     name: "Legacy / Generic Documents",
     required: [
