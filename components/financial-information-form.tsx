@@ -57,25 +57,6 @@ const financialFormSchema = z
       .number()
       .min(1, { message: "Company must be operational for at least 1 year." })
       .max(200, { message: "Please enter a valid number of years." }),
-  })
-  .superRefine((data, ctx) => {
-    const profits = data.last3YearsRevenue.map((p) => p.revenue);
-    const last12MonthsProfit = profits[2]; // assuming most recent year is last
-    const total3YearsProfit = profits.reduce((acc, val) => acc + val, 0);
-
-    // Profit Test Requirement
-    const meetsProfitTest =
-      last12MonthsProfit >= 1000000 ||
-      (total3YearsProfit >= 2000000 && last12MonthsProfit >= 500000);
-
-    if (!meetsProfitTest) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "Company must meet profit test: $1M in last 12 months, OR $2M over 3 years with at least $500K in the last 12 months.",
-        path: ["last3YearsProfit"],
-      });
-    }
   });
 
 type FinancialFormValues = z.infer<typeof financialFormSchema>;
@@ -119,6 +100,8 @@ export const FinancialInformationForm = forwardRef<
   useImperativeHandle(ref, () => ({
     async submit() {
       const isValid = await form.trigger();
+      const errors = form.formState.errors;
+      console.log("Financial Information Form Errors:", errors);
       if (!isValid) return false;
       const values = form.getValues();
       onSubmitData?.(values);
@@ -234,9 +217,7 @@ export const FinancialInformationForm = forwardRef<
                               )
                             );
                           }}
-                          value={
-                            field.value[index]?.year ?? ""
-                          }
+                          value={field.value[index]?.year ?? ""}
                         />
                       </FormControl>
 
@@ -253,20 +234,25 @@ export const FinancialInformationForm = forwardRef<
                                 i === index
                                   ? {
                                       ...val,
-                                      revenue: Number(formatted.replace(/,/g, "")),
+                                      revenue: Number(
+                                        formatted.replace(/,/g, "")
+                                      ),
                                     }
                                   : val
                               )
                             );
                           }}
-                          value={
-                            field.value[index]?.revenue ?? ""
-                          }
+                          value={field.value[index]?.revenue ?? ""}
                         />
                       </FormControl>
                     </FormItem>
                   ))}
-                  <FormMessage />
+                  {/* Display validation error for last3YearsRevenue */}
+                  {form.formState.errors.last3YearsRevenue && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {form.formState.errors.last3YearsRevenue.message}
+                    </p>
+                  )}
                   <FormDescription>
                     Enter your revenue for the last 3 years. Most recent year
                     last.
@@ -345,12 +331,14 @@ export const FinancialInformationForm = forwardRef<
                           Last 3 Years Revenue:
                         </p>
                         <ul className="list-disc ml-5">
-                          {last3YearsRevenue.map((r, idx) => isNaN(r.revenue) ? null : (
-                            <li key={idx}>
-                              {r.year}: $
-                              {Number(r.revenue).toLocaleString("en-AU")}
-                            </li>
-                          ))}
+                          {last3YearsRevenue.map((r, idx) =>
+                            isNaN(r.revenue) ? null : (
+                              <li key={idx}>
+                                {r.year}: $
+                                {Number(r.revenue).toLocaleString("en-AU")}
+                              </li>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}

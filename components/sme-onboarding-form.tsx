@@ -92,7 +92,7 @@ function ReviewInformationForm({
               </p>
               <p className="text-sm">
                 <span className="font-medium">Incorporation Date:</span>{" "}
-                {smeData.incorporationDate}
+                {new Date(smeData.incorporationDate).toLocaleDateString("en-AU")}
               </p>
               <p className="text-sm">
                 <span className="font-medium">ASIC Registration:</span>{" "}
@@ -192,7 +192,7 @@ function ReviewInformationForm({
               {smeData.gstRegistered && smeData.gstEffectiveDate && (
                 <p className="text-sm">
                   <span className="font-medium">GST Effective Date:</span>{" "}
-                  {smeData.gstEffectiveDate}
+                  {new Date(smeData.gstEffectiveDate).toLocaleDateString("en-AU")}
                 </p>
               )}
             </div>
