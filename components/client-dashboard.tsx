@@ -85,7 +85,7 @@ export function ClientDashboard({
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <span>Dashboard</span>
           <ChevronRight className="h-4 w-4" />
@@ -93,7 +93,7 @@ export function ClientDashboard({
           <ChevronRight className="h-4 w-4" />
           <span className="font-medium text-foreground">{clientName}</span>
         </div>
-      </div>
+      </div> */}
 
       <CompanyBanner
         data={{
@@ -351,7 +351,7 @@ export function ClientDashboard({
             </div>
           </CardContent>
           <CardFooter className="pt-0">
-            <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/client/${encodeURIComponent(clientId!)}/valuation`)}>
+            <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/client/${encodeURIComponent(clientId!)}/valuation`)} disabled={["pending", "failed"].includes(clientData!.complianceStatus)}>
               Check Valuation
             </Button>
           </CardFooter>

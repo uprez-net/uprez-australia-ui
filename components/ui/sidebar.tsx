@@ -266,7 +266,7 @@ const SidebarTrigger = React.forwardRef<
   const { toggleSidebar } = useSidebar();
 
   return (
-    <div className="flex flex-col flex-1 bg-slate-50">
+    <div className="flex flex-col">
       <Button
         ref={ref}
         data-sidebar="trigger"

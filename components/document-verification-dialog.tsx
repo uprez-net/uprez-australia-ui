@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import {
   CheckCircle,
   AlertTriangle,
@@ -33,6 +33,7 @@ import { DocumentVerificationTimer } from "./DocumentVerificationTimer";
 import { useSubscription } from "@/hooks/useSubscription";
 import { documentCategories } from "@/app/interface/interface";
 import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 // interface VerificationResult {
 //   category: string;
@@ -69,11 +70,20 @@ export function DocumentVerificationDialog({
       clientData!.generationId !== null
     // && true
   );
-  const [verificationComplete, setVerificationComplete] = useState(
-    clientData?.complianceStatus !== "pending" ||
-      (clientData?.eligibilityStatus !== "Pending" &&
-        clientData.eligibilityStatus !== "Failed")
-  );
+  const verificationComplete = useMemo(() => {
+    return (
+      clientData?.complianceStatus !== "pending" ||
+      clientData?.eligibilityStatus !== "Pending"
+    );
+  }, [clientData?.complianceStatus, clientData?.eligibilityStatus]);
+
+  const isFailed = useMemo(() => {
+    return (
+      clientData?.eligibilityStatus === "Failed" ||
+      clientData?.complianceStatus === "failed"
+    );
+  }, [clientData?.eligibilityStatus, clientData?.complianceStatus]);
+
   const documentProgress = useMemo(() => {
     if (open) {
       return getDocumentUploadProgress(documents);
@@ -84,7 +94,9 @@ export function DocumentVerificationDialog({
   const verificationResults = useMemo(
     () =>
       documentCategories.map((category) => {
-        const progress = documentProgress.find((p) => p.category === category.name);
+        const progress = documentProgress.find(
+          (p) => p.category === category.name
+        );
 
         return {
           category: category.name,
@@ -130,6 +142,9 @@ export function DocumentVerificationDialog({
       dispatch(setGenerationNumber(res.generationNumber)); //Add after migrating to new schema
       setIsVerifying(true);
       toast.success("Document verification started successfully");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      toast.loading("Redirecting to client dashboard...");
+      router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
       console.error("Error triggering generation:", error);
       toast.error("Failed to trigger document generation");
@@ -269,8 +284,22 @@ export function DocumentVerificationDialog({
             </div>
           )}
 
-          {isVerifying && !verificationComplete && (
+          {isVerifying && !verificationComplete && !isFailed && (
             <DocumentVerificationTimer updatedAt={clientData!.updatedAt} />
+          )}
+
+          {isFailed && (
+            <div className="space-y-6">
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Verification Failed</AlertTitle>
+                <AlertDescription>
+                  Document verification has failed. Please review the missing
+                  documents below and ensure all required documents are uploaded
+                  before trying again.
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
 
           {verificationComplete && (

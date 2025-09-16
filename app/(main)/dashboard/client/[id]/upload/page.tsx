@@ -40,7 +40,7 @@ export default function UploadDocumentsPage() {
   const handleCancel = () => {
     // console.log("Action cancelled");
     // setShowOverlay(false);
-    router.push(`/dashboard/client/${clientData!.id}`);
+    router.push(`/dashboard/client/${clientData!.id}/report`);
   };
 
   const handleDismiss = () => {
@@ -153,7 +153,7 @@ export default function UploadDocumentsPage() {
         </div>
 
         {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+        {/* <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <span>Dashboard</span>
           <span>›</span>
           <span>Clients</span>
@@ -161,7 +161,7 @@ export default function UploadDocumentsPage() {
           <span>{clientData!.companyName}</span>
           <span>›</span>
           <span className="font-medium text-foreground">Upload Documents</span>
-        </div>
+        </div> */}
 
         {/* Document Categories */}
         <div className="space-y-8">
@@ -204,7 +204,7 @@ export default function UploadDocumentsPage() {
             documentProgress.find((p) => p.category === "Overall")
               ?.percentage || 0
           }
-          onComplete={handleVerificationComplete}
+          onComplete={clientData?.eligibilityStatus === "Failed" ? undefined : handleVerificationComplete}
         />
       </div>
     </main>

@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
+import * as React from "react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
-  label?: string
-  value?: Date
-  onChange?: (date: Date | undefined) => void
-  placeholder?: string
-  className?: string
-  error?: string // <-- NEW
+  label?: string;
+  value?: Date;
+  onChange?: (date: Date | undefined) => void;
+  placeholder?: string;
+  className?: string;
+  error?: string; // <-- NEW
 }
 
 export function DatePicker({
@@ -31,7 +31,7 @@ export function DatePicker({
   className,
   error,
 }: DatePickerProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
@@ -58,17 +58,17 @@ export function DatePicker({
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
           <Calendar
             mode="single"
-            selected={value}
+            className="rounded-md border shadow-sm py-6"
             captionLayout="dropdown"
+            selected={value}
             onSelect={(date) => {
-              onChange?.(date)
-              setOpen(false)
+              onChange?.(date);
+              setOpen(false);
             }}
-            initialFocus
           />
         </PopoverContent>
       </Popover>
       {error && <p className="text-sm text-red-500 px-1">{error}</p>}
     </div>
-  )
+  );
 }
