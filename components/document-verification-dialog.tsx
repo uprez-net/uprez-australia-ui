@@ -119,7 +119,7 @@ export function DocumentVerificationDialog({
     [documentProgress, documents]
   );
 
-  const handleVerification = async () => {
+  const handleVerification = async (redirect = true) => {
     if (isLoading) return;
     const isValid = attemptGeneration();
     if (!isValid) {
@@ -143,6 +143,7 @@ export function DocumentVerificationDialog({
       setIsVerifying(true);
       toast.success("Document verification started successfully");
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (!redirect) return;
       toast.loading("Redirecting to client dashboard...");
       router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
@@ -275,7 +276,7 @@ export function DocumentVerificationDialog({
                   // documentProgress.some((p) => p.percentage < 100) ||
                   isLoading
                 }
-                onClick={handleVerification}
+                onClick={() => handleVerification(false)}
                 className="bg-[#027055] hover:bg-[#025a44]"
                 size="lg"
               >
@@ -411,6 +412,7 @@ export function DocumentVerificationDialog({
               <Button
                 onClick={() => {
                   if (onComplete) {
+                    handleVerification(false);
                     onComplete();
                   } else {
                     handleVerification();

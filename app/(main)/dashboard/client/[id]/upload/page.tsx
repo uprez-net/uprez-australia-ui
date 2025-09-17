@@ -101,7 +101,7 @@ export default function UploadDocumentsPage() {
 
   const handleVerificationComplete = () => {
     setVerificationDialogOpen(false);
-    router.push(`/dashboard/client/${clientData!.id}/report`);
+    // router.push(`/dashboard/client/${clientData!.id}/report`);
     // Navigate to next step or show success message
     // alert("Document verification completed! Proceeding to next step...");
   };
