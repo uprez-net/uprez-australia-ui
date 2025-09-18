@@ -3,70 +3,33 @@ import { splitCamelCase } from "@/components/document-upload-dialog";
 import { DocumentType, Document } from "@prisma/client";
 
 export const documentCategories = {
-  "Corporate Structure": [
+  "Corporate Governance & Formation": [
     DocumentType.CompanyConstitution,
     DocumentType.CorporateStructureChart,
-    DocumentType.BoardResolutionConstitution,
-    DocumentType.BoardResolutionASXContact,
+    DocumentType.CorporateGovernanceStatement,
+    DocumentType.SecuritiesTradingPolicy,
+    DocumentType.BoardAndCommitteeCharters,
   ],
-  "Financial Documents": [
+  "Financial Reporting & Analysis": [
     DocumentType.AuditedFinancialStatements,
     DocumentType.ProFormaStatementOfFinancialPosition,
     DocumentType.InvestigatingAccountantsReport,
     DocumentType.WorkingCapitalStatement,
-  ],
-  "Market Integrity": [
-    DocumentType.ShareholderSpreadAnalysisReport,
-    DocumentType.FreeFloatAnalysis,
-    DocumentType.RelatedPartiesAndPromotersList,
-  ],
-  "Governance & Personnel": [
-    DocumentType.DirectorConsentForms,
-    DocumentType.DirectorQuestionnaires,
-    DocumentType.PoliceAndBankruptcyChecks,
-    DocumentType.ASXListingRuleCourseCertificate,
-    DocumentType.SecuritiesTradingPolicy,
-    DocumentType.CorporateGovernanceStatement,
-    DocumentType.BoardAndCommitteeCharters,
-  ],
-  "Escrow & Restricted Securities": [
-    DocumentType.ExecutedRestrictionDeeds,
-  ],
-  "The Offer": [
-    DocumentType.FinalProspectusDocument,
-    DocumentType.DueDiligenceCommitteeDocuments,
-    DocumentType.ExpertConsentLetters,
-  ],
-  "Capital Structure": [
-    DocumentType.OptionAndPerformanceRightTerms,
-    DocumentType.CompanyOptionSecurityRegister,
-  ],
-  "Legal & Agreements": [
-    DocumentType.LegalDueDiligenceReport,
-    DocumentType.SummaryOfMaterialContracts,
-    DocumentType.RelatedPartyAgreements,
-    DocumentType.AdvisorMandates,
-  ],
-  "Asset Ownership & Tax": [
-    DocumentType.AssetTitleDocuments,
-    DocumentType.IPAssignmentDeeds,
-    DocumentType.SpecialistTaxDueDiligenceReport,
-    DocumentType.CompanyTaxReturns,
-  ],
-  "Sector-Specific": [
-    DocumentType.IndependentGeologistsReport,
-    DocumentType.TherapeuticGoodsAdministrationApprovals,
-    DocumentType.AustralianFinancialServicesLicence,
-  ],
-  "Legacy / Generic Documents": [
-    DocumentType.CertificateOfIncorporation,
-    DocumentType.MemorandumOfAssociation,
-    DocumentType.ArticlesOfAssociation,
-    DocumentType.ShareholderAgreements,
-    DocumentType.IntellectualPropertyDocuments,
-    DocumentType.TaxComplianceCertificates,
     DocumentType.RegulatoryApprovals,
   ],
+  "Shareholders & Related Parties Information": [
+    DocumentType.ShareholderSpreadAnalysisReport,
+    DocumentType.RelatedPartiesAndPromotersList,
+    DocumentType.ExecutedRestrictionDeeds,
+    DocumentType.EscrowAgreements,
+    DocumentType.ShareRegisterAnalysis,
+  ],
+  "Directors & Officers Compliance": [
+    DocumentType.DirectorQuestionnaires,
+    DocumentType.PoliceAndBankruptcyChecks,
+    DocumentType.BankruptcyRegisterSearches,
+    DocumentType.BoardResolutionASXContact,
+  ]
 };
 
 export type CategoryProgress = {

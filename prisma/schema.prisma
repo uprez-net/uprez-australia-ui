@@ -214,6 +214,10 @@ enum DocumentType {
   IntellectualPropertyDocuments
   TaxComplianceCertificates
   RegulatoryApprovals
+
+  EscrowAgreements
+  ShareRegisterAnalysis
+  BankruptcyRegisterSearches
 }
 
 enum EligibilityStatus {
