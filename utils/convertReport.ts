@@ -136,7 +136,7 @@ const google = createGoogleGenerativeAI({
 });
 
 export const convertReport = async (report: string): Promise<ReportSummary> => {
-
+  console.log(`Converting report with length ${report.length}`);
   const res = await generateObject({
     schema: z.object({
       compliance_status: z
@@ -169,12 +169,11 @@ export const convertReport = async (report: string): Promise<ReportSummary> => {
           "List of automated, actionable recommendations to improve or resolve the compliance issues. Should cover all identified non-compliant areas."
         ),
     }),
-    model: google("gemini-2.5-flash"),
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: report },
-    ],
-    temperature: 0.4,
+    model: google("gemini-2.0-flash"),
+    prompt: `${SYSTEM_PROMPT}
+        Here is the compliance report to convert:
+        ${report}`,
+    temperature: 0.5,
   });
 
   return res.object as ReportSummary;

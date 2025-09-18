@@ -48,7 +48,6 @@ export const getReportsFromBackend = async (
         report: string;
       } = await res.json();
 
-      console.log(`Fetched report for document ID ${document.id}:`, data.report);
       const summary = await convertReport(data.report);
 
       return {
