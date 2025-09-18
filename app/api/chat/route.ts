@@ -1,7 +1,7 @@
 import { getRelevantContent } from "@/lib/ai/findRelevantContent";
 import { getReport } from "@/lib/data/getReport";
 import { google } from "@/lib/gemini";
-import { streamText, tool, UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, tool, UIMessage } from "ai";
 import { z } from "zod";
 
 export const maxDuration = 30;
@@ -129,7 +129,7 @@ You are not an auditor or regulator. Your job is to:
 
 const findRules = tool({
   description: "Fetch a compliance rules based on user query",
-  parameters: z.object({
+  inputSchema: z.object({
     query: z
       .string()
       .describe("The user query to find the relevant compliance rules and guidelines"),
@@ -144,7 +144,7 @@ const findRules = tool({
 
 const getComplianceReport = tool({
   description: "Fetch a compliance report based on generation ID and document ID",
-  parameters: z.object({
+  inputSchema: z.object({
     generationId: z.string().describe("The ID of the generation to fetch the report for"),
     documentId: z.string().describe("The ID of the document to fetch the report for"),
   }),
@@ -178,14 +178,14 @@ export async function POST(request: Request) {
 
   const result = streamText({
     model: google("gemini-2.5-flash"),
-    messages,
+    messages: convertToModelMessages(messages),
     system: generateSystemPrompt(generationId, documentId),
     tools: {
       getRelevantRules: findRules,
       getComplianceReport: getComplianceReport,
     },
-    maxSteps: 2,
+    stopWhen: stepCountIs(4),
   });
 
-  return result.toDataStreamResponse();
+  return result.toUIMessageStreamResponse();
 }
