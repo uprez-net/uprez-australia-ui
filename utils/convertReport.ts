@@ -171,9 +171,11 @@ export const convertReport = async (report: string): Promise<ReportSummary> => {
     }),
     model: google("gemini-2.0-flash"),
     prompt: `${SYSTEM_PROMPT}
+        Return ONLY a valid JSON object. 
+        Do not wrap it in quotes, do not return a string, do not include markdown.
+
         Here is the compliance report to convert:
         ${report}`,
-    temperature: 0.5,
   });
 
   return res.object as ReportSummary;
