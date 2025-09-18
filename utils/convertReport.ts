@@ -169,7 +169,7 @@ export const convertReport = async (report: string): Promise<ReportSummary> => {
           "List of automated, actionable recommendations to improve or resolve the compliance issues. Should cover all identified non-compliant areas."
         ),
     }),
-    model: google("gemini-2.0-flash-lite"),
+    model: google("gemini-2.5-flash"),
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: report },

@@ -5,7 +5,7 @@ import { Document } from "@prisma/client";
 import pLimit from "p-limit";
 import  prisma from "@/lib/prisma";
 
-const limit = pLimit(5); // Limit to 5 concurrent requests (tweak this as needed)
+const limit = pLimit(3); // Limit to 3 concurrent requests (tweak this as needed)
 
 interface DocumentReport {
   id: string;
