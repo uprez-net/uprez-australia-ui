@@ -209,6 +209,7 @@ export function ComplianceReportViewer() {
       "non-compliant": "high",
     };
     docReport.forEach((doc) => {
+      console.log("Processing docReport item:", doc);
       const document = documents.find((d) => d.id === doc.id)!;
       const category = documentCategories.find(
         (cat) =>
@@ -217,16 +218,7 @@ export function ComplianceReportViewer() {
       );
 
       if (category) {
-        const categoryName =
-          category.name === "Financial Documents"
-            ? "Financial"
-            : category.name === "Legal & Agreements"
-            ? "Regulatory"
-            : category.name === "Asset Ownership & Tax"
-            ? "Tax"
-            : category.name === "Governance & Personnel"
-            ? "Governance"
-            : category.name; // fallback to default name if not mapped
+        const categoryName = category.name;
 
         if (!findings[categoryName]) {
           findings[categoryName] = [];
