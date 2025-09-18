@@ -173,6 +173,7 @@ export const convertReport = async (report: string): Promise<ReportSummary> => {
     prompt: `${SYSTEM_PROMPT}
         Return ONLY a valid JSON object. 
         Do not wrap it in quotes, do not return a string, do not include markdown.
+        Do not include any text outside the JSON object.
 
         Here is the compliance report to convert:
         ${report}`,
