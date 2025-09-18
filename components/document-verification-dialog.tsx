@@ -144,7 +144,7 @@ export function DocumentVerificationDialog({
       toast.success("Document verification started successfully");
       await new Promise((resolve) => setTimeout(resolve, 2000));
       if (!redirect) return;
-      toast.loading("Redirecting to client dashboard...");
+      toast.info("Redirecting to client dashboard...");
       router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
       console.error("Error triggering generation:", error);
