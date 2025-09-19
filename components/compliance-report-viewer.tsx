@@ -63,108 +63,47 @@ export function ComplianceReportViewer() {
     documentProgress.find((cat) => cat.category === "Overall")?.percentage || 0;
   const categories = [
     {
-      name: "Corporate Structure",
-      score:
-        documentProgress.find((cat) => cat.category === "Corporate Structure")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Corporate Structure")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Financial Documents",
-      score:
-        documentProgress.find((cat) => cat.category === "Financial Documents")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Financial Documents")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Market Integrity",
-      score:
-        documentProgress.find((cat) => cat.category === "Market Integrity")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Market Integrity")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Governance & Personnel",
+      name: "Corporate Governance & Formation",
       score:
         documentProgress.find(
-          (cat) => cat.category === "Governance & Personnel"
+          (cat) => cat.category === "Corporate Governance & Formation"
         )?.percentage || 0,
       findings:
         documentProgress.find(
-          (cat) => cat.category === "Governance & Personnel"
+          (cat) => cat.category === "Corporate Governance & Formation"
         )?.uploadedCount || 0,
     },
     {
-      name: "Escrow & Restricted Securities",
+      name: "Financial Reporting & Analysis",
       score:
         documentProgress.find(
-          (cat) => cat.category === "Escrow & Restricted Securities"
+          (cat) => cat.category === "Financial Reporting & Analysis"
         )?.percentage || 0,
       findings:
         documentProgress.find(
-          (cat) => cat.category === "Escrow & Restricted Securities"
+          (cat) => cat.category === "Financial Reporting & Analysis"
         )?.uploadedCount || 0,
     },
     {
-      name: "The Offer",
-      score:
-        documentProgress.find((cat) => cat.category === "The Offer")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "The Offer")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Capital Structure",
-      score:
-        documentProgress.find((cat) => cat.category === "Capital Structure")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Capital Structure")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Legal & Agreements",
-      score:
-        documentProgress.find((cat) => cat.category === "Legal & Agreements")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Legal & Agreements")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Asset Ownership & Tax",
-      score:
-        documentProgress.find((cat) => cat.category === "Asset Ownership & Tax")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Asset Ownership & Tax")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Sector-Specific",
-      score:
-        documentProgress.find((cat) => cat.category === "Sector-Specific")
-          ?.percentage || 0,
-      findings:
-        documentProgress.find((cat) => cat.category === "Sector-Specific")
-          ?.uploadedCount || 0,
-    },
-    {
-      name: "Legacy / Generic Documents",
+      name: "Shareholders & Related Parties Information",
       score:
         documentProgress.find(
-          (cat) => cat.category === "Legacy / Generic Documents"
+          (cat) => cat.category === "Shareholders & Related Parties Information"
         )?.percentage || 0,
       findings:
         documentProgress.find(
-          (cat) => cat.category === "Legacy / Generic Documents"
+          (cat) => cat.category === "Shareholders & Related Parties Information"
+        )?.uploadedCount || 0,
+    },
+    {
+      name: "Directors & Officers Compliance",
+      score:
+        documentProgress.find(
+          (cat) => cat.category === "Directors & Officers Compliance"
+        )?.percentage || 0,
+      findings:
+        documentProgress.find(
+          (cat) => cat.category === "Directors & Officers Compliance"
         )?.uploadedCount || 0,
     },
   ];
@@ -212,9 +151,8 @@ export function ComplianceReportViewer() {
       console.log("Processing docReport item:", doc);
       const document = documents.find((d) => d.id === doc.id)!;
       const category = documentCategories.find(
-        (cat) =>
-          cat.required.includes(splitCamelCase(document.documentType)) ||
-          cat.optional.includes(splitCamelCase(document.documentType))
+        (cat) => cat.required.includes(splitCamelCase(document.documentType))
+        // || cat.optional.includes(splitCamelCase(document.documentType))
       );
 
       if (category) {
