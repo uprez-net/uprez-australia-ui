@@ -103,11 +103,16 @@ export function ClientDashboard({
           paygWithholding: clientData!.paygWithholding ?? undefined,
           gstRegistered: clientData!.gstRegistered ?? undefined,
           abn: clientData!.abn ?? undefined,
-          incorporationDate: clientData!.incorporationDate?.toISOString() ?? undefined,
+          incorporationDate:
+            clientData!.incorporationDate?.toISOString() ?? undefined,
           asicRegistration: clientData!.asicRegistration ?? undefined,
           austracRegistered: clientData!.austracRegistered ?? undefined,
           chessHin: clientData!.chessHin ?? undefined,
-          last3YearsRevenue: clientData!.last3YearsRevenue as Array<{ year: number; revenue: number }> ?? undefined,
+          last3YearsRevenue:
+            (clientData!.last3YearsRevenue as Array<{
+              year: number;
+              revenue: number;
+            }>) ?? undefined,
           paidUpCapital: clientData!.paidUpCapital ?? undefined,
           turnover: clientData!.turnover ?? undefined,
           netWorth: clientData!.netWorth ?? undefined,
@@ -116,13 +121,14 @@ export function ClientDashboard({
           acn: clientData!.acn ?? undefined,
           companyType: clientData!.companyType ?? undefined,
           stateOfRegistration: clientData!.stateOfRegistration ?? undefined,
-          gstEffectiveDate: clientData!.gstEffectiveDate?.toISOString() ?? undefined,
+          gstEffectiveDate:
+            clientData!.gstEffectiveDate?.toISOString() ?? undefined,
           lastUpdatedAt: lastUpdated,
         }}
       />
 
       {/* Status Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {/* Compliance Status Card */}
         <Card>
           <CardHeader className="pb-2">
@@ -331,7 +337,7 @@ export function ClientDashboard({
           </CardFooter>
         </Card>
 
-        {/* Valuation Card (Coming Soon) */}
+        {/* Valuation Card */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Valuation</CardTitle>
@@ -351,8 +357,63 @@ export function ClientDashboard({
             </div>
           </CardContent>
           <CardFooter className="pt-0">
-            <Button variant="outline" className="w-full" onClick={() => router.push(`/dashboard/client/${encodeURIComponent(clientId!)}/valuation`)} disabled={["pending", "failed"].includes(clientData!.complianceStatus)}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                router.push(
+                  `/dashboard/client/${encodeURIComponent(clientId!)}/valuation`
+                )
+              }
+              disabled={["pending", "failed"].includes(
+                clientData!.complianceStatus
+              )}
+            >
               Check Valuation
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Prospectus Card (Coming Soon) */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Prospectus</CardTitle>
+            <CardDescription>
+              Automated IPO prospectus generation
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-4 space-y-2 text-center">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                <span className="text-2xl font-bold">
+                  <FileText />
+                </span>
+              </div>
+              <Badge variant="outline" className="border-dashed">
+                Coming Soon
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                Automated prospectus generation tools to help streamline the IPO
+                process
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                router.push(
+                  `/dashboard/client/${encodeURIComponent(
+                    clientId!
+                  )}/prospectus`
+                )
+              }
+              // disabled={["pending", "failed"].includes(
+              //   clientData!.complianceStatus
+              // )}
+            >
+              Generate Prospectus
             </Button>
           </CardFooter>
         </Card>

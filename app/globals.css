@@ -84,6 +84,69 @@ body {
   }
 }
 
+.section-badge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+}
+
+.nav-section {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-section.active {
+  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+  transform: translateX(2px);
+}
+
+.nav-section.active .section-icon {
+  color: white;
+}
+
+.nav-subsection {
+  transition: all 0.15s ease;
+}
+
+.nav-subsection.active {
+  background: rgb(240 253 244);
+  color: rgb(22 163 74);
+  border-left: 3px solid rgb(34 197 94);
+  font-weight: 500;
+}
+
+.pdf-page {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(243 244 246);
+}
+
+.section-badge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+}
+
+.pdf-page:hover .section-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.floating-action {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+
 @layer base {
   * {
     @apply border-border;

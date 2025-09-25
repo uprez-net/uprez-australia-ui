@@ -22,6 +22,7 @@ const breadcrumbMap: Record<string, string> = {
   invite: "Invite",
   create: "Create",
   subscription: "Subscription",
+  prospectus: "Generate Prospectus",
 }
 
 export function DynamicBreadcrumb() {
