@@ -20,7 +20,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head />
-        <body suppressHydrationWarning>
+        <body suppressHydrationWarning={true}>
           <Providers>
             <UpgradeDialogProvider>
             {children}

@@ -15,7 +15,14 @@ import { ProspectusSubsection } from "@/app/interface/interface";
 import { getYear, format } from "date-fns";
 import { australianStates } from "@/components/business-details-form";
 import { useAppDispatch } from "@/app/redux/use-dispatch";
-import { clearProspectusData } from "@/app/redux/prospectusSlice";
+import {
+  addNewSubsection,
+  clearProspectusData,
+  loadProspectusData,
+  saveProgress,
+} from "@/app/redux/prospectusSlice";
+import { toast } from "sonner";
+import { AddSubsectionModal } from "@/components/add-subsection-dialog";
 
 export default function ProspectusEditor() {
   const [activeSection, setActiveSection] = useState("important-notices");
@@ -29,6 +36,7 @@ export default function ProspectusEditor() {
     "comments" | "history" | "ai" | null
   >(null);
   const [showGenerationModal, setShowGenerationModal] = useState(false);
+  const [addingSubsectionTo, setAddingSubsectionTo] = useState<string | null>(null);
   const {
     clientData,
     isLoading: clientLoading,
@@ -50,23 +58,45 @@ export default function ProspectusEditor() {
 
   useEffect(() => {
     let mounted = true;
-    const fetchData = async (clientId: string) => {};
+    const fetchData = async (clientId: string) => {
+      const toastId = toast.loading("Loading prospectus data...");
+      try {
+        const res = await dispatch(loadProspectusData({ clientId }));
+        if (loadProspectusData.rejected.match(res)) {
+          throw new Error(res.payload as string);
+        }
+        if (mounted) {
+          toast.success("Prospectus data loaded");
+        }
+      } catch (error) {
+        toast.error("Error fetching prospectus data");
+        console.error("Error fetching prospectus data:", error);
+      } finally {
+        toast.dismiss(toastId);
+      }
+    };
 
     if (!clientData) return;
     fetchData(clientData.id);
 
     return () => {
       mounted = false;
-      if(clientData === null) dispatch(clearProspectusData());
+      dispatch(clearProspectusData());
     };
-  }, [clientData]);
+  }, [clientData?.id]);
 
   useEffect(() => {
     const container = document.querySelector<HTMLDivElement>(
       "#document-container .overflow-y-auto"
     );
-    if (!container) return;
-    if (!activeProspectus) return;
+    if (!container) {
+      console.warn("⚠️ No container found!");
+      return;
+    }
+    if (!activeProspectus) {
+      console.warn("⚠️ No active prospectus found!");
+      return;
+    }
 
     const sections = activeProspectus.sections.flatMap((section) =>
       section.subsections.map((sub) => ({
@@ -104,8 +134,10 @@ export default function ProspectusEditor() {
     container.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [activeProspectus]);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [activeProspectus, clientLoading, prospectusLoading]);
 
   const handleSectionClick = (sectionId: string) => {
     console.log("[v0] Section clicked:", sectionId);
@@ -171,11 +203,34 @@ export default function ProspectusEditor() {
     setEditingSubsection(subsection);
   };
 
-  const handleSaveSection = (content: string) => {
+  const handleSaveSection = async (content: string) => {
     if (editingSubsection) {
-      // In a real app, this would update the data store
       console.log("Saving content for", editingSubsection.id, content);
-      setEditingSubsection(null);
+      const toastId = toast.loading("Saving section...");
+      try {
+        const updatedProspectus = activeProspectus.sections.map((section) => ({
+          ...section,
+          subsections: section.subsections.map((sub) =>
+            sub.id === editingSubsection.id ? { ...sub, content } : sub
+          ),
+        }));
+        const res = await dispatch(
+          saveProgress({
+            clientId: clientData!.id,
+            content: updatedProspectus,
+          })
+        );
+        if (saveProgress.rejected.match(res)) {
+          throw new Error(res.payload as string);
+        }
+        toast.success("Section saved successfully");
+        setEditingSubsection(null);
+      } catch (error) {
+        toast.error("Error saving section");
+        console.error("Error saving section:", error);
+      } finally {
+        toast.dismiss(toastId);
+      }
     }
   };
 
@@ -217,13 +272,7 @@ export default function ProspectusEditor() {
     clientError !== null ||
     prospectusError !== null
   ) {
-    console.log("Loading state:", {
-      clientLoading,
-      prospectusLoading,
-      clientData,
-      clientError,
-      prospectusError,
-    });
+    console.log(`Client loading: ${clientLoading}, Prospectus loading: ${prospectusLoading}`);
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
@@ -302,8 +351,10 @@ export default function ProspectusEditor() {
           key={activeSubsection} // Force remount to reset expanded state
           activeSection={activeSection}
           activeSubsection={activeSubsection}
+          prospectusData={activeProspectus}
           onSectionClick={handleSectionClick}
           onSubsectionClick={handleSubsectionClick}
+          openAddDialog={(sectionId) => setAddingSubsectionTo(sectionId)}
         />
       </div>
 
@@ -398,6 +449,25 @@ export default function ProspectusEditor() {
       <GenerationModal
         isOpen={showGenerationModal}
         onClose={() => setShowGenerationModal(false)}
+      />
+
+      <AddSubsectionModal
+        isOpen={addingSubsectionTo !== null}
+        onClose={() => setAddingSubsectionTo(null)}
+        sectionName={
+          activeProspectus.sections.find(s => s.id === addingSubsectionTo)?.title || ""
+        }
+        onConfirm={({ title, type }) => {
+          console.log("Add subsection to", addingSubsectionTo, { title, type });
+          const newSubsection: ProspectusSubsection = {
+            id: title.toLowerCase().replace(/\s+/g, "-"),
+            title,
+            contentType: type as "text" | "table" | "chart" | "list",
+            content: `New ${type} subsection. Click edit to add content.`,
+          }
+          dispatch(addNewSubsection({ sectionId: addingSubsectionTo!, subsection: newSubsection }));
+          dispatch(saveProgress({clientId: clientData?.id! }));
+        }}
       />
     </div>
   );
