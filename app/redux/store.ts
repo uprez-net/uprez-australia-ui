@@ -2,11 +2,13 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import dashboard from "./dashboardSlice";
 import client from "./clientSlice";
 import report from "./reportSlice";
+import prospectus from "./prospectusSlice";
 
 const rootReducer = combineReducers({
     dashboard,
     client,
     report,
+    prospectus
 });
 
 const store = configureStore({

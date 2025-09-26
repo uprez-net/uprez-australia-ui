@@ -1,4 +1,4 @@
-import { EligibilityStatus, IntermediaryType, UserRole } from "@prisma/client";
+import { EligibilityStatus, IntermediaryType, UserRole, Comments } from "@prisma/client";
 
 export interface Organisation {
   orgType: "sme" | "intermediary";
@@ -113,3 +113,42 @@ export const documentCategories = [
   }
 ];
 
+export interface ProspectusSection {
+  id: string
+  title: string
+  icon: string
+  subsections: ProspectusSubsection[]
+}
+
+export interface ProspectusSubsection {
+  id: string
+  title: string
+  content: string
+  contentType: "text" | "table" | "chart" | "list"
+}
+
+export interface Prospectus {
+  id: string
+  version: number
+  sections: ProspectusSection[]
+  comments: CommentsExtended[]
+  createdBy: string
+  createdAt: string
+}
+
+export interface CommentsExtended extends Comments {
+  name: string
+  role: UserRole
+}
+
+export interface CompanyInfo {
+  name: string
+  acn: string
+  industry: string
+  employees: string
+  markets: string
+  founded: string
+  headquarters: string
+  businessAddress: string
+  lodgeDate: string
+}

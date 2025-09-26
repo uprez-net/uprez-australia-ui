@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { NavigationSidebar } from "@/components/navigation-sidebar";
 import { TopNavigation } from "@/components/top-navigation";
 import { DocumentViewer } from "@/components/document-viewer";
@@ -9,10 +9,13 @@ import { UploadBriefModal } from "@/components/upload-brief-modal";
 import { SidebarPanel } from "@/components/sidebar-panel";
 import { GenerationModal } from "@/components/generation-modal";
 import { SidebarContent } from "@/components/sidebar-content";
-import {
-  prospectusData,
-  type ProspectusSubsection,
-} from "@/lib/prospectus-data";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/redux/store";
+import { ProspectusSubsection } from "@/app/interface/interface";
+import { getYear, format } from "date-fns";
+import { australianStates } from "@/components/business-details-form";
+import { useAppDispatch } from "@/app/redux/use-dispatch";
+import { clearProspectusData } from "@/app/redux/prospectusSlice";
 
 export default function ProspectusEditor() {
   const [activeSection, setActiveSection] = useState("important-notices");
@@ -26,14 +29,46 @@ export default function ProspectusEditor() {
     "comments" | "history" | "ai" | null
   >(null);
   const [showGenerationModal, setShowGenerationModal] = useState(false);
+  const {
+    clientData,
+    isLoading: clientLoading,
+    error: clientError,
+  } = useSelector((state: RootState) => state.client);
+  const {
+    prospectusData,
+    activeProspectusId,
+    isLoading: prospectusLoading,
+    error: prospectusError,
+  } = useSelector((state: RootState) => state.prospectus);
+  const dispatch = useAppDispatch();
+  const activeProspectus = useMemo(
+    () =>
+      prospectusData &&
+      prospectusData.find((p) => p.id === activeProspectusId)!,
+    [prospectusData, activeProspectusId]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchData = async (clientId: string) => {};
+
+    if (!clientData) return;
+    fetchData(clientData.id);
+
+    return () => {
+      mounted = false;
+      if(clientData === null) dispatch(clearProspectusData());
+    };
+  }, [clientData]);
 
   useEffect(() => {
     const container = document.querySelector<HTMLDivElement>(
       "#document-container .overflow-y-auto"
     );
     if (!container) return;
+    if (!activeProspectus) return;
 
-    const sections = prospectusData.flatMap((section) =>
+    const sections = activeProspectus.sections.flatMap((section) =>
       section.subsections.map((sub) => ({
         id: sub.id,
         sectionId: section.id,
@@ -70,13 +105,13 @@ export default function ProspectusEditor() {
     handleScroll();
 
     return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [activeProspectus]);
 
   const handleSectionClick = (sectionId: string) => {
     console.log("[v0] Section clicked:", sectionId);
     setActiveSection(sectionId);
     // Find the first subsection of this section to scroll to
-    const section = prospectusData.find((s) => s.id === sectionId);
+    const section = activeProspectus.sections.find((s) => s.id === sectionId);
     if (section && section.subsections.length > 0) {
       const firstSubsectionId = section.subsections[0].id;
       setActiveSubsection(firstSubsectionId);
@@ -102,9 +137,9 @@ export default function ProspectusEditor() {
   };
 
   const handleSubsectionClick = (subsectionId: string) => {
-    console.log("[v0] Subsection clicked:", subsectionId);
+    // console.log("[v0] Subsection clicked:", subsectionId);
     // Find which section this subsection belongs to
-    const parentSection = prospectusData.find((section) =>
+    const parentSection = activeProspectus.sections.find((section) =>
       section.subsections.some((sub) => sub.id === subsectionId)
     );
     if (parentSection) {
@@ -122,12 +157,12 @@ export default function ProspectusEditor() {
       const scrollTop =
         container.scrollTop + (elementRect.top - containerRect.top) - 100;
 
-      console.log(
-        "[v0] Scrolling to subsection:",
-        subsectionId,
-        "position:",
-        scrollTop
-      );
+      // console.log(
+      //   "[v0] Scrolling to subsection:",
+      //   subsectionId,
+      //   "position:",
+      //   scrollTop
+      // );
       container.scrollTo({ top: scrollTop, behavior: "smooth" });
     }
   };
@@ -166,7 +201,7 @@ export default function ProspectusEditor() {
   };
 
   const getSubsectionTitle = (subsectionId: string) => {
-    for (const section of prospectusData) {
+    for (const section of activeProspectus.sections) {
       const subsection = section.subsections.find(
         (sub) => sub.id === subsectionId
       );
@@ -174,6 +209,90 @@ export default function ProspectusEditor() {
     }
     return "Unknown Section";
   };
+
+  if (
+    clientLoading ||
+    prospectusLoading ||
+    clientData === null ||
+    clientError !== null ||
+    prospectusError !== null
+  ) {
+    console.log("Loading state:", {
+      clientLoading,
+      prospectusLoading,
+      clientData,
+      clientError,
+      prospectusError,
+    });
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (clientError) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4 p-8 bg-white rounded-lg shadow-lg border border-red-200">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Client Data
+            </h3>
+            <p className="text-red-600 text-sm">{clientError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (prospectusError) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4 p-8 bg-white rounded-lg shadow-lg border border-red-200">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Prospectus Data
+            </h3>
+            <p className="text-red-600 text-sm">{prospectusError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -205,6 +324,23 @@ export default function ProspectusEditor() {
             onEditSection={handleEditSection}
             onUploadBrief={handleUploadBrief}
             onGenerateAll={handleGenerateAll}
+            companyData={{
+              name: clientData!.companyName,
+              acn: clientData!.acn ?? "N/A",
+              industry: clientData!.industrySector ?? "N/A",
+              employees: "50-100", // Placeholder
+              markets: "Australia", // Placeholder
+              founded: clientData!.incorporationDate
+                ? getYear(clientData!.incorporationDate).toString()
+                : "N/A",
+              headquarters:
+                australianStates.find(
+                  (state) => state.value === clientData?.stateOfRegistration
+                )?.label ?? "N/A",
+              businessAddress: "N/A", // Placeholder
+              lodgeDate: format(new Date(), "dd/MM/yyyy"),
+            }}
+            prospectusData={activeProspectus}
           />
         </div>
       </div>
@@ -223,7 +359,18 @@ export default function ProspectusEditor() {
             : ""
         }
       >
-        {sidebarType && <SidebarContent type={sidebarType} />}
+        {sidebarType && (
+          <SidebarContent
+            type={sidebarType}
+            comments={activeProspectus ? activeProspectus.comments : []}
+            versionHistory={prospectusData.map((p) => ({
+              version: p.version.toString(),
+              createdBy: p.createdBy,
+              createdAt: p.createdAt,
+              isCurrent: p.id === activeProspectusId,
+            }))}
+          />
+        )}
       </SidebarPanel>
 
       {/* Rich Text Editor Modal */}

@@ -1,22 +1,26 @@
 "use client";
 
 import {
-  prospectusData,
-  companyInfo,
+  // prospectusData,
+  // companyInfo,
   offerDetails,
   financialData,
-  type ProspectusSubsection,
 } from "@/lib/prospectus-data";
 import { Button } from "./ui/button";
 import { Bot, Pencil, Upload } from "lucide-react";
+import { CompanyInfo, Prospectus, ProspectusSubsection } from "@/app/interface/interface";
 
 interface DocumentViewerProps {
+  companyData: CompanyInfo;
+  prospectusData: Prospectus;
   onEditSection: (subsection: ProspectusSubsection) => void;
   onUploadBrief: (subsectionId: string) => void;
   onGenerateAll: () => void;
 }
 
 export function DocumentViewer({
+  companyData: companyInfo,
+  prospectusData,
   onEditSection,
   onUploadBrief,
   onGenerateAll,
@@ -316,7 +320,7 @@ export function DocumentViewer({
 
         {/* PDF-like Document Pages */}
         <div className="max-w-5xl mx-auto px-6 pb-12 space-y-8">
-          {prospectusData.map((section) => (
+          {prospectusData.sections.map((section) => (
             <div
               key={section.id}
               className="pdf-page rounded-2xl p-12 relative content-section"

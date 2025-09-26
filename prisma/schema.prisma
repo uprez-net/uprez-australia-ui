@@ -79,51 +79,75 @@ model SMEProfile {
 }
 
 model SMECompany {
-  id                  String               @id @default(uuid())
-  companyName         String
+  id          String @id @default(uuid())
+  companyName String
 
   // AU company identifiers
-  acn                 String?   // Australian Company Number (replaces CIN)
-  abn                 String?   // Australian Business Number (replaces PAN)
+  acn String? // Australian Company Number (replaces CIN)
+  abn String? // Australian Business Number (replaces PAN)
 
-  paygWithholding     Boolean?  // Replaces TAN - Yes/No if registered for PAYG Withholding
-  gstRegistered       Boolean?  // GST Registration linked to ABN
-  gstEffectiveDate    DateTime? // Effective date of GST registration
+  paygWithholding  Boolean? // Replaces TAN - Yes/No if registered for PAYG Withholding
+  gstRegistered    Boolean? // GST Registration linked to ABN
+  gstEffectiveDate DateTime? // Effective date of GST registration
 
   // Financials
-  paidUpCapital       Float?
-  turnover            Float?
-  netWorth            Float?
-  yearsOperational    Int?
-  last3YearsRevenue   Json?     // Store as JSON array [{year: 2023, revenue: 1.2M}, ...]
+  paidUpCapital     Float?
+  turnover          Float?
+  netWorth          Float?
+  yearsOperational  Int?
+  last3YearsRevenue Json? // Store as JSON array [{year: 2023, revenue: 1.2M}, ...]
 
   // Company details
   industrySector      String?
-  companyType         String?   // Public / Proprietary Limited
-  stateOfRegistration String?   // State/Territory of registration
+  companyType         String? // Public / Proprietary Limited
+  stateOfRegistration String? // State/Territory of registration
   incorporationDate   DateTime? // Date of incorporation
 
   // Registrations
-  asicRegistration    String?   // ASIC registration details (could also be a JSON blob)
-  austracRegistered   Boolean?  // If registered with AUSTRAC
-  chessHin            String?   // CHESS Holding Identification Number (if applicable)
+  asicRegistration  String? // ASIC registration details (could also be a JSON blob)
+  austracRegistered Boolean? // If registered with AUSTRAC
+  chessHin          String? // CHESS Holding Identification Number (if applicable)
 
   // Internal system fields
-  generationId        String?
-  generationNumber    Int?
-  eligibilityStatus   EligibilityStatus
-  complianceStatus    ComplianceStatus
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime
+  generationId      String?
+  generationNumber  Int?
+  eligibilityStatus EligibilityStatus
+  complianceStatus  ComplianceStatus
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
 
   // Relations
   smeProfileId        String?
   intermediaryId      String?
   Documents           Document[]
+  ClientProspectus    ClientProspectus[]
   SMEProfile          SMEProfile?          @relation(fields: [smeProfileId], references: [id])
   IntermediaryProfile IntermediaryProfile? @relation(fields: [intermediaryId], references: [id])
 }
 
+model ClientProspectus {
+  id           String     @id @default(uuid())
+  smeCompanyId String
+  version      Int        @default(1)
+  content      Json
+  createdAt    DateTime   @default(now())
+  createdById  String
+  createdBy    String
+  Comments     Comments[]
+  SMECompany   SMECompany @relation(fields: [smeCompanyId], references: [id])
+  User         User       @relation(fields: [createdById], references: [id])
+}
+
+model Comments {
+  id           String           @id @default(uuid())
+  prospectusId String
+  userId       String
+  content      String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  Prospectus   ClientProspectus @relation(fields: [prospectusId], references: [id])
+  User         User             @relation(fields: [userId], references: [id])
+}
 
 model User {
   id                  String               @id
@@ -134,6 +158,8 @@ model User {
   updatedAt           DateTime
   ClientTeamMember    ClientTeamMember[]
   Document            Document[]
+  Comments            Comments[]
+  ClientProspectus    ClientProspectus[]
   IntermediaryProfile IntermediaryProfile?
   SMEProfile          SMEProfile?
 }

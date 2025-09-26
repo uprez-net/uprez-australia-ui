@@ -1,6 +1,8 @@
 "use client"
 
+import { RootState } from "@/app/redux/store"
 import { companyInfo } from "@/lib/prospectus-data"
+import { useSelector } from "react-redux"
 
 interface TopNavigationProps {
   onCommentsClick: () => void
@@ -9,19 +11,11 @@ interface TopNavigationProps {
 }
 
 export function TopNavigation({ onCommentsClick, onHistoryClick, onAiClick }: TopNavigationProps) {
+  const { clientData } = useSelector((state :RootState) => state.client)
   return (
     <div className="h-16 glass-effect border-b border-white/20 flex items-center justify-between px-6">
       <div className="flex items-center space-x-4">
-        <h2 className="text-xl font-bold text-gray-900">{companyInfo.name} IPO Prospectus</h2>
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
-            <span className="text-white text-xs font-bold">JD</span>
-          </div>
-          <div className="text-sm">
-            <div className="font-semibold text-gray-900">John Doe</div>
-            <div className="text-gray-500 text-xs">Legal Counsel</div>
-          </div>
-        </div>
+        <h2 className="text-xl font-bold text-gray-900">{clientData!.companyName} IPO Prospectus</h2>
       </div>
 
       {/* Top Navigation Icons */}
