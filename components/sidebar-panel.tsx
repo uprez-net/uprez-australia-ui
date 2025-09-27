@@ -19,7 +19,7 @@ interface SidebarPanelProps {
 export function SidebarPanel({ isOpen, onClose, title, children }: SidebarPanelProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-96">
+      <SheetContent side="right" className="w-auto sm:max-w-[800px]">
         <SheetHeader className="border-b border-gray-200 pb-4">
           <SheetTitle className="text-lg font-bold text-gray-900">{title}</SheetTitle>
           <SheetDescription />

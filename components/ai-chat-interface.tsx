@@ -10,7 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { DefaultChatTransport } from "ai";
 
 interface AIChatInterfaceProps {
-  context: {
+  context?: {
     findingId: string;
     title: string;
     description: string;
@@ -22,22 +22,26 @@ interface AIChatInterfaceProps {
     priority: string;
     userNotes: string;
   };
-  generationId: string;
-  documentId: string;
+  generationId?: string;
+  documentId?: string;
+  clientId?: string;
 }
 
 export function AIChatInterface({
   context,
   generationId,
   documentId,
+  clientId,
 }: AIChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: `/api/chat?generationId=${encodeURIComponent(
-        generationId
-      )}&documentId=${encodeURIComponent(documentId)}`,
+        generationId ?? ""
+      )}&documentId=${encodeURIComponent(
+        documentId ?? ""
+      )}&clientId=${encodeURIComponent(clientId ?? "")}`,
     }),
   });
 
@@ -48,17 +52,19 @@ export function AIChatInterface({
     setMessages([
       {
         id: "system-initial",
-        role: "system",
+        role: "assistant",
         parts: [
           {
             type: "text",
-            text: `You're currently reviewing a compliance finding related to:
+            text: context
+              ? `You're currently reviewing a compliance finding related to:
 - **Title:** ${context.title}
 - **Status:** ${context.status}
 - **Category:** ${context.category}
 
 I'm here to help you understand what this means, why it matters, or what steps you might take next.  
-Just ask if you'd like clarification on the rule, the reasoning behind the finding, or how to address it.`,
+Just ask if you'd like clarification on the rule, the reasoning behind the finding, or how to address it.`
+              : `Welcome! I can guide you through creating or refining your prospectus, highlight compliance gaps, and answer any questions about findings. Would you like to review compliance results or begin drafting content?`,
           },
         ],
       },
@@ -135,7 +141,7 @@ Just ask if you'd like clarification on the rule, the reasoning behind the findi
 
       <form
         onSubmit={() => {
-          sendMessage({ text: input.trim()})
+          sendMessage({ text: input.trim() });
           setInput("");
         }}
         className="p-3 border-t mt-auto"

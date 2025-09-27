@@ -413,12 +413,13 @@ export default function ProspectusEditor() {
         {sidebarType && (
           <SidebarContent
             type={sidebarType}
-            comments={activeProspectus ? activeProspectus.comments : []}
+            comments={prospectusData.flatMap((p) => p.comments)}
             versionHistory={prospectusData.map((p) => ({
               version: p.version.toString(),
               createdBy: p.createdBy,
               createdAt: p.createdAt,
               isCurrent: p.id === activeProspectusId,
+              id: p.id,
             }))}
           />
         )}

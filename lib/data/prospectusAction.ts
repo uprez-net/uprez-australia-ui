@@ -6,7 +6,7 @@ import { prospectusData } from "../prospectus-data";
 
 
 
-export async function fetchOrCreateClientProspectus(clientId: string, offset?: number): Promise<Prospectus[]> {
+export async function fetchOrCreateClientProspectus(clientId: string, offset?: number): Promise<{ data: Prospectus[]; hasMore: boolean }> {
     try {
         const user = await currentUser();
         if (!user) {
@@ -36,7 +36,7 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
                 }
             });
 
-            return [{
+            const data = [{
                 id: newProspectus.id,
                 version: newProspectus.version,
                 sections: JSON.parse(newProspectus.content as string) as unknown as ProspectusSection[],
@@ -51,8 +51,11 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
                     prospectusId: comment.prospectusId,
                     name: comment.User.name ?? comment.User.email ?? "Unknown User",
                     role: comment.User.role,
+                    parentId: comment.parentId,
                 })) : [],
             }]
+
+            return { data, hasMore: false };
         }
 
         const existingProspectus = await prisma.clientProspectus.findMany({
@@ -68,10 +71,13 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
             },
             orderBy: { createdAt: 'desc' },
             skip: offset ?? 0,
-            take: 10,
+            take: 11,
         });
 
-        return existingProspectus.map(prospectus => ({
+        const hasMore = existingProspectus.length > 10;
+        const sliced = existingProspectus.slice(0, 10);
+
+        const data =  sliced.map(prospectus => ({
             id: prospectus.id,
             version: prospectus.version,
             sections: JSON.parse(prospectus.content as string) as unknown as ProspectusSection[],
@@ -86,8 +92,11 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
                 prospectusId: comment.prospectusId,
                 name: comment.User.name ?? comment.User.email ?? "Unknown User",
                 role: comment.User.role,
+                parentId: comment.parentId,
             })) : [],
         }));
+
+        return { data, hasMore };
 
     } catch (error) {
         console.error("Error fetching or creating prospectus:", error);
@@ -97,7 +106,7 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
     }
 }
 
-export async function addCommentToProspectus(prospectusId: string, content: string): Promise<CommentsExtended> {
+export async function addCommentToProspectus(prospectusId: string, content: string, parentId?: string): Promise<CommentsExtended> {
     try {
         const user = await currentUser();
         if (!user) {
@@ -108,6 +117,7 @@ export async function addCommentToProspectus(prospectusId: string, content: stri
                 content,
                 userId: user.id,
                 prospectusId,
+                parentId,
             },
             include: {
                 User: true,
@@ -123,6 +133,7 @@ export async function addCommentToProspectus(prospectusId: string, content: stri
             prospectusId: newComment.prospectusId,
             name: newComment.User.name ?? newComment.User.email ?? "Unknown User",
             role: newComment.User.role,
+            parentId: newComment.parentId,
         }
     } catch (error) {
         console.error("Error adding comment to prospectus:", error);
@@ -182,6 +193,7 @@ export async function createNewProspectusVersion(clientId: string, content: Pros
                 prospectusId: comment.prospectusId,
                 name: comment.User.name ?? comment.User.email ?? "Unknown User",
                 role: comment.User.role,
+                parentId: comment.parentId,
             })) : [],
         }
     } catch (error) {

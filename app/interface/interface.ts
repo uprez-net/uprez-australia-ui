@@ -141,6 +141,10 @@ export interface CommentsExtended extends Comments {
   role: UserRole
 }
 
+export interface CommentNode extends CommentsExtended {
+  replies: CommentNode[]
+}
+
 export interface CompanyInfo {
   name: string
   acn: string

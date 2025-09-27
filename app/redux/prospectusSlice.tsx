@@ -16,12 +16,16 @@ interface ProspectusState {
   isLoading: boolean;
   error: string | null;
   prospectusData: Prospectus[];
+  hasMore: boolean;
+  offset: number;
   activeProspectusId?: string;
 }
 
 const initialState: ProspectusState = {
   isLoading: false,
   error: null,
+  hasMore: false,
+  offset: 0,
   prospectusData: [
     {
       id: "1",
@@ -36,7 +40,7 @@ const initialState: ProspectusState = {
 };
 
 export const loadProspectusData = createAsyncThunk<
-  Prospectus[],
+  { data: Prospectus[]; hasMore: boolean; offset: number },
   { clientId: string; offset?: number },
   { rejectValue: string }
 >(
@@ -44,7 +48,11 @@ export const loadProspectusData = createAsyncThunk<
   async ({ clientId, offset }, { rejectWithValue }) => {
     try {
       const res = await fetchOrCreateClientProspectus(clientId, offset);
-      return res;
+      return {
+        data: res.data,
+        hasMore: res.hasMore,
+        offset: (offset || 0) + res.data.length,
+      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
@@ -55,13 +63,13 @@ export const loadProspectusData = createAsyncThunk<
 
 export const addComment = createAsyncThunk<
   CommentsExtended,
-  { prospectusId: string; content: string },
+  { prospectusId: string; content: string; parentId?: string },
   { rejectValue: string }
 >(
   "prospectus/addCommentToProspectus",
-  async ({ prospectusId, content }, { rejectWithValue }) => {
+  async ({ prospectusId, content, parentId }, { rejectWithValue }) => {
     try {
-      const res = await addCommentToProspectus(prospectusId, content);
+      const res = await addCommentToProspectus(prospectusId, content, parentId);
       return res;
     } catch (error) {
       const errorMessage =
@@ -155,16 +163,20 @@ export const prospectusSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loadProspectusData.pending, (state) => {
-        state.isLoading = true;
+        if (state.offset === 0) {
+          state.isLoading = true;
+        }
         state.error = null;
         state.prospectusData = [];
       })
       .addCase(loadProspectusData.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.prospectusData = [...action.payload];
-        if (action.payload.length > 0) {
-          state.activeProspectusId = action.payload[0].id;
+        state.prospectusData = [...action.payload.data];
+        if (action.payload.data.length > 0) {
+          state.activeProspectusId = action.payload.data[0].id;
         }
+        state.hasMore = action.payload.hasMore;
+        state.offset = action.payload.offset;
         state.error = null;
       })
       .addCase(loadProspectusData.rejected, (state, action) => {
