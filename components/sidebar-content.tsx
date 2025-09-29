@@ -197,6 +197,7 @@ export function SidebarContent({
               rows={3}
               placeholder="Add a comment or question..."
               onChange={(e) => setCommentContent(e.target.value)}
+              value={commentContent}
             />
             <div className="mt-3 flex justify-between items-center">
               <div className="flex items-center gap-2 text-xs text-gray-500">

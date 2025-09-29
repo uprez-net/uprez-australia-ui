@@ -22,21 +22,12 @@ interface ProspectusState {
 }
 
 const initialState: ProspectusState = {
-  isLoading: false,
+  isLoading: true,
   error: null,
   hasMore: false,
   offset: 0,
-  prospectusData: [
-    {
-      id: "1",
-      version: 1,
-      sections: [...prospectusData],
-      comments: [],
-      createdBy: "user1",
-      createdAt: new Date().toISOString(),
-    },
-  ],
-  activeProspectusId: "1",
+  prospectusData: [],
+  activeProspectusId: undefined,
 };
 
 export const loadProspectusData = createAsyncThunk<
@@ -125,10 +116,7 @@ export const prospectusSlice = createSlice({
   initialState,
   reducers: {
     clearProspectusData: (state) => {
-      state.prospectusData = [];
-      state.isLoading = false;
-      state.error = null;
-      state.activeProspectusId = undefined;
+      state = initialState;
     },
     setActiveProspectusId: (state, action) => {
       state.activeProspectusId = action.payload;

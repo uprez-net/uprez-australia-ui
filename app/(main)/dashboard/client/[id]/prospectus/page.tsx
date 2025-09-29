@@ -36,7 +36,9 @@ export default function ProspectusEditor() {
     "comments" | "history" | "ai" | null
   >(null);
   const [showGenerationModal, setShowGenerationModal] = useState(false);
-  const [addingSubsectionTo, setAddingSubsectionTo] = useState<string | null>(null);
+  const [addingSubsectionTo, setAddingSubsectionTo] = useState<string | null>(
+    null
+  );
   const {
     clientData,
     isLoading: clientLoading,
@@ -272,7 +274,9 @@ export default function ProspectusEditor() {
     clientError !== null ||
     prospectusError !== null
   ) {
-    console.log(`Client loading: ${clientLoading}, Prospectus loading: ${prospectusLoading}`);
+    console.log(
+      `Client loading: ${clientLoading}, Prospectus loading: ${prospectusLoading}`
+    );
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
@@ -456,7 +460,8 @@ export default function ProspectusEditor() {
         isOpen={addingSubsectionTo !== null}
         onClose={() => setAddingSubsectionTo(null)}
         sectionName={
-          activeProspectus.sections.find(s => s.id === addingSubsectionTo)?.title || ""
+          activeProspectus.sections.find((s) => s.id === addingSubsectionTo)
+            ?.title || ""
         }
         onConfirm={({ title, type }) => {
           console.log("Add subsection to", addingSubsectionTo, { title, type });
@@ -465,9 +470,14 @@ export default function ProspectusEditor() {
             title,
             contentType: type as "text" | "table" | "chart" | "list",
             content: `New ${type} subsection. Click edit to add content.`,
-          }
-          dispatch(addNewSubsection({ sectionId: addingSubsectionTo!, subsection: newSubsection }));
-          dispatch(saveProgress({clientId: clientData?.id! }));
+          };
+          dispatch(
+            addNewSubsection({
+              sectionId: addingSubsectionTo!,
+              subsection: newSubsection,
+            })
+          );
+          dispatch(saveProgress({ clientId: clientData?.id! }));
         }}
       />
     </div>
