@@ -13,6 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Matcher } from "react-day-picker";
 
 interface DatePickerProps {
   label?: string;
@@ -21,6 +22,7 @@ interface DatePickerProps {
   placeholder?: string;
   className?: string;
   error?: string; // <-- NEW
+  disabled?: Matcher | Matcher[] | undefined
 }
 
 export function DatePicker({
@@ -30,6 +32,7 @@ export function DatePicker({
   placeholder = "Select date",
   className,
   error,
+  disabled,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -65,6 +68,7 @@ export function DatePicker({
               onChange?.(date);
               setOpen(false);
             }}
+            disabled={disabled}
           />
         </PopoverContent>
       </Popover>

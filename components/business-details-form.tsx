@@ -1,13 +1,28 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { forwardRef, useImperativeHandle } from "react"
-import { DatePicker } from "./ui/date-picker"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { DatePicker } from "./ui/date-picker";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const businessFormSchema = z.object({
   industrySector: z.string({
@@ -21,10 +36,10 @@ const businessFormSchema = z.object({
   }),
   incorporationDate: z.string({
     required_error: "Please select the incorporation date.",
-  })
-})
+  }),
+});
 
-type BusinessFormValues = z.infer<typeof businessFormSchema>
+type BusinessFormValues = z.infer<typeof businessFormSchema>;
 
 // This can be used to pre-fill the form with existing data
 const defaultValues: Partial<BusinessFormValues> = {
@@ -32,7 +47,7 @@ const defaultValues: Partial<BusinessFormValues> = {
   companyType: "",
   stateOfRegistration: "",
   incorporationDate: "",
-}
+};
 
 // Industry sectors relevant to Indian SMEs
 export const industrySectors = [
@@ -57,12 +72,12 @@ export const industrySectors = [
   { value: "telecommunications", label: "Telecommunications" },
   { value: "textiles", label: "Textiles & Apparel" },
   { value: "other", label: "Other" },
-]
+];
 
 export const companyTypes = [
   { value: "public", label: "Public Company" },
   { value: "proprietary", label: "Proprietary Limited Company" },
-]
+];
 
 export const australianStates = [
   { value: "nsw", label: "New South Wales" },
@@ -73,32 +88,45 @@ export const australianStates = [
   { value: "tas", label: "Tasmania" },
   { value: "act", label: "Australian Capital Territory" },
   { value: "nt", label: "Northern Territory" },
-]
-
+];
 
 export type BusinessDetailsFormHandle = {
-  submit: () => Promise<boolean>
-}
+  submit: () => Promise<boolean>;
+};
 
-export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
-  onSubmitData?: (data: BusinessFormValues) => void
-  data?: BusinessFormValues
-}>(({ onSubmitData, data }, ref) => {
+export const BusinessDetailsForm = forwardRef<
+  BusinessDetailsFormHandle,
+  {
+    onSubmitData?: (data: BusinessFormValues) => void;
+    data?: BusinessFormValues;
+  }
+>(({ onSubmitData, data }, ref) => {
+  const [isPublic, setIsPublic] = useState(false);
   const form = useForm<BusinessFormValues>({
     resolver: zodResolver(businessFormSchema),
     defaultValues: data ?? defaultValues,
     mode: "onChange",
-  })
+  });
 
   useImperativeHandle(ref, () => ({
     async submit() {
-      const isValid = await form.trigger()
-      if (!isValid) return false
-      const values = form.getValues()
-      onSubmitData?.(values)
-      return true
+      if (isPublic) return false;
+      const isValid = await form.trigger();
+      if (!isValid) return false;
+      const values = form.getValues();
+      onSubmitData?.(values);
+      return true;
     },
-  }))
+  }));
+
+  const companyType = useWatch({
+    control: form.control,
+    name: "companyType",
+  });
+
+  useEffect(() => {
+    setIsPublic(companyType === "public");
+  }, [companyType]);
 
   return (
     <div className="space-y-6">
@@ -117,7 +145,10 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Primary Industry Sector</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select industry" />
@@ -132,7 +163,8 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Select the primary industry sector that best describes your company's main business activities.
+                  Select the primary industry sector that best describes your
+                  company's main business activities.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -146,7 +178,10 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Company Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select company type" />
@@ -172,7 +207,10 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>State of Registration</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select state" />
@@ -201,18 +239,50 @@ export const BusinessDetailsForm = forwardRef<BusinessDetailsFormHandle, {
                 <FormControl>
                   <DatePicker
                     value={field.value ? new Date(field.value) : undefined}
-                    onChange={(date) => field.onChange(date ? date.toISOString() : '')}
+                    onChange={(date) =>
+                      field.onChange(date ? date.toISOString() : "")
+                    }
                     placeholder="Company Incorporation Date"
+                    disabled={{ after: new Date() }}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* Alert Saying Public Companies cannot apply */}
+          {isPublic && (
+            <Alert className="border-amber-500/50 bg-amber-50 text-amber-800">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <div className="flex flex-col">
+                <AlertTitle className="font-semibold">Not Eligible</AlertTitle>
+                <AlertDescription className="text-sm">
+                  Companies that are already <strong>publicly traded</strong> or
+                  listed in the
+                  <strong> public sector</strong> are <u>not eligible</u> to
+                  apply through this platform.
+                  <br />
+                  <br />
+                  Our IPO valuation models and processes are designed
+                  exclusively for
+                  <strong> private enterprises</strong>. Public sector or listed
+                  companies require different regulatory pathways and valuation
+                  frameworks, which are not supported here.
+                  <br />
+                  <br />
+                  If you are preparing for your{" "}
+                  <strong>first IPO as a private company</strong>, you may
+                  continue. Otherwise, please consult your exchange or
+                  regulatory advisor for next steps.
+                </AlertDescription>
+              </div>
+            </Alert>
+          )}
         </form>
       </Form>
     </div>
-  )
-})
+  );
+});
 
-BusinessDetailsForm.displayName = "BusinessDetailsForm"
+BusinessDetailsForm.displayName = "BusinessDetailsForm";

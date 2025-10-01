@@ -214,6 +214,7 @@ export const CompanyIdentificationForm = forwardRef<
                         onChange={(date) => field.onChange(date?.toISOString() || '')}
                         placeholder="Select GST effective date"
                         error={form.formState.errors.gstEffectiveDate?.message}
+                        disabled={{ after: new Date() }}
                       />
                     ) : (
                       <Input
