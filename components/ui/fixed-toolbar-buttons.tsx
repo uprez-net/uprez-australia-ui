@@ -66,9 +66,9 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <ExportToolbarButton>
+            {/* <ExportToolbarButton>
               <ArrowUpToLineIcon />
-            </ExportToolbarButton>
+            </ExportToolbarButton> */}
 
             <ImportToolbarButton />
           </ToolbarGroup>
@@ -123,21 +123,21 @@ export function FixedToolbarButtons() {
 
             <NumberedListToolbarButton />
             <BulletedListToolbarButton />
-            <TodoListToolbarButton />
+            {/* <TodoListToolbarButton /> */}
             <ToggleToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
             <LinkToolbarButton />
             <TableToolbarButton />
-            <EmojiToolbarButton />
+            {/* <EmojiToolbarButton /> */}
           </ToolbarGroup>
 
           <ToolbarGroup>
             <MediaToolbarButton nodeType={KEYS.img} />
-            <MediaToolbarButton nodeType={KEYS.video} />
+            {/* <MediaToolbarButton nodeType={KEYS.video} />
             <MediaToolbarButton nodeType={KEYS.audio} />
-            <MediaToolbarButton nodeType={KEYS.file} />
+            <MediaToolbarButton nodeType={KEYS.file} /> */}
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -146,24 +146,24 @@ export function FixedToolbarButtons() {
             <IndentToolbarButton />
           </ToolbarGroup>
 
-          <ToolbarGroup>
+          {/* <ToolbarGroup>
             <MoreToolbarButton />
-          </ToolbarGroup>
+          </ToolbarGroup> */}
         </>
       )}
 
       <div className="grow" />
 
-      <ToolbarGroup>
+      {/* <ToolbarGroup>
         <MarkToolbarButton nodeType={KEYS.highlight} tooltip="Highlight">
           <HighlighterIcon />
         </MarkToolbarButton>
         <CommentToolbarButton />
-      </ToolbarGroup>
+      </ToolbarGroup> */}
 
-      <ToolbarGroup>
+      {/* <ToolbarGroup>
         <ModeToolbarButton />
-      </ToolbarGroup>
+      </ToolbarGroup> */}
     </div>
   );
 }

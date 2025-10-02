@@ -116,7 +116,7 @@ export const prospectusSlice = createSlice({
   initialState,
   reducers: {
     clearProspectusData: (state) => {
-      state = initialState;
+      state = {...initialState};
     },
     setActiveProspectusId: (state, action) => {
       state.activeProspectusId = action.payload;

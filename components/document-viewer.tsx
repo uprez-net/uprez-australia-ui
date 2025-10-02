@@ -8,282 +8,72 @@ import {
 } from "@/lib/prospectus-data";
 import { Button } from "./ui/button";
 import { Bot, Pencil, Upload } from "lucide-react";
-import { CompanyInfo, Prospectus, ProspectusSubsection } from "@/app/interface/interface";
+import {
+  CompanyInfo,
+  Prospectus,
+  ProspectusSubsection,
+} from "@/app/interface/interface";
+import { RichTextEditor } from "./rich-text-editor";
+import { cn } from "@/lib/utils";
+import SlateToHtmlBlock from "./slate-to-html";
 
 interface DocumentViewerProps {
+  editingSubsection: ProspectusSubsection | null;
   companyData: CompanyInfo;
   prospectusData: Prospectus;
-  onEditSection: (subsection: ProspectusSubsection) => void;
+  onEditSection: (subsection: ProspectusSubsection | null) => void;
   onUploadBrief: (subsectionId: string) => void;
   onGenerateAll: () => void;
+  handleSaveSection: (content: string) => Promise<void>;
 }
 
 export function DocumentViewer({
+  editingSubsection,
   companyData: companyInfo,
   prospectusData,
   onEditSection,
   onUploadBrief,
   onGenerateAll,
+  handleSaveSection,
 }: DocumentViewerProps) {
   const renderSubsectionContent = (subsection: ProspectusSubsection) => {
     // For demo purposes, we'll render some sample content based on the subsection
-    switch (subsection.id) {
-      case "disclaimer":
-        return (
-          <div className="flex items-start space-x-4">
-            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-5 h-5 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                ASIC Disclaimer
-              </h3>
-              <div className="prose prose-gray max-w-none">
-                <p className="text-gray-700 leading-relaxed">
-                  {subsection.content}
-                </p>
-              </div>
-            </div>
+    return (
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 mb-6">
+          {subsection.title}
+        </h3>
+        {subsection.id === editingSubsection?.id ? (
+          <RichTextEditor
+            isOpen={editingSubsection !== null}
+            content={editingSubsection.content}
+            onSave={handleSaveSection}
+            onCancel={() => onEditSection(null)}
+          />
+        ) : (
+          <div className="prose prose-gray max-w-none">
+            <SlateToHtmlBlock content={subsection.content} />
+            {/* <p className="text-gray-700 leading-relaxed">
+              {subsection.content}
+            </p> */}
           </div>
-        );
-      case "the-issuer":
-        return (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              <div className="w-8 h-8 bg-green-600 rounded-lg mr-3 flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-              </div>
-              The Issuer
-            </h3>
-            <div className="prose prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>{companyInfo.name}</strong> (ACN {companyInfo.acn}) is
-                an Australian public company incorporated on March 15, 2018. The
-                Company is headquartered in {companyInfo.headquarters}, and is a
-                leading provider of innovative enterprise software solutions.
-              </p>
-              <div className="grid grid-cols-2 gap-6 mt-6">
-                <div className="bg-white rounded-xl p-4">
-                  <div className="text-sm text-gray-500 mb-1">Industry</div>
-                  <div className="font-semibold text-gray-900">
-                    {companyInfo.industry}
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl p-4">
-                  <div className="text-sm text-gray-500 mb-1">Employees</div>
-                  <div className="font-semibold text-gray-900">
-                    {companyInfo.employees}
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl p-4">
-                  <div className="text-sm text-gray-500 mb-1">Markets</div>
-                  <div className="font-semibold text-gray-900">
-                    {companyInfo.markets}
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl p-4">
-                  <div className="text-sm text-gray-500 mb-1">Founded</div>
-                  <div className="font-semibold text-gray-900">
-                    {companyInfo.founded}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "offer-statistics":
-        return (
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Offer Statistics
-            </h3>
-            <div className="bg-gradient-to-br from-green-900 to-emerald-900 rounded-2xl p-8 text-white">
-              <div className="grid grid-cols-4 gap-8">
-                <div className="text-center">
-                  <div className="text-3xl font-black mb-2">
-                    {offerDetails.offerPrice}
-                  </div>
-                  <div className="text-sm opacity-75">
-                    Offer Price per Share
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-black mb-2">
-                    {offerDetails.sharesOnOffer}
-                  </div>
-                  <div className="text-sm opacity-75">Shares on Offer</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-black mb-2">
-                    {offerDetails.totalFundsRaised}
-                  </div>
-                  <div className="text-sm opacity-75">Total Funds Raised</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-black mb-2">
-                    {offerDetails.marketCap}
-                  </div>
-                  <div className="text-sm opacity-75">Market Cap (est.)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "historical-financials":
-        return (
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Historical Financial Performance
-            </h3>
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-8 py-4 border-b border-gray-200">
-                <h4 className="font-bold text-gray-900">
-                  Three-Year Financial Summary
-                </h4>
-              </div>
-              <div className="p-8">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b-2 border-gray-200">
-                        <th className="text-left py-4 font-bold text-gray-900">
-                          (000 AUD)
-                        </th>
-                        <th className="text-right py-4 font-bold text-gray-900">
-                          FY2025
-                        </th>
-                        <th className="text-right py-4 font-bold text-gray-900">
-                          FY2024
-                        </th>
-                        <th className="text-right py-4 font-bold text-gray-900">
-                          FY2023
-                        </th>
-                        <th className="text-right py-4 font-bold text-green-600">
-                          Growth %
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-4 font-semibold text-gray-900">
-                          Revenue
-                        </td>
-                        <td className="text-right py-4 font-bold text-gray-900">
-                          {financialData.revenue.fy2025}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.revenue.fy2024}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.revenue.fy2023}
-                        </td>
-                        <td className="text-right py-4 font-bold text-green-600">
-                          {financialData.revenue.growth}
-                        </td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-4 font-semibold text-gray-900">
-                          EBITDA
-                        </td>
-                        <td className="text-right py-4 font-bold text-gray-900">
-                          {financialData.ebitda.fy2025}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.ebitda.fy2024}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.ebitda.fy2023}
-                        </td>
-                        <td className="text-right py-4 font-bold text-green-600">
-                          {financialData.ebitda.growth}
-                        </td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-4 font-semibold text-gray-900">
-                          Net Profit
-                        </td>
-                        <td className="text-right py-4 font-bold text-gray-900">
-                          {financialData.netProfit.fy2025}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.netProfit.fy2024}
-                        </td>
-                        <td className="text-right py-4 text-gray-600">
-                          {financialData.netProfit.fy2023}
-                        </td>
-                        <td className="text-right py-4 font-bold text-green-600">
-                          {financialData.netProfit.growth}
-                        </td>
-                      </tr>
-                      <tr className="bg-green-50">
-                        <td className="py-4 font-bold text-green-900">
-                          Total Assets
-                        </td>
-                        <td className="text-right py-4 font-bold text-green-900">
-                          {financialData.totalAssets.fy2025}
-                        </td>
-                        <td className="text-right py-4 text-green-700">
-                          {financialData.totalAssets.fy2024}
-                        </td>
-                        <td className="text-right py-4 text-green-700">
-                          {financialData.totalAssets.fy2023}
-                        </td>
-                        <td className="text-right py-4 font-bold text-green-600">
-                          {financialData.totalAssets.growth}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              {subsection.title}
-            </h3>
-            <div className="prose prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed">
-                {subsection.content}
-              </p>
-            </div>
-          </div>
-        );
-    }
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="h-full flex flex-col">
       {/* Document Viewer - Scrollable */}
       <div
-        className="flex-1 overflow-y-auto bg-gray-50"
+        className={cn(
+          "flex-1 overflow-y-auto bg-gray-50",
+          "[&::-webkit-scrollbar]:h-[1px]",
+          "[&::-webkit-scrollbar-track]:bg-transparent",
+          "[&::-webkit-scrollbar-thumb]:bg-gray-400/30",
+          "[&::-webkit-scrollbar-thumb]:rounded-full",
+          "[&::-webkit-scrollbar-thumb]:hover:bg-gray-400/50"
+        )}
         id="document-container"
       >
         {/* Floating Generate All Button */}

@@ -201,7 +201,7 @@ export default function ProspectusEditor() {
     }
   };
 
-  const handleEditSection = (subsection: ProspectusSubsection) => {
+  const handleEditSection = (subsection: ProspectusSubsection | null) => {
     setEditingSubsection(subsection);
   };
 
@@ -376,9 +376,11 @@ export default function ProspectusEditor() {
         {/* Document Viewer - Scrollable */}
         <div className="flex-1 overflow-hidden" id="document-container">
           <DocumentViewer
+            editingSubsection={editingSubsection}
             onEditSection={handleEditSection}
             onUploadBrief={handleUploadBrief}
             onGenerateAll={handleGenerateAll}
+            handleSaveSection={handleSaveSection}
             companyData={{
               name: clientData!.companyName,
               acn: clientData!.acn ?? "N/A",
@@ -430,7 +432,7 @@ export default function ProspectusEditor() {
       </SidebarPanel>
 
       {/* Rich Text Editor Modal */}
-      {editingSubsection && (
+      {/* {editingSubsection && (
         <RichTextEditor
           isOpen={editingSubsection !== null}
           content={editingSubsection.content}
@@ -438,7 +440,7 @@ export default function ProspectusEditor() {
           onSave={handleSaveSection}
           onCancel={() => setEditingSubsection(null)}
         />
-      )}
+      )} */}
 
       {/* Upload/Brief Modal */}
       <UploadBriefModal

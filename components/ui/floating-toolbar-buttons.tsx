@@ -62,9 +62,9 @@ export function FloatingToolbarButtons() {
               <StrikethroughIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
+            {/* <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
               <Code2Icon />
-            </MarkToolbarButton>
+            </MarkToolbarButton> */}
 
             <InlineEquationToolbarButton />
 
@@ -74,8 +74,8 @@ export function FloatingToolbarButtons() {
       )}
 
       <ToolbarGroup>
-        <CommentToolbarButton />
-        <SuggestionToolbarButton />
+        {/* <CommentToolbarButton />
+        <SuggestionToolbarButton /> */}
 
         {!readOnly && <MoreToolbarButton />}
       </ToolbarGroup>
