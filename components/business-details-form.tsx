@@ -24,29 +24,51 @@ import { DatePicker } from "./ui/date-picker";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
 
-const businessFormSchema = z.object({
-  industrySector: z.string({
-    required_error: "Please select an industry sector.",
-  }),
-  companyType: z.string({
-    required_error: "Please select company type.",
-  }),
-  stateOfRegistration: z.string({
-    required_error: "Please select a state of registration.",
-  }),
-  incorporationDate: z.string({
-    required_error: "Please select the incorporation date.",
-  }),
-});
+const businessFormSchema = z
+  .object({
+    industrySector: z
+      .string({
+        error: "Please select an industry sector.",
+      })
+      .min(1, { error: "Please select an industry sector." }),
+    companyType: z
+      .string({
+        error: "Please select company type.",
+      })
+      .min(1, { error: "Please select company type." }),
+    stateOfRegistration: z
+      .string({
+        error: "Please select a state of registration.",
+      })
+      .min(1, { error: "Please select a state of registration." }),
+    incorporationDate: z
+      .string({
+        error: "Please select the incorporation date.",
+      })
+      .min(1, { error: "Please select the incorporation date." }),
+  })
+  .refine(
+    (data) => {
+      // If company type is "public", return false to trigger error
+      if (data.companyType.toLowerCase() === "public") {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Public companies are not eligible for SME IPO.",
+      path: ["companyType"], // This shows the error on the companyType field
+    }
+  );
 
 type BusinessFormValues = z.infer<typeof businessFormSchema>;
 
 // This can be used to pre-fill the form with existing data
 const defaultValues: Partial<BusinessFormValues> = {
-  industrySector: "",
-  companyType: "",
-  stateOfRegistration: "",
-  incorporationDate: "",
+  industrySector: undefined,
+  companyType: undefined,
+  stateOfRegistration: undefined,
+  incorporationDate: undefined,
 };
 
 // Industry sectors relevant to Indian SMEs

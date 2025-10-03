@@ -16,56 +16,76 @@ import { Input } from "@/components/ui/input";
 import { forwardRef, useImperativeHandle } from "react";
 import { getYear } from "date-fns";
 
-const financialFormSchema = z
-  .object({
-    paidUpCapital: z.coerce
-      .number()
-      .min(1500000, {
-        message:
-          "Paid-up capital must be at least $1,500,000 for SME IPO eligibility in Australia.",
+const financialFormSchema = z.object({
+  paidUpCapital: z.coerce
+    .number({
+      error: "Paid-up capital is required.",
+      // invalid_type_error: "Paid-up capital must be a number.",
+    })
+    .min(1500000, {
+      error:
+        "Paid-up capital must be at least $1,500,000 for SME IPO eligibility in Australia.",
+    })
+    .max(500000000, {
+      error: "Paid-up capital cannot exceed $500 million for SME category.",
+    }),
+
+  turnover: z.coerce
+    .number({
+      error: "Turnover is required.",
+      // invalid_type_error: "Turnover must be a number.",
+    })
+    .min(0, { error: "Turnover cannot be negative." })
+    .max(50000000, {
+      error: "Turnover cannot exceed $50 million for SME IPO eligibility.",
+    }),
+
+  netWorth: z.coerce
+    .number({
+      error: "Net worth is required.",
+      // invalid_type_error: "Net worth must be a number.",
+    })
+    .min(0, { error: "Net worth cannot be negative." }),
+
+  last3YearsRevenue: z
+    .array(
+      z.object({
+        year: z
+          .number({ error: "Year is required." })
+          .min(2000)
+          .max(getYear(new Date())),
+        revenue: z.coerce
+          .number({ error: "Revenue is required." })
+          .min(0),
       })
-      .max(500000000, {
-        message: "Paid-up capital cannot exceed $500 million for SME category.",
-      }),
+    )
+    .length(3, { error: "You must provide exactly 3 years of revenue." }),
 
-    turnover: z.coerce
-      .number()
-      .min(0, { message: "Turnover cannot be negative." })
-      .max(50000000, {
-        message: "Turnover cannot exceed $50 million for SME IPO eligibility.",
-      }),
-
-    netWorth: z.coerce
-      .number()
-      .min(0, { message: "Net worth cannot be negative." }),
-
-    last3YearsRevenue: z
-      .array(
-        z.object({
-          year: z
-            .number({ required_error: "Year is required." })
-            .min(2000)
-            .max(getYear(new Date())),
-          revenue: z.coerce
-            .number({ required_error: "Revenue is required." })
-            .min(0),
-        })
-      )
-      .length(3, { message: "You must provide exactly 3 years of revenue." }),
-
-    yearsOperational: z.coerce
-      .number()
-      .min(1, { message: "Company must be operational for at least 1 year." })
-      .max(200, { message: "Please enter a valid number of years." }),
-  });
+  yearsOperational: z.coerce
+    .number({
+      error: "Years operational is required.",
+      // invalid_type_error: "Years operational must be a number.",
+    })
+    .min(1, { error: "Company must be operational for at least 1 year." })
+    .max(200, { error: "Please enter a valid number of years." }),
+});
 
 type FinancialFormValues = z.infer<typeof financialFormSchema>;
 
-const defaultValues: Partial<FinancialFormValues> = {
-  paidUpCapital: undefined,
-  turnover: undefined,
-  netWorth: undefined,
-  yearsOperational: undefined,
+// Define the input type explicitly to handle form inputs
+type FinancialFormInput = {
+  paidUpCapital: number;
+  turnover: number;
+  netWorth: number;
+  last3YearsRevenue: { year: number; revenue: number }[];
+  yearsOperational: number;
+};
+
+const defaultValues: Partial<FinancialFormInput> = {
+  paidUpCapital: NaN,
+  turnover: NaN,
+  netWorth: NaN,
+  yearsOperational: NaN,
   last3YearsRevenue: [
     { year: getYear(new Date()) - 2, revenue: NaN },
     { year: getYear(new Date()) - 1, revenue: NaN },
@@ -88,11 +108,11 @@ export const FinancialInformationForm = forwardRef<
   FinancialInformationFormHandle,
   {
     onSubmitData?: (data: FinancialFormValues) => void;
-    data?: FinancialFormValues;
+    data?: FinancialFormInput;
   }
 >(({ data, onSubmitData }, ref) => {
-  const form = useForm<FinancialFormValues>({
-    resolver: zodResolver(financialFormSchema),
+  const form = useForm<FinancialFormInput>({
+    resolver: zodResolver(financialFormSchema) as any,
     defaultValues: data ?? defaultValues,
     mode: "onChange",
   });
@@ -207,7 +227,7 @@ export const FinancialInformationForm = forwardRef<
                           onChange={(e) => {
                             const formatted = formatNumber(e.target.value);
                             field.onChange(
-                              field.value.map((val, i) =>
+                              field.value?.map((val, i) =>
                                 i === index
                                   ? {
                                       ...val,
@@ -217,7 +237,7 @@ export const FinancialInformationForm = forwardRef<
                               )
                             );
                           }}
-                          value={field.value[index]?.year ?? ""}
+                          value={(field.value ?? [])[index]?.year ?? ""}
                         />
                       </FormControl>
 
@@ -230,7 +250,7 @@ export const FinancialInformationForm = forwardRef<
                           onChange={(e) => {
                             const formatted = formatNumber(e.target.value);
                             field.onChange(
-                              field.value.map((val, i) =>
+                              field.value?.map((val, i) =>
                                 i === index
                                   ? {
                                       ...val,
@@ -242,7 +262,7 @@ export const FinancialInformationForm = forwardRef<
                               )
                             );
                           }}
-                          value={field.value[index]?.revenue ?? ""}
+                          value={(field.value ?? [])[index]?.revenue ?? ""}
                         />
                       </FormControl>
                     </FormItem>

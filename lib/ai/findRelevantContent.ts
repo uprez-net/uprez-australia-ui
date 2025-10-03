@@ -66,3 +66,38 @@ export async function getRelevantContent(query: string, topK: number = 5) {
     throw new Error("Failed to fetch relevant content");
   }
 }
+
+export async function getClientData(clientId: string, topK: number = 5, query: string) {
+  try {
+    const clientIndex = pinecone.Index("hybrid-search-index");
+    const embedding = await createEmbedding(query);
+    // Fetch client data with clientId as namespace
+    const namespace = clientIndex.namespace(clientId)
+    const results = await namespace.query({
+      vector: embedding,
+      topK,
+      includeValues: true,
+      includeMetadata: true,
+    });
+
+    const allTexts = results.matches
+      .map((match) => {
+        try {
+          const nodeContentRaw = match.metadata!;
+          if (!nodeContentRaw) return null;
+          const nodeContent = JSON.parse(nodeContentRaw._node_content as string);
+          return nodeContent.text as string;
+        } catch (error) {
+          console.error("Failed to parse _node_content:", error);
+          return null;
+        }
+      })
+      .filter(m => m !== null);
+    return allTexts;
+
+  }
+  catch (error) {
+    console.error("Error in getClientData:", error);
+    throw new Error("Failed to fetch client data");
+  }
+}

@@ -1,4 +1,4 @@
-import { getRelevantContent } from "@/lib/ai/findRelevantContent";
+import { getClientData, getRelevantContent } from "@/lib/ai/findRelevantContent";
 import { getReport } from "@/lib/data/getReport";
 import { google } from "@/lib/gemini";
 import { convertToModelMessages, stepCountIs, streamText, tool, UIMessage } from "ai";
@@ -157,32 +157,60 @@ const getComplianceReport = tool({
   },
 });
 
-const generateSystemPrompt = (generationId: string, documentId: string) => {
+const getClientRelatedData = tool({
+  description: "Fetch data related to a specific client based on client ID",
+  inputSchema: z.object({
+    clientId: z.string().describe("The ID of the client to fetch related data for"),
+    query: z.string().describe("The user query to find the relevant client data"),
+  }),
+  execute: async ({ clientId, query }) => {
+    const report = await getClientData(clientId, 7, query);
+    return report?.length
+      ? report
+      : ["No relevant client data was found for this query."];
+  },
+});
+
+const generateSystemPrompt = (generationId?: string, documentId?: string, clientId?: string) => {
   return `
   ${SYSTEM_PROMPT}
 
   ---
   ### Session Context:
-  - Generation ID: \`${generationId}\`
-  - Document ID: \`${documentId}\`
+  - Generation ID: \`${generationId ?? "N/A"}\`
+  - Document ID: \`${documentId ?? "N/A"}\`
+  - Client ID: \`${clientId ?? "N/A"}\`
   `;
 };
 
 export async function POST(request: Request) {
   const { messages }: { messages: UIMessage[] } = await request.json();
   const url = new URL(request.url);
-  const generationId = url.searchParams.get("generationId")!;
-  const documentId = url.searchParams.get("documentId")!;
+  const generationId = url.searchParams.get("generationId");
+  const documentId = url.searchParams.get("documentId");
+  const clientId = url.searchParams.get("clientId");
 
-  console.log(`Processing chat request for generationId: ${generationId}, documentId: ${documentId}`);
+  //Either it should have both generationId and documentId or just clientId for general queries
+  if (
+    (!generationId || !documentId) &&
+    !clientId
+  ) {
+    return new Response(
+      "Either generationId and documentId or clientId must be provided",
+      { status: 400 }
+    );
+  }
+
+  console.log(`Processing chat request for generationId: ${generationId}, documentId: ${documentId}, clientId: ${clientId}`);
 
   const result = streamText({
     model: google("gemini-2.5-flash"),
     messages: convertToModelMessages(messages),
-    system: generateSystemPrompt(generationId, documentId),
+    system: generateSystemPrompt(generationId ?? undefined, documentId ?? undefined, clientId ?? undefined),
     tools: {
       getRelevantRules: findRules,
       getComplianceReport: getComplianceReport,
+      getClientRelatedData: getClientRelatedData,
     },
     stopWhen: stepCountIs(4),
   });

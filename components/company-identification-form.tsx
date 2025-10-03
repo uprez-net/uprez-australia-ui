@@ -21,13 +21,13 @@ import { DatePicker } from "./ui/date-picker";
 
 const companyFormSchema = z.object({
   legalName: z.string().min(2, {
-    message: "Company name must be at least 2 characters.",
+    error: "Company name must be at least 2 characters.",
   }),
   acn: z.string().regex(/^\d{9}$/, {
-    message: "Please enter a valid 9-digit ACN.",
+    error: "Please enter a valid 9-digit ACN.",
   }),
   abn: z.string().regex(/^\d{11}$/, {
-    message: "Please enter a valid 11-digit ABN.",
+    error: "Please enter a valid 11-digit ABN.",
   }),
   paygWithholding: z.boolean().default(false),
   gstRegistered: z.boolean().default(false),
