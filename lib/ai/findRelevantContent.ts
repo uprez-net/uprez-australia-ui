@@ -69,6 +69,7 @@ export async function getRelevantContent(query: string, topK: number = 5) {
 
 export async function getClientData(clientId: string, topK: number = 5, query: string) {
   try {
+    console.log(`Fetching data for clientId: ${clientId} with query: ${query}`);
     const clientIndex = pinecone.Index("hybrid-search-index");
     const embedding = await createEmbedding(query);
     // Fetch client data with clientId as namespace

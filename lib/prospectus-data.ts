@@ -368,3 +368,708 @@ export const prospectusData: ProspectusSection[] = [
     ],
   },
 ]
+
+export type ProspectusSectionTypes = 
+  // Important Notices
+  | 'disclaimer'
+  | 'expiry-date'
+  | 'general-advice'
+  // Investment Overview
+  | 'the-issuer'
+  | 'purpose-offer'
+  | 'key-dates'
+  | 'offer-statistics'
+  | 'business-highlights'
+  // Offer Details
+  | 'terms-conditions'
+  | 'application-process'
+  | 'allocation-policy'
+  | 'asx-listing'
+  | 'underwriting'
+  // Company Overview
+  | 'company-history'
+  | 'industry-context'
+  | 'products-services'
+  // Financial Information
+  | 'historical-financials'
+  | 'pro-forma'
+  | 'management-analysis'
+  // Key Risks
+  | 'company-risks'
+  | 'industry-risks'
+  | 'market-risks'
+  | 'climate-risks'
+  // Directors & Management
+  | 'biographical-info'
+  | 'interests-benefits'
+  | 'corporate-governance'
+  // Additional Information
+  | 'material-contracts'
+  | 'legal-proceedings'
+  | 'consents'
+  // Glossary
+  | 'key-terms'
+  | 'technical-definitions'
+  // Corporate Directory
+  | 'company-contacts'
+  | 'advisers';
+
+export type SectionCategoryTypes = 
+  | 'important-notices'
+  | 'investment-overview'
+  | 'offer-details'
+  | 'company-overview'
+  | 'financial-information'
+  | 'key-risks'
+  | 'directors-management'
+  | 'additional-information'
+  | 'glossary'
+  | 'corporate-directory';
+
+export const SECTION_PROMPTS: Record<ProspectusSectionTypes, string> = {
+  // ==================== IMPORTANT NOTICES ====================
+  'disclaimer': `You are drafting the ASIC Disclaimer section for an Australian prospectus.
+
+REQUIREMENTS:
+- Must comply with Corporations Act 2001 requirements
+- State that ASIC takes no responsibility for prospectus contents
+- Clearly indicate ASIC does not verify compliance
+- Use formal, legally precise language
+- Keep concise (2-3 sentences)
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate the ASIC disclaimer text ensuring regulatory compliance.`,
+
+  'expiry-date': `You are drafting the Prospectus Expiry section.
+
+REQUIREMENTS:
+- Calculate expiry as 13 months from lodgment date
+- Clearly state no securities will be issued after expiry
+- Include specific expiry date
+- Reference lodgment with ASIC
+- Use clear, unambiguous language
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract the lodgment date and generate the expiry notice.`,
+
+  'general-advice': `You are drafting the General Advice Warning for the prospectus.
+
+REQUIREMENTS:
+- State information is general in nature
+- Warn it doesn't consider personal circumstances
+- Advise readers to consider their own situation
+- Recommend seeking professional advice if needed
+- Use accessible language while remaining formal
+- Length: 3-4 sentences
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate a comprehensive general advice warning.`,
+
+  // ==================== INVESTMENT OVERVIEW ====================
+  'the-issuer': `You are drafting "The Issuer" section providing core company identification.
+
+REQUIREMENTS:
+- Full legal company name with ACN
+- Incorporation date and jurisdiction
+- Registered office location
+- Business classification/sector
+- Brief one-line description of core business
+- Formal, factual tone
+- Length: 2-3 sentences
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract company registration details and provide a concise issuer identification.`,
+
+  'purpose-offer': `You are drafting the "Purpose of the Offer" section.
+
+REQUIREMENTS:
+- Clear statement of how funds will be used
+- Breakdown by category with percentages
+- Specific initiatives for each category
+- Align with business strategy
+- Show value proposition to investors
+- Include: product development, market expansion, acquisitions, working capital
+- Length: 3-4 sentences with percentage breakdown
+
+CLIENT CONTEXT:
+{clientData}
+
+Analyze the client's strategic plans and funding requirements to generate the use of proceeds breakdown.`,
+
+  'key-dates': `You are drafting the "Key Dates" section as a structured table.
+
+REQUIREMENTS:
+- Prospectus lodgment date
+- Offer opening date
+- Offer closing date
+- Expected allotment date
+- Expected dispatch of holding statements
+- Expected ASX quotation date
+- Format as markdown table with dates
+- Include timezone (AEDT/AEST)
+- Note dates are indicative and subject to change
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract timeline information and generate a comprehensive key dates table.`,
+
+  'offer-statistics': `You are drafting the "Offer Statistics" section as a structured table.
+
+REQUIREMENTS:
+- Offer price per share
+- Number of shares offered
+- Total funds to be raised (before costs)
+- Estimated offer costs
+- Net proceeds
+- Shares on issue post-offer
+- Estimated market capitalization
+- Format as markdown table
+- All amounts in AUD with proper formatting
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract financial offer details and generate the offer statistics table.`,
+
+  'business-highlights': `You are drafting the "Business & Financial Highlights" section.
+
+REQUIREMENTS:
+- 5-8 bullet points highlighting key achievements
+- Include revenue growth metrics
+- Customer base and retention statistics
+- Product/technology milestones
+- Market position indicators
+- Award recognitions or certifications
+- Strategic partnerships
+- Employee growth or key hires
+- Each point should be specific and quantified where possible
+
+CLIENT CONTEXT:
+{clientData}
+
+Analyze client achievements and generate compelling business highlights.`,
+
+  // ==================== OFFER DETAILS ====================
+  'terms-conditions': `You are drafting the "Terms and Conditions" section.
+
+REQUIREMENTS:
+- Clearly state offer terms (shares, price, total amount)
+- Eligibility criteria for applicants
+- Minimum and maximum application amounts
+- Payment methods accepted
+- Binding nature of applications
+- Company's rights regarding acceptance
+- Reference to Application Form
+- Formal legal tone
+- Length: 3-5 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive terms and conditions for the share offer.`,
+
+  'application-process': `You are drafting the "Application Process" section.
+
+REQUIREMENTS:
+- Step-by-step application instructions
+- How to complete Application Form
+- Where to submit applications (online/mail)
+- Payment requirements and methods
+- Share Registry contact details
+- Processing timeline expectations
+- What happens after submission
+- Clear, instructional tone
+- Length: 3-4 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Create clear application process instructions for potential investors.`,
+
+  'allocation-policy': `You are drafting the "Allocation Policy" section.
+
+REQUIREMENTS:
+- Explain allocation methodology
+- Priority allocation rules if applicable
+- Company's discretion parameters
+- Oversubscription procedures
+- Scale-back provisions
+- Notification process for applicants
+- Refund procedures for unsuccessful applications
+- Fair and transparent approach
+- Length: 2-3 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate the share allocation policy ensuring fairness and clarity.`,
+
+  'asx-listing': `You are drafting the "ASX Listing" section.
+
+REQUIREMENTS:
+- Application timeline to ASX (within 7 days)
+- Listing conditions and requirements
+- Expected quotation commencement
+- Trading conditions
+- ASX ticker code if determined
+- Reference to ASX Listing Rules compliance
+- Consequences if listing not achieved
+- Length: 2-3 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate ASX listing information and conditions.`,
+
+  'underwriting': `You are drafting the "Underwriting Agreements" section.
+
+REQUIREMENTS:
+- Underwriter identification
+- Underwriting amount and percentage
+- Key terms of underwriting agreement
+- Fees and commissions
+- Termination events
+- Sub-underwriting arrangements if applicable
+- Provide certainty message to investors
+- Length: 3-4 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract underwriting details and generate comprehensive disclosure.`,
+
+  // ==================== COMPANY OVERVIEW ====================
+  'company-history': `You are drafting the "Company History & Business Model" section.
+
+REQUIREMENTS:
+- Founding story and year
+- Key milestones in company development
+- Evolution of business model
+- Current business model explanation (SaaS, licensing, etc.)
+- Geographic presence
+- Customer segments served
+- Value proposition
+- Competitive positioning
+- Engaging narrative style while remaining factual
+- Length: 4-6 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Create a compelling company history and business model description.`,
+
+  'industry-context': `You are drafting the "Industry Context" section.
+
+REQUIREMENTS:
+- Industry definition and scope
+- Market size and growth projections
+- Key industry trends and drivers
+- Technological developments
+- Regulatory environment
+- Competitive landscape overview
+- Where company fits in industry
+- Future outlook
+- Data-driven with credible sources
+- Length: 4-5 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Analyze industry positioning and generate comprehensive industry context.`,
+
+  'products-services': `You are drafting the "Products and Services" section.
+
+REQUIREMENTS:
+- Detailed description of each product/service offering
+- Target customers for each offering
+- Key features and benefits
+- Pricing model overview
+- Differentiation from competitors
+- Integration capabilities
+- Customer success examples
+- Product roadmap hints if relevant
+- Technical depth appropriate for investors
+- Length: 5-7 paragraphs (or structured by product)
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive product and services descriptions.`,
+
+  // ==================== FINANCIAL INFORMATION ====================
+  'historical-financials': `You are drafting the "Audited Historical Statements" section.
+
+REQUIREMENTS:
+- 3-year financial performance tables
+- Revenue by year with growth rates
+- EBITDA and net profit metrics
+- Gross margin percentages
+- Cash flow summaries
+- Balance sheet highlights
+- Key financial ratios
+- Format as markdown tables
+- Include year-over-year percentage changes
+- Note audit status
+- Professional financial reporting tone
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract historical financial data and create comprehensive financial tables.`,
+
+  'pro-forma': `You are drafting the "Pro-forma Financials" section.
+
+REQUIREMENTS:
+- Pro-forma balance sheet post-IPO
+- Impact of offer proceeds on cash position
+- Impact on equity structure
+- Adjustments for transaction costs
+- Debt levels post-transaction
+- Working capital position
+- Format as markdown table
+- Include assumptions and notes
+- Show before/after comparison
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate pro-forma financial statements showing IPO impact.`,
+
+  'management-analysis': `You are drafting the "Management Discussion & Analysis" section.
+
+REQUIREMENTS:
+- Revenue drivers and trends
+- Cost structure evolution
+- Margin analysis and trends
+- Cash flow generation capability
+- Key performance indicators (KPIs)
+- Seasonality factors if applicable
+- Capital allocation priorities
+- Future growth outlook
+- Risks to financial performance
+- Management's strategic initiatives
+- Conversational yet professional tone
+- Length: 5-8 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Create insightful management discussion and analysis of financial performance.`,
+
+  // ==================== KEY RISKS ====================
+  'company-risks': `You are drafting the "Company-Specific Risks" section.
+
+REQUIREMENTS:
+- 8-12 specific risks unique to the company
+- Key person dependencies
+- Technology and IP risks
+- Customer concentration risks
+- Operational risks
+- Cybersecurity and data risks
+- Product development risks
+- Each risk should have:
+  * Clear heading
+  * Description of risk (2-3 sentences)
+  * Potential impact
+- Honest and transparent disclosure
+- Regulatory-compliant tone
+- Format as structured list with headings
+
+CLIENT CONTEXT:
+{clientData}
+
+Identify and describe company-specific risks comprehensively.`,
+
+  'industry-risks': `You are drafting the "Industry-Related Risks" section.
+
+REQUIREMENTS:
+- 6-10 industry-level risks
+- Competitive intensity risks
+- Technological disruption risks
+- Market adoption risks
+- Regulatory change risks
+- Supplier/partner risks
+- Industry consolidation risks
+- Each risk with clear description
+- How risks could impact company
+- Industry context provided
+- Format as structured list
+
+CLIENT CONTEXT:
+{clientData}
+
+Analyze industry dynamics and generate comprehensive risk disclosures.`,
+
+  'market-risks': `You are drafting the "General Market Risks" section.
+
+REQUIREMENTS:
+- Economic downturn risks
+- Share price volatility
+- Liquidity of shares
+- Dividend policy risks
+- Dilution risks
+- Force majeure events
+- Currency/interest rate risks if applicable
+- Standard investment risks
+- Each clearly explained for retail investors
+- 6-8 key market risks
+- Format as structured list
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive general market and investment risk disclosures.`,
+
+  'climate-risks': `You are drafting the "Climate-Related Risks" section.
+
+REQUIREMENTS:
+- Physical climate risks (extreme weather, etc.)
+- Transition risks (policy, technology, market)
+- Reputation risks related to climate
+- Supply chain climate impacts
+- Energy cost and availability risks
+- Regulatory compliance with climate disclosure
+- Company's climate strategy context
+- Materiality assessment
+- Forward-looking statements
+- Length: 3-4 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Assess climate-related risks in accordance with TCFD framework.`,
+
+  // ==================== DIRECTORS & MANAGEMENT ====================
+  'biographical-info': `You are drafting the "Biographical Information" section.
+
+REQUIREMENTS:
+- For each director and executive:
+  * Full name and title
+  * Age (optional)
+  * Professional qualifications
+  * Career history (key roles chronologically)
+  * Relevant industry experience
+  * Board committee memberships
+  * Other current directorships
+  * Skills and expertise
+  * Why qualified for role
+- Professional biographical style
+- 4-6 sentences per person
+- Highlight diversity of skills
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract leadership information and create professional biographies.`,
+
+  'interests-benefits': `You are drafting the "Interests and Benefits" section.
+
+REQUIREMENTS:
+- Current shareholdings table (pre and post-IPO)
+- Options and rights held
+- Remuneration summary table
+- Indemnity and insurance arrangements
+- Related party transactions
+- Service agreements summary
+- Interests in contracts
+- Format as markdown tables where appropriate
+- Transparent disclosure
+- Regulatory compliance focus
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive disclosure of directors' interests and benefits.`,
+
+  'corporate-governance': `You are drafting the "Corporate Governance Statement" section.
+
+REQUIREMENTS:
+- Commitment to ASX Corporate Governance Principles
+- Board composition and independence
+- Board committees (Audit, Remuneration, Nomination)
+- Risk management framework
+- Diversity policy
+- Trading policy
+- Continuous disclosure policy
+- Shareholder communication policy
+- Where practices differ from recommendations
+- How governance supports company
+- Length: 4-6 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Create comprehensive corporate governance statement.`,
+
+  // ==================== ADDITIONAL INFORMATION ====================
+  'material-contracts': `You are drafting the "Material Contracts" section.
+
+REQUIREMENTS:
+- For each material contract:
+  * Contract type and parties
+  * Key commercial terms
+  * Duration and termination rights
+  * Material obligations
+  * Financial implications
+  * Why material to business
+- Customer contracts
+- Supplier agreements
+- Partnership agreements
+- IP licenses
+- Facility leases
+- Banking facilities
+- Confidentiality balanced with disclosure
+- Length: 4-6 paragraphs or structured by contract
+
+CLIENT CONTEXT:
+{clientData}
+
+Identify and describe material contracts affecting the business.`,
+
+  'legal-proceedings': `You are drafting the "Legal Proceedings" section.
+
+REQUIREMENTS:
+- Current litigation summary
+- Historical material litigation
+- Regulatory investigations
+- Financial exposure and provisions
+- Management's assessment
+- Insurance coverage
+- Impact on business operations
+- If none: clear statement of no material proceedings
+- Transparent disclosure
+- Legal precision
+- Length: 2-4 paragraphs
+
+CLIENT CONTEXT:
+{clientData}
+
+Disclose any material legal proceedings or state their absence.`,
+
+  'consents': `You are drafting the "Consents" section.
+
+REQUIREMENTS:
+- List each adviser (auditors, lawyers, underwriters, etc.)
+- State consent to inclusion of statements
+- Consent to prospectus distribution form
+- Note advisers not involved in offer promotion
+- Confirmation of consent not withdrawn
+- Format as structured list
+- Formal regulatory compliance tone
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive adviser consent statements.`,
+
+  // ==================== GLOSSARY ====================
+  'key-terms': `You are drafting the "Key Terms" section.
+
+REQUIREMENTS:
+- Alphabetical list of defined terms
+- Clear, concise definitions
+- Include: ASIC, ACN, ASX, EBITDA, Prospectus, Offer, Shares, etc.
+- Company-specific terms
+- Legal and regulatory terms
+- Financial terms
+- Format as markdown list or table
+- Each definition 1-2 sentences
+- Plain English where possible
+
+CLIENT CONTEXT:
+{clientData}
+
+Generate comprehensive glossary of key terms used in prospectus.`,
+
+  'technical-definitions': `You are drafting the "Technical Definitions" section.
+
+REQUIREMENTS:
+- Industry-specific technical terms
+- Technology terminology
+- Product-related terms
+- Business model terms
+- More detailed than key terms glossary
+- Accessible explanations for investors
+- Examples where helpful
+- 2-3 sentences per term
+- Organized by category if extensive
+
+CLIENT CONTEXT:
+{clientData}
+
+Create detailed technical definitions relevant to the business.`,
+
+  // ==================== CORPORATE DIRECTORY ====================
+  'company-contacts': `You are drafting the "Company Contacts" section.
+
+REQUIREMENTS:
+- Registered office address
+- Principal place of business
+- Postal address
+- Phone number
+- Email address
+- Website
+- Share registry details
+- Investor relations contact
+- Format clearly with labels
+- Accurate and current
+
+CLIENT CONTEXT:
+{clientData}
+
+Extract and format company contact information.`,
+
+  'advisers': `You are drafting the "Professional Advisers" section.
+
+REQUIREMENTS:
+- Legal advisers (Australian and international)
+- Auditors
+- Lead manager/underwriter
+- Share registry
+- Tax advisers
+- Any other material advisers
+- For each: Firm name, contact person, address, phone
+- Format as structured list or table
+- Professional presentation
+
+CLIENT CONTEXT:
+{clientData}
+
+List all professional advisers with complete contact details.`,
+};
+
+export function isValidProspectusSection(value?: string): value is ProspectusSectionTypes {
+  const validSections: ProspectusSectionTypes[] = [
+    // Important Notices
+    'disclaimer', 'expiry-date', 'general-advice',
+    // Investment Overview
+    'the-issuer', 'purpose-offer', 'key-dates', 'offer-statistics', 'business-highlights',
+    // Offer Details
+    'terms-conditions', 'application-process', 'allocation-policy', 'asx-listing', 'underwriting',
+    // Company Overview
+    'company-history', 'industry-context', 'products-services',
+    // Financial Information
+    'historical-financials', 'pro-forma', 'management-analysis',
+    // Key Risks
+    'company-risks', 'industry-risks', 'market-risks', 'climate-risks',
+    // Directors & Management
+    'biographical-info', 'interests-benefits', 'corporate-governance',
+    // Additional Information
+    'material-contracts', 'legal-proceedings', 'consents',
+    // Glossary
+    'key-terms', 'technical-definitions',
+    // Corporate Directory
+    'company-contacts', 'advisers'
+  ];
+  
+  return typeof value === 'string' && validSections.includes(value as ProspectusSectionTypes);
+}

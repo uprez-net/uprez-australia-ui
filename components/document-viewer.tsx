@@ -32,7 +32,7 @@ export function DocumentViewer({
   companyData: companyInfo,
   prospectusData,
   onEditSection,
-  onUploadBrief,
+  // onUploadBrief,
   onGenerateAll,
   handleSaveSection,
 }: DocumentViewerProps) {
@@ -214,7 +214,7 @@ export function DocumentViewer({
                       <Pencil className="h-4 w-4" />
                     </Button>
 
-                    <Button
+                    {/* <Button
                       variant="outline"
                       size="icon"
                       title="Upload/Brief"
@@ -222,9 +222,9 @@ export function DocumentViewer({
                       className="h-8 w-8 bg-gray-50 text-gray-600 hover:bg-gray-100"
                     >
                       <Upload className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
 
-                    <Button
+                    {/* <Button
                       variant="outline"
                       size="icon"
                       title="Request AI Rewrite"
@@ -232,7 +232,7 @@ export function DocumentViewer({
                       className="h-8 w-8 bg-blue-50 text-blue-600 hover:bg-blue-100"
                     >
                       <Bot className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
                   </div>
                   {renderSubsectionContent(subsection)}
                 </div>

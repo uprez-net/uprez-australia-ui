@@ -1,4 +1,4 @@
-import { prospectusData } from "@/lib/prospectus-data";
+// import { prospectusData } from "@/lib/prospectus-data";
 import {
   CommentsExtended,
   Prospectus,
@@ -19,6 +19,7 @@ interface ProspectusState {
   hasMore: boolean;
   offset: number;
   activeProspectusId?: string;
+  editingSubsectionId?: string;
 }
 
 const initialState: ProspectusState = {
@@ -28,6 +29,7 @@ const initialState: ProspectusState = {
   offset: 0,
   prospectusData: [],
   activeProspectusId: undefined,
+  editingSubsectionId: undefined,
 };
 
 export const loadProspectusData = createAsyncThunk<
@@ -147,6 +149,10 @@ export const prospectusSlice = createSlice({
         }
       }
     },
+    setEditingSubsectionId: (state, action) => {
+      console.log(`Setting editingSubsectionId to ${action.payload}`);
+      state.editingSubsectionId = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -211,5 +217,6 @@ export const {
   setActiveProspectusId,
   addNewSubsection,
   deleteSubsection,
+  setEditingSubsectionId,
 } = prospectusSlice.actions;
 export default prospectusSlice.reducer;

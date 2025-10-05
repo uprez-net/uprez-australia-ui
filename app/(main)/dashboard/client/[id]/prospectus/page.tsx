@@ -20,6 +20,7 @@ import {
   clearProspectusData,
   loadProspectusData,
   saveProgress,
+  setEditingSubsectionId,
 } from "@/app/redux/prospectusSlice";
 import { toast } from "sonner";
 import { AddSubsectionModal } from "@/components/add-subsection-dialog";
@@ -202,6 +203,7 @@ export default function ProspectusEditor() {
   };
 
   const handleEditSection = (subsection: ProspectusSubsection | null) => {
+    dispatch(setEditingSubsectionId(subsection?.id || undefined));
     setEditingSubsection(subsection);
   };
 

@@ -12,8 +12,10 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateObject,
+  stepCountIs,
   streamObject,
   streamText,
+  tool,
 } from 'ai';
 import { NextResponse } from 'next/server';
 import { type SlateEditor, createSlateEditor, nanoid, RangeApi } from 'platejs';
@@ -21,6 +23,7 @@ import { z } from 'zod';
 
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
+import { getClientData } from '@/lib/ai/findRelevantContent';
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw } = await req.json();
@@ -43,6 +46,21 @@ export async function POST(req: NextRequest) {
   }
 
   const isSelecting = editor.api.isExpanded();
+
+  const getClientRelatedData = tool({
+    description: "Fetch data related to a specific client based on client ID and generate content using the most relevant information about the client.",
+    inputSchema: z.object({
+      clientId: z.string().describe("The ID of the client to fetch related data for"),
+      query: z.string().describe("The user query to find the relevant client data"),
+    }),
+    execute: async ({ clientId, query }) => {
+      const report = await getClientData(clientId, 7, query);
+      return report?.length
+        ? report
+        : ["No relevant client data was found for this query."];
+    },
+  });
+
 
   try {
     const stream = createUIMessageStream<ChatMessage>({
@@ -97,6 +115,10 @@ export async function POST(req: NextRequest) {
             messages: convertToModelMessages(messages),
             model: google('gemini-2.5-flash'),
             system: generateSystem,
+            tools: {
+              getClientRelatedData: getClientRelatedData,
+            },
+            stopWhen: stepCountIs(4),
           });
 
           writer.merge(gen.toUIMessageStream({ sendFinish: false }));
@@ -242,6 +264,11 @@ const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
 Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
 
+Capabilities:
+- Fetch and use client-related data through tools to provide context-aware notes.
+- Generate content using relevant information about the client (e.g., summaries, insights, suggestions).
+- Assist with note structuring, reminders, and enhancing clarity.
+
 Rules:
 - <Document> is the entire note the user is working on.
 - <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
@@ -251,8 +278,9 @@ Rules:
 - For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
 - CRITICAL: DO NOT remove or modify the following custom MDX tags: <u>, <callout>, <kbd>, <toc>, <sub>, <sup>, <mark>, <del>, <date>, <span>, <column>, <column_group>, <file>, <audio>, <video> in <Selection> unless the user explicitly requests this change.
 - CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
-- CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
+- CRITICAL: when asked to write in markdown, do not start with \\\\markdown.
 - CRITICAL: When writing the column, such line breaks and indentation must be preserved.
+
 <column_group>
   <column>
     1
@@ -265,6 +293,7 @@ Rules:
   </column>
 </column_group>
 `;
+
 
 const generateSystemDefault = `\
 ${systemCommon}
