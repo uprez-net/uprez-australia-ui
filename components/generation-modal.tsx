@@ -8,6 +8,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { useSelector } from "react-redux"
+import { RootState } from "@/app/redux/store"
+import { useAppDispatch } from "@/app/redux/use-dispatch"
+import { generateProspectus } from "@/app/redux/prospectusSlice"
+import { toast } from "sonner"
 
 interface GenerationModalProps {
   isOpen: boolean
@@ -15,22 +20,88 @@ interface GenerationModalProps {
 }
 
 export function GenerationModal({ isOpen, onClose }: GenerationModalProps) {
-  const [isGenerating, setIsGenerating] = useState(true)
+  const { locked } = useSelector((state: RootState) => state.prospectus)
+  const { clientData } = useSelector((state: RootState) => state.client)
+  const dispatch = useAppDispatch()
+  const [showConfirmation, setShowConfirmation] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
 
+  // Reset confirmation state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setIsGenerating(true)
-      const timer = setTimeout(() => {
-        setIsGenerating(false)
-      }, 3000)
-      return () => clearTimeout(timer)
+      setShowConfirmation(true)
+      setIsGenerating(false)
     }
   }, [isOpen])
+
+  const handleConfirmGeneration = async () => {
+    setShowConfirmation(false)
+    setIsGenerating(true)
+    
+    try {
+      const clientId = clientData?.id!
+      const res = await dispatch(generateProspectus({ clientId }))
+      if (generateProspectus.rejected.match(res)) {
+        throw new Error(res.payload as string)
+      }
+      toast.success("AI Generation completed successfully!")
+    } catch (error) {
+      console.error("Generation failed:", error)
+    }
+  }
+
+  const handleCancel = () => {
+    setShowConfirmation(true)
+    setIsGenerating(false)
+    onClose()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg rounded-3xl p-10 text-center">
-        {isGenerating ? (
+        {showConfirmation && !isGenerating ? (
+          <>
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mx-auto mb-8 flex items-center justify-center">
+              <svg
+                className="w-10 h-10 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-gray-900">Start AI Generation?</DialogTitle>
+              <DialogDescription className="text-gray-600 leading-relaxed mt-2">
+                This will generate all sections using AI. The document will be locked during generation.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 my-8">
+              <div className="text-sm font-semibold text-gray-500 mb-2">ESTIMATED TIME</div>
+              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+                ~ 5-10 minutes
+              </div>
+              <div className="text-xs text-gray-500">AI will ensure compliance and quality</div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancel}
+                className="flex-1 px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmGeneration}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-colors"
+              >
+                Start Generation
+              </button>
+            </div>
+          </>
+        ) : locked || isGenerating ? (
           <>
             <div className="w-20 h-20 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl mx-auto mb-8 flex items-center justify-center">
               <svg
@@ -49,15 +120,7 @@ export function GenerationModal({ isOpen, onClose }: GenerationModalProps) {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 my-8">
-              <div className="text-sm font-semibold text-gray-500 mb-2">SERVICE LEVEL AGREEMENT</div>
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2">
-                2 Hours
-              </div>
-              <div className="text-xs text-gray-500">Estimated completion time</div>
-            </div>
-
-            <div className="text-sm text-gray-500 leading-relaxed bg-gray-50 rounded-xl p-4">
+            <div className="text-sm text-gray-500 leading-relaxed bg-gray-50 rounded-xl p-4 mt-8">
               <p>The document is locked for editing. You'll be notified upon completion.</p>
             </div>
           </>
@@ -75,17 +138,9 @@ export function GenerationModal({ isOpen, onClose }: GenerationModalProps) {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 my-8">
-              <div className="text-sm font-semibold text-gray-500 mb-2">COMPLETION TIME</div>
-              <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-2">
-                1h 23m
-              </div>
-              <div className="text-xs text-gray-500">Faster than estimated 2-hour SLA</div>
-            </div>
-
             <button
               onClick={onClose}
-              className="w-full px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors"
+              className="w-full px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors mt-8"
             >
               Review Generated Content
             </button>

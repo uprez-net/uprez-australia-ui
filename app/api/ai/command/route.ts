@@ -51,7 +51,12 @@ export async function POST(req: NextRequest) {
     description: "Fetch data related to a specific client based on client ID and generate content using the most relevant information about the client.",
     inputSchema: z.object({
       clientId: z.string().describe("The ID of the client to fetch related data for"),
-      query: z.string().describe("The user query to find the relevant client data"),
+      query: z.string().describe(
+        "Natural language description of the client information to retrieve. " +
+        "This query is embedded and matched against client data using semantic similarity. " +
+        "Be specific about attributes, time periods, or criteria needed. " +
+        "Example: 'active clients in New York who purchased in Q4 2024'"
+      )
     }),
     execute: async ({ clientId, query }) => {
       const report = await getClientData(clientId, 7, query);

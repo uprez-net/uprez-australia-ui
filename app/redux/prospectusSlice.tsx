@@ -9,8 +9,10 @@ import {
   addCommentToProspectus,
   createNewProspectusVersion,
   fetchOrCreateClientProspectus,
+  generateNewProspectusVersion,
 } from "@/lib/data/prospectusAction";
 import { RootState } from "./store";
+import { set } from "zod";
 
 interface ProspectusState {
   isLoading: boolean;
@@ -20,6 +22,7 @@ interface ProspectusState {
   offset: number;
   activeProspectusId?: string;
   editingSubsectionId?: string;
+  locked: boolean;
 }
 
 const initialState: ProspectusState = {
@@ -30,6 +33,7 @@ const initialState: ProspectusState = {
   prospectusData: [],
   activeProspectusId: undefined,
   editingSubsectionId: undefined,
+  locked: false,
 };
 
 export const loadProspectusData = createAsyncThunk<
@@ -113,6 +117,25 @@ export const saveProgress = createAsyncThunk<
   }
 );
 
+export const generateProspectus = createAsyncThunk<
+  Prospectus,
+  { clientId: string },
+  { rejectValue: string }
+>(
+  "prospectus/generateProspectus",
+  async ({ clientId }, { rejectWithValue, dispatch }) => {
+    try {
+      dispatch(setLock(true));
+      const res = await generateNewProspectusVersion(clientId);
+      
+      return res;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  });
+
 export const prospectusSlice = createSlice({
   name: "prospectus",
   initialState,
@@ -152,6 +175,9 @@ export const prospectusSlice = createSlice({
     setEditingSubsectionId: (state, action) => {
       console.log(`Setting editingSubsectionId to ${action.payload}`);
       state.editingSubsectionId = action.payload;
+    },
+    setLock: (state, action) => {
+      state.locked = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -208,6 +234,22 @@ export const prospectusSlice = createSlice({
       .addCase(saveProgress.rejected, (state, action) => {
         // state.isLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(generateProspectus.pending, (state) => {
+        // state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(generateProspectus.fulfilled, (state, action) => {
+        state.locked = false;
+        // state.isLoading = false;
+        state.prospectusData.unshift(action.payload);
+        state.activeProspectusId = action.payload.id;
+        state.error = null;
+      })
+      .addCase(generateProspectus.rejected, (state, action) => {
+        state.locked = false;
+        // state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -218,5 +260,6 @@ export const {
   addNewSubsection,
   deleteSubsection,
   setEditingSubsectionId,
+  setLock,
 } = prospectusSlice.actions;
 export default prospectusSlice.reducer;

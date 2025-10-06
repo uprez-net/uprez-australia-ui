@@ -25,6 +25,7 @@ interface DocumentViewerProps {
   onUploadBrief: (subsectionId: string) => void;
   onGenerateAll: () => void;
   handleSaveSection: (content: string) => Promise<void>;
+  disabled?: boolean;
 }
 
 export function DocumentViewer({
@@ -35,6 +36,7 @@ export function DocumentViewer({
   // onUploadBrief,
   onGenerateAll,
   handleSaveSection,
+  disabled,
 }: DocumentViewerProps) {
   const renderSubsectionContent = (subsection: ProspectusSubsection) => {
     // For demo purposes, we'll render some sample content based on the subsection
@@ -109,7 +111,12 @@ export function DocumentViewer({
         </div>
 
         {/* PDF-like Document Pages */}
-        <div className="max-w-5xl mx-auto px-6 pb-12 space-y-8">
+        <div
+          className={cn(
+            "max-w-5xl mx-auto px-6 pb-12 space-y-8",
+            disabled && "filter blur-sm pointer-events-none select-none"
+          )}
+        >
           {prospectusData.sections.map((section) => (
             <div
               key={section.id}
@@ -117,7 +124,22 @@ export function DocumentViewer({
               id={section.id}
             >
               <div className="section-badge">
-                <div className="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg">
+                <div className="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2">
+                  {/* SVG Icon */}
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={section.icon}
+                    />
+                  </svg>
                   {section.title}
                 </div>
               </div>
@@ -191,7 +213,22 @@ export function DocumentViewer({
 
               {/* Section Title for non-first sections */}
               {section.id !== "important-notices" && (
-                <h1 className="text-3xl font-black text-gray-900 mb-8">
+                <h1 className="text-3xl font-black text-gray-900 mb-8 flex items-center gap-3">
+                  {/* SVG Icon */}
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={section.icon}
+                    />
+                  </svg>
                   {section.title}
                 </h1>
               )}
@@ -210,6 +247,7 @@ export function DocumentViewer({
                       title="Edit Section"
                       onClick={() => onEditSection(subsection)}
                       className="h-8 w-8 bg-green-50 text-green-600 hover:bg-green-100"
+                      disabled={disabled}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>

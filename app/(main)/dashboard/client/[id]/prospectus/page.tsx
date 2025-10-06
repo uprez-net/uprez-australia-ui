@@ -50,6 +50,7 @@ export default function ProspectusEditor() {
     activeProspectusId,
     isLoading: prospectusLoading,
     error: prospectusError,
+    locked,
   } = useSelector((state: RootState) => state.prospectus);
   const dispatch = useAppDispatch();
   const activeProspectus = useMemo(
@@ -400,6 +401,7 @@ export default function ProspectusEditor() {
               lodgeDate: format(new Date(), "dd/MM/yyyy"),
             }}
             prospectusData={activeProspectus}
+            disabled={locked}
           />
         </div>
       </div>
@@ -432,17 +434,6 @@ export default function ProspectusEditor() {
           />
         )}
       </SidebarPanel>
-
-      {/* Rich Text Editor Modal */}
-      {/* {editingSubsection && (
-        <RichTextEditor
-          isOpen={editingSubsection !== null}
-          content={editingSubsection.content}
-          title={editingSubsection.title}
-          onSave={handleSaveSection}
-          onCancel={() => setEditingSubsection(null)}
-        />
-      )} */}
 
       {/* Upload/Brief Modal */}
       <UploadBriefModal

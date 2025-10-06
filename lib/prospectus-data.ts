@@ -1,12 +1,12 @@
 export interface ProspectusSection {
-  id: string
+  id: SectionCategoryTypes
   title: string
   icon: string
   subsections: ProspectusSubsection[]
 }
 
 export interface ProspectusSubsection {
-  id: string
+  id: ProspectusSectionTypes
   title: string
   content: string
   contentType: "text" | "table" | "chart" | "list"
