@@ -23,6 +23,7 @@ const breadcrumbMap: Record<string, string> = {
   create: "Create",
   subscription: "Subscription",
   prospectus: "Generate Prospectus",
+  agents: "AI Agents",
 }
 
 export function DynamicBreadcrumb() {
@@ -37,7 +38,14 @@ export function DynamicBreadcrumb() {
         {segments.map((segment, index) => {
           const href = "/" + segments.slice(0, index + 1).join("/")
           const isLast = index === segments.length - 1
-          const label = breadcrumbMap[segment] || segment
+          let label = breadcrumbMap[segment] || segment
+
+          //if label is UUID shorten it
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+          if (uuidRegex.test(label)) {
+            label = label.slice(0, 8) + "..." + label.slice(-4)
+          }
+
 
           return (
             <BreadcrumbItem key={href}>

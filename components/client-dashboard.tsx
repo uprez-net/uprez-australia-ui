@@ -9,6 +9,7 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  Bot,
 } from "lucide-react";
 import {
   Card,
@@ -128,7 +129,7 @@ export function ClientDashboard({
       />
 
       {/* Status Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {/* Compliance Status Card */}
         <Card>
           <CardHeader className="pb-2">
@@ -414,6 +415,48 @@ export function ClientDashboard({
               // )}
             >
               Generate Prospectus
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Advance Assessment Agents Card */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Assessment Agents</CardTitle>
+            <CardDescription>
+              AI-powered compliance assessment agents
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-4 space-y-2 text-center">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                <span className="text-2xl font-bold">
+                  <Bot />
+                </span>
+              </div>
+              <Badge variant="outline" className="border-dashed">
+                Coming Soon
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                AI-powered agents to assist with compliance assessments and
+                recommendations
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                router.push(
+                  `/dashboard/client/${encodeURIComponent(clientId!)}/agents`
+                )
+              }
+              // disabled={["pending", "failed"].includes(
+              //   clientData!.complianceStatus
+              // )}
+            >
+              Explore Agents
             </Button>
           </CardFooter>
         </Card>
