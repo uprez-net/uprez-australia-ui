@@ -23,7 +23,6 @@ const breadcrumbMap: Record<string, string> = {
   create: "Create",
   subscription: "Subscription",
   prospectus: "Generate Prospectus",
-  agents: "AI Agents",
 }
 
 export function DynamicBreadcrumb() {
