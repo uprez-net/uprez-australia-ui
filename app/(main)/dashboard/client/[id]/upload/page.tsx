@@ -165,7 +165,7 @@ export default function UploadDocumentsPage() {
 
         {/* Document Categories */}
         <div className="space-y-8">
-          {documentCategories.map((category) => (
+          {documentCategories.map((category) => category.isIPO ? null : (
             <DocumentCategoryUpload
               key={category.name}
               categoryName={category.name}

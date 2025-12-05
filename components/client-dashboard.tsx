@@ -366,9 +366,9 @@ export function ClientDashboard({
                   `/dashboard/client/${encodeURIComponent(clientId!)}/valuation`
                 )
               }
-              disabled={["pending", "failed"].includes(
-                clientData!.complianceStatus
-              )}
+              // disabled={["pending", "failed"].includes(
+              //   clientData!.complianceStatus
+              // )}
             >
               Check Valuation
             </Button>

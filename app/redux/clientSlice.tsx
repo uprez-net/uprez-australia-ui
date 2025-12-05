@@ -40,18 +40,18 @@ export const setClientData = createAsyncThunk<
 
 export const createDocumentClient = createAsyncThunk<
   Document,
-  { Document: Document; sessionToken?: string },
+  { Document: Document; sessionToken?: string, isIPO?: boolean },
   { rejectValue: string }
 >(
   "clientPage/createDocument",
-  async ({ Document, sessionToken }, { rejectWithValue }) => {
+  async ({ Document, sessionToken, isIPO = false }, { rejectWithValue }) => {
     try {
       if (!sessionToken) {
         return rejectWithValue(
           "Session token is required to create a document"
         );
       }
-      const res = createDocument(Document, sessionToken);
+      const res = createDocument(Document, sessionToken, isIPO);
 
       return res;
     } catch (error) {

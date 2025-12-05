@@ -5,9 +5,12 @@ import { currentUser } from "@clerk/nextjs/server";
 import { getUserRoleInOrg } from "../clerk";
 import { UserBackendSession } from "@/app/interface/interface";
 import { getAllLabelsForDocumentType } from "@/utils/convertDocumentType";
+import { stat } from "fs";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api";
+const IPO_BACKEND_URL =
+  process.env.NEXT_PUBLIC_IPO_BACKEND_URL || "http://localhost:4000/api";
 
 export const fetchClientData = async (clientId: string) => {
   try {
@@ -62,12 +65,59 @@ export const fetchClientData = async (clientId: string) => {
 
 export const createDocument = async (
   Document: Document,
-  sessionToken: string
+  sessionToken: string,
+  isIPO: boolean = false
 ) => {
   try {
     const user = await currentUser();
     if (!user) {
       throw new Error("User not authenticated");
+    }
+
+    if (isIPO) {
+      console.log("Creating IPO Document:", Document);
+      //Register Company IPO Document in IPO Backend
+      const companyRes = await fetch(`${IPO_BACKEND_URL}/v1/register-company`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: Document.smeCompanyId,
+        }),
+      });
+      if (!companyRes.ok) {
+        console.error("Failed to register company in IPO backend:", companyRes.statusText);
+        throw new Error("Failed to register company in IPO backend");
+      }
+      // Additional logic for IPO documents can be added here
+      const res = await fetch(`${IPO_BACKEND_URL}/v1/valuation-document`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: Document.id,
+          client_account_id: Document.smeCompanyId,
+          bucket_link: Document.uploadThingKey,
+          status: "pending",
+          filename: Document.fileName,
+        }),
+      });
+      if (!res.ok) {
+        console.error("Failed to create IPO document in backend:", res.statusText);
+        throw new Error("Failed to create IPO document in backend");
+      }
+
+      const newDocument = await prisma.document.create({
+        data: {
+          ...Document,
+          uploadedById: user.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+      return newDocument;
     }
 
     const res = await fetch(`${BACKEND_URL}/api/v1/upload`, {
@@ -93,10 +143,10 @@ export const createDocument = async (
     }
     const backendDocument:
       | {
-          success: boolean;
-          message: string;
-          document_id: string;
-        }
+        success: boolean;
+        message: string;
+        document_id: string;
+      }
       | { detail: string } = await res.json();
 
     if ("detail" in backendDocument) {
@@ -206,9 +256,8 @@ export const triggerGeneration = async (
         // file_name: Document.fileName,
         // document_type: getAllLabelsForDocumentType(Document.documentType),
         // copy_status: "Pending",
-        callback_url: `${
-          process.env.BASE_URL ?? "http://localhost:3000"
-        }/api/webhooks/generation`,
+        callback_url: `${process.env.BASE_URL ?? "http://localhost:3000"
+          }/api/webhooks/generation`,
       }),
     });
     if (!response.ok) {
@@ -235,9 +284,9 @@ export const triggerGeneration = async (
         updatedAt: new Date(),
         Documents: {
           updateMany: {
-            where: { 
+            where: {
               smeCompanyId: Document.smeCompanyId,
-              NOT: { 
+              NOT: {
                 basicCheckStatus: BasicCheckStatus.Passed
               }
             },

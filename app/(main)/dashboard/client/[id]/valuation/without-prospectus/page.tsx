@@ -17,14 +17,54 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { UploadDropZoneComponent } from "@/components/upload-component";
 import { Document, DocumentType } from "@prisma/client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { DocumentUploadDialog, splitCamelCase } from "@/components/document-upload-dialog";
+import { ca } from "date-fns/locale";
+import { createDocumentClient } from "@/app/redux/clientSlice";
 
 export default function WithoutProspectusPage() {
   const [capitalRaise, setCapitalRaise] = useState(20000000);
   const [percentageSold, setPercentageSold] = useState(25);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState<"Company Narrative & Growth Strategy" | "Risk Management & Due Diligence">("Company Narrative & Growth Strategy");
 
-  const { clientData } = useSelector((state: RootState) => state.client);
+  const { clientData, documents } = useSelector((state: RootState) => state.client);
   const clientId = clientData?.id ?? crypto.randomUUID();
+
+  const { riskDocuments, narrativeDocuments, allAuditedFinancials } = useMemo(() => {
+    const riskTypes = new Set<DocumentType>([
+      DocumentType.InternalRiskRegister,
+      DocumentType.DueDiligenceQuestionnaire,
+      DocumentType.BoardMeetingMinutes,
+    ]);
+    const narrativeTypes = new Set<DocumentType>([
+      DocumentType.InvestorPresentationPitchDeck,
+      DocumentType.FormalBusinessPlan,
+      DocumentType.InformationMemorandum,
+    ]);
+
+    return documents.reduce(
+      (acc, doc) => {
+        if (riskTypes.has(doc.documentType)) {
+          acc.riskDocuments.push(doc);
+        }
+        if (narrativeTypes.has(doc.documentType)) {
+          acc.narrativeDocuments.push(doc);
+        }
+        if (doc.documentType === DocumentType.AuditedFinancialStatements) {
+          acc.allAuditedFinancials.push(doc);
+        }
+        return acc;
+      },
+      {
+        riskDocuments: [] as Document[],
+        narrativeDocuments: [] as Document[],
+        allAuditedFinancials: [] as Document[],
+      }
+    );
+  }, [documents]);
+
+
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-3xl">
@@ -53,13 +93,24 @@ export default function WithoutProspectusPage() {
               <Label className="font-medium text-gray-700">
                 Audited Financial Statements
               </Label>
-              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>
-                  Audited_FY23.pdf, Audited_FY22.pdf (auto-detected from
-                  compliance module)
-                </span>
-              </div>
+                {allAuditedFinancials.length > 0 ? (
+                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 flex items-center">
+                  <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <span>
+                  {allAuditedFinancials.map((doc, idx) => (
+                    <span key={doc.id}>
+                    {doc.fileName}
+                    {idx < allAuditedFinancials.length - 1 ? ", " : ""}
+                    </span>
+                  ))}{" "}
+                  (auto-detected from compliance module)
+                  </span>
+                </div>
+                ) : (
+                <p className="mt-2 text-sm text-gray-500">
+                  No audited financial statements detected yet.
+                </p>
+                )}
             </div>
 
             {/* Cap Table Upload */}
@@ -71,17 +122,18 @@ export default function WithoutProspectusPage() {
                 Please upload your current Cap Table (Excel/CSV).
               </p>
               <UploadDropZoneComponent
-                setUploadedFiles={(file: Document) => {
-                  console.log("Files uploaded:", file);
-                  return;
-                  // setSelectedFile((p) => [...p, file])
-                }}
+                // setUploadedFiles={(file: Document) => {
+                //   console.log("Files uploaded:", file);
+                //   return;
+                //   // setSelectedFile((p) => [...p, file])
+                // }}
                 smeCompanyId={clientId}
-                documentType={DocumentType.WorkingCapitalStatement}
-                year={2025}
+                documentType={DocumentType.CapitalisationTable}
+                year={new Date().getFullYear()}
                 heading="Drag & drop or click to upload."
                 subtext="Supported formats: Excel/CSV"
                 className="mt-4 w-full"
+                isIPO={true}
               />
             </div>
 
@@ -133,6 +185,21 @@ export default function WithoutProspectusPage() {
                 following. Our AI will use them to verify and enhance its
                 analysis.
               </p>
+              {/* Uploaded Document List */}
+              {narrativeDocuments.length > 0 && 
+              <div className="mt-4 space-y-2">
+                <ul className="space-y-2">
+                  {narrativeDocuments.map((doc) => (
+                    <li
+                      key={doc.id}
+                      className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700"
+                    >
+                      <span className="font-medium">{doc.fileName}</span>
+                      <span className="text-gray-500">{splitCamelCase(doc.documentType)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>}
               <div className="mt-4 bg-gray-50 p-4 rounded-lg border">
                 <div className="flex items-center justify-between">
                   <div>
@@ -148,6 +215,10 @@ export default function WithoutProspectusPage() {
                   <Button
                     variant="outline"
                     className="flex items-center bg-transparent"
+                    onClick={() => {
+                      setCategoryName("Company Narrative & Growth Strategy");
+                      setUploadDialogOpen(true)
+                    }}
                   >
                     <Upload className="w-5 h-5 mr-2" />
                     Upload
@@ -188,6 +259,21 @@ export default function WithoutProspectusPage() {
                 You can provide more context by uploading an internal risk
                 register, board papers, or a SWOT analysis.
               </p>
+              {/* Uploaded Document List */}
+              {riskDocuments.length > 0 && 
+              <div className="mt-4 space-y-2">
+                <ul className="space-y-2">
+                  {riskDocuments.map((doc) => (
+                    <li
+                      key={doc.id}
+                      className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700"
+                    >
+                      <span className="font-medium">{doc.fileName}</span>
+                      <span className="text-gray-500">{splitCamelCase(doc.documentType)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>}
               <div className="mt-4 bg-gray-50 p-4 rounded-lg border">
                 <div className="flex items-center justify-between">
                   <ul className="list-disc list-inside text-gray-600 text-sm space-y-1">
@@ -198,6 +284,10 @@ export default function WithoutProspectusPage() {
                   <Button
                     variant="outline"
                     className="flex items-center bg-transparent"
+                    onClick={() => {
+                      setCategoryName("Risk Management & Due Diligence");
+                      setUploadDialogOpen(true)
+                    }}
                   >
                     <Upload className="w-5 h-5 mr-2" />
                     Upload
@@ -286,6 +376,17 @@ export default function WithoutProspectusPage() {
           </Button>
         </div>
       </div>
+
+      {/* Upload Dialog */}
+      <DocumentUploadDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        categoryName={categoryName}
+        clientId={clientData!.id}
+        // onUpload={handleUpload}
+        isIPO={true}
+        type={categoryName === "Company Narrative & Growth Strategy" ? DocumentType.InvestorPresentationPitchDeck : DocumentType.InternalRiskRegister}
+      />
     </div>
   );
 }

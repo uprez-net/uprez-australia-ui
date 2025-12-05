@@ -31,6 +31,7 @@ interface DocumentUploadDialogProps {
   clientId: string
   // onUpload: (file: File, documentType: string, year: string) => void
   type?: DocumentType
+  isIPO?: boolean
 }
 
 export function splitCamelCase(input: string): string {
@@ -38,7 +39,7 @@ export function splitCamelCase(input: string): string {
               .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2') // split acronyms like "PDFParser"
 }
 
-export function DocumentUploadDialog({ open, onOpenChange, categoryName, clientId, type }: DocumentUploadDialogProps) {
+export function DocumentUploadDialog({ open, onOpenChange, categoryName, clientId, type, isIPO = false }: DocumentUploadDialogProps) {
   const [selectedFile, setSelectedFile] = useState<Document[]>([])
   const [documentType, setDocumentType] = useState<DocumentType>(documentCategories[categoryName as keyof typeof documentCategories][0] as DocumentType)
   const [year, setYear] = useState("")
@@ -66,7 +67,7 @@ export function DocumentUploadDialog({ open, onOpenChange, categoryName, clientI
     try {
       setIsUploading(true)
       const uploadPromises = selectedFile.map(file =>
-        dispatch(createDocumentClient({ Document: file, sessionToken }))
+        dispatch(createDocumentClient({ Document: file, sessionToken, isIPO }))
       );
       const results = await Promise.all(uploadPromises);
       results.forEach(res => {

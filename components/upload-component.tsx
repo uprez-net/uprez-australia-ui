@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 interface UploadComponentProps {
   setUploadedFiles?: (file: Document) => void;
   dispatchFunction?: typeof createDocumentClient;
+  isIPO?: boolean;
   isICon?: boolean;
   smeCompanyId: string;
   documentType: DocumentType;
@@ -46,7 +47,8 @@ export function UploadDropZoneComponent({
   year,
   heading,
   subtext,
-  className
+  className,
+  isIPO = false,
 }: UploadComponentProps) {
   const dispatch = useAppDispatch();
   const { sessionToken } = useSelector((state: RootState) => state.client);
@@ -81,7 +83,7 @@ export function UploadDropZoneComponent({
         if (setUploadedFiles) {
           setUploadedFiles(doc);
         } else {
-          await dispatch(dispatchFunction({ Document: doc, sessionToken }));
+          await dispatch(dispatchFunction({ Document: doc, sessionToken, isIPO }));
         }
         toast.success("File Uploaded Successfully");
       }

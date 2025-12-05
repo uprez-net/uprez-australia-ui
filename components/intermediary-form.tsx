@@ -29,7 +29,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { createOrganizationAction } from "@/app/actions/organisationAction";
 import { Organisation } from "@/app/interface/interface";
-import { IntermediaryType } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -37,6 +36,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+
+const IntermediaryType = {
+  MerchantBanker: "MerchantBanker",
+  CompanySecretary: "CompanySecretary",
+  Auditor: "Auditor",
+  Other: "Other",
+} as const;
 import { toast } from "sonner";
 
 const formSchema = z.object({

@@ -120,6 +120,7 @@ model SMECompany {
   smeProfileId        String?
   intermediaryId      String?
   Documents           Document[]
+  ipoValuations       IPOValuation[]
   ClientProspectus    ClientProspectus[]
   SMEProfile          SMEProfile?          @relation(fields: [smeProfileId], references: [id])
   IntermediaryProfile IntermediaryProfile? @relation(fields: [intermediaryId], references: [id])
@@ -150,6 +151,30 @@ model Comments {
   User         User             @relation(fields: [userId], references: [id])
   parent       Comments?        @relation("CommentReplies", fields: [parentId], references: [id])
   replies      Comments[]       @relation("CommentReplies")
+}
+
+model IPOValuation {
+  id              String @id @default(uuid())
+  generation_id   String
+  clientAccountId String
+  inputJson       Json
+  outputJson      Json
+
+  projectedNetProfit                String // Textarea
+  companyNarrativeAndGrowthStrategy String // Textarea
+  keyBusinessRisks                  String // Textarea
+
+  competitors       String
+  inputDocumentUrls String[] // Array of Strings
+
+  ipoValuationPdfUrl String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // If you have a relation to Client Account:
+  smeCompany      SMECompany @relation(fields: [clientAccountId], references: [id])
+  // clientAccount  ClientAccount @relation(fields: [clientAccountId], references: [id])
 }
 
 model User {
@@ -234,6 +259,15 @@ enum DocumentType {
   IndependentGeologistsReport
   TherapeuticGoodsAdministrationApprovals
   AustralianFinancialServicesLicence
+
+  // Valutation Inputs
+  CapitalisationTable
+  InvestorPresentationPitchDeck
+  FormalBusinessPlan
+  InformationMemorandum
+  InternalRiskRegister
+  DueDiligenceQuestionnaire
+  BoardMeetingMinutes
 
   // (Keep original ones if still needed in system)
   CertificateOfIncorporation

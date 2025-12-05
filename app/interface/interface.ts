@@ -110,6 +110,34 @@ export const documentCategories = [
       "Board Resolution ASX Contact",
     ],
     optional: [],
+  },
+  {
+    name: "Current Capitalisation Table",
+    required: [
+      "Capitalisation Table",
+    ],
+    optional: [],
+    isIPO: true
+  },
+  {
+    name: "Company Narative & Growth Strategy",
+    required: [
+      "Investor Presentation Pitch Deck",
+      "Formal Business Plan",
+      "Information Memorandum",
+    ],
+    optional: [],
+    isIPO: true
+  },
+  {
+    name: "Risk Management & Due Diligence",
+    required: [
+      "Internal Risk Register",
+      "Due Diligence Questionnaire",
+      "Board Meeting Minutes",
+    ],
+    optional: [],
+    isIPO: true
   }
 ];
 

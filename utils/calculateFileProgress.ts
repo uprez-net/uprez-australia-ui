@@ -29,6 +29,16 @@ export const documentCategories = {
     DocumentType.PoliceAndBankruptcyChecks,
     DocumentType.BankruptcyRegisterSearches,
     DocumentType.BoardResolutionASXContact,
+  ],
+  "Company Narrative & Growth Strategy": [
+    DocumentType.InvestorPresentationPitchDeck,
+    DocumentType.FormalBusinessPlan,
+    DocumentType.InformationMemorandum,
+  ],
+  "Risk Management & Due Diligence":[
+    DocumentType.InternalRiskRegister,
+    DocumentType.DueDiligenceQuestionnaire,
+    DocumentType.BoardMeetingMinutes,
   ]
 };
 
@@ -49,6 +59,7 @@ export function getDocumentUploadProgress(uploadedDocs: Document[]): CategoryPro
 
 
 for (const category of dc) {
+  if (category.isIPO) continue; // Skip IPO categories
   const requiredTypes = category.required || [];
   const uploadedCount = requiredTypes.filter(type => uploadedTypes.has(type)).length;
   const requiredCount = requiredTypes.length;
