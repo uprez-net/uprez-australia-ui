@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 
+const CALCULATION_BACKEND_URL = process.env.CALCULATION_BACKEND_URL || "http://localhost:5000";
+
 // ----------------------
 // POST /api/valuation
 // ----------------------
@@ -60,24 +62,55 @@ export async function POST(req: Request) {
                   });
 
                   return NextResponse.json(
-                        { success: false, error: "Valuation record not found" },
-                        { status: 404 }
+                        { success: true, msg: "Table Created Done.." },
+                        { status: 200 }
                   );
             }
+
+            const Json = { ...Json_Output, client_id: client_account_id, generation_id: generation_id }
+
+            // data: updated,
+
+            const reportResponse = await fetch(
+                  `${CALCULATION_BACKEND_URL}/api/Ipo/valuation`,
+                  {
+                        method: "POST",
+                        headers: {
+                              "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(Json),
+                  }
+            );
+            if (!reportResponse.ok) {
+                  console.error("Failed to send data to calculation backend:", await reportResponse.text());
+                  return NextResponse.json(
+                        { success: false, error: "Failed to process valuation report" },
+                        { status: 500 }
+                  );
+            }
+            const reportData: {
+                  success: boolean;
+                  path: string;
+                  output: object;
+            } = await reportResponse.json();
+            console.log("Calculation backend response:", reportData);
+
 
             // 2️⃣ UPDATE using the unique id
             const updated = await prisma.iPOValuation.update({
                   where: { id: existing.id }, // must use primary key
                   data: {
                         inputJson: Json_Output,
+                        outputJson: reportData.success ? reportData.output : "",
+                        ipoValuationPdfUrl: reportData.success ? reportData.path : null,
                   },
             });
 
-            return NextResponse.json({
-                  success: true,
-                  message: "Valuation record created successfully",
-                  data: updated,
-            });
+            return NextResponse.json(
+                  { success: true, message: "Valuation record created successfully" },
+                  { status: 200 }
+            );
+
       } catch (error) {
             console.error("POST /api/valuation error:", error);
             return NextResponse.json(

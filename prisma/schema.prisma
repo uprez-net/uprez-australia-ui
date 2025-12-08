@@ -167,6 +167,9 @@ model IPOValuation {
   competitors       String?
   //inputDocumentUrls String[] @default([]) // Array of Strings
 
+  capitalRaiseAmount      Float?
+  recommendedIpoPriceMin  Float?
+
   ipoValuationPdfUrl String?
 
   createdAt DateTime @default(now())

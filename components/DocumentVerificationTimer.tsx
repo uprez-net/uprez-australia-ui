@@ -14,10 +14,14 @@ function formatETA(msLeft: number): string {
 
 interface DocumentVerificationTimerProps {
   updatedAt: Date; // ISO timestamp
+  description?: string;
+  etaOverride?: number; // in milliseconds
 }
 
 export function DocumentVerificationTimer({
   updatedAt,
+  description,
+  etaOverride,
 }: DocumentVerificationTimerProps) {
   const [progress, setProgress] = useState(0);
   const [eta, setEta] = useState("08:00:00");
@@ -29,8 +33,8 @@ export function DocumentVerificationTimer({
     const update = () => {
       const now = Date.now();
       const elapsed = now - start;
-      const percent = Math.min((elapsed / MAX_DURATION_MS) * 100, 100);
-      const msLeft = Math.max(MAX_DURATION_MS - elapsed, 0);
+      const percent = Math.min((elapsed / (etaOverride ?? MAX_DURATION_MS)) * 100, 100);
+      const msLeft = Math.max((etaOverride ?? MAX_DURATION_MS) - elapsed, 0);
 
       setProgress(percent);
       setEta(formatETA(msLeft));
@@ -51,9 +55,8 @@ export function DocumentVerificationTimer({
       <RefreshCw className="h-16 w-16 mx-auto mb-4 text-[#027055] animate-spin" />
       <h3 className="text-lg font-medium mb-2">Verifying Documents...</h3>
       <p className="text-muted-foreground mb-2">
-        Please wait while we analyze your uploaded documents and check
-        compliance requirements.
-      </p>
+        {description ?? "Please wait while we analyze your uploaded documents and check compliance requirements."}
+      </p >
       <Progress value={progress} className="w-full max-w-md mx-auto mb-2" />
       {isDelayed ? (
         <p className="text-sm text-yellow-600">
