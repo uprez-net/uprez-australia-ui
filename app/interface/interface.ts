@@ -105,7 +105,7 @@ export const documentCategories = [
     name: "Directors & Officers Compliance",
     required: [
       "Director Questionnaires",
-      "Police Checks",
+      "Police And Bankruptcy Checks",
       "Bankruptcy Register Searches",
       "Board Resolution ASX Contact",
     ],

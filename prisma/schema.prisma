@@ -114,7 +114,7 @@ model SMECompany {
   eligibilityStatus EligibilityStatus
   complianceStatus  ComplianceStatus
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime          @updatedAt
 
   // Relations
   smeProfileId        String?
@@ -173,7 +173,7 @@ model IPOValuation {
   updatedAt DateTime @updatedAt
 
   // If you have a relation to Client Account:
-  smeCompany      SMECompany @relation(fields: [clientAccountId], references: [id])
+  smeCompany SMECompany @relation(fields: [clientAccountId], references: [id])
   // clientAccount  ClientAccount @relation(fields: [clientAccountId], references: [id])
 }
 
