@@ -94,6 +94,7 @@ export function DocumentVerificationDialog({
   const verificationResults = useMemo(
     () =>
       documentCategories.map((category) => {
+        if (category.isIPO) return;
         const progress = documentProgress.find(
           (p) => p.category === category.name
         );
@@ -115,7 +116,13 @@ export function DocumentVerificationDialog({
                 (doc) => !documents.some((d) => d.documentType === doc)
               ) || [],
         };
-      }),
+      }).filter((res) => res !== undefined) as {
+        category: string;
+        uploaded: number;
+        required: number;
+        status: "complete" | "partial" | "missing";
+        missingDocuments: string[];
+      }[],
     [documentProgress, documents]
   );
 
