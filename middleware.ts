@@ -14,6 +14,7 @@ export const PublicRoutes = [
   "/api/uploadthing(.*)",
   "/api/address/autocomplete",
   "/api/address/place",
+  "/api/valuations(.*)",
 ];
 
 const SubscriptionRoute = ["/subscription(.*)"];

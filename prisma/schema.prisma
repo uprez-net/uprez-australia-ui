@@ -157,17 +157,17 @@ model IPOValuation {
   id              String @id @default(uuid())
   generation_id   String
   clientAccountId String
-  inputJson       Json
-  outputJson      Json
+  inputJson       Json?
+  outputJson      Json?
 
-  projectedNetProfit                String // Textarea
-  companyNarrativeAndGrowthStrategy String // Textarea
-  keyBusinessRisks                  String // Textarea
+  projectedNetProfit                String? // Textarea
+  companyNarrativeAndGrowthStrategy String? // Textarea
+  keyBusinessRisks                  String? // Textarea
 
-  competitors       String
-  inputDocumentUrls String[] // Array of Strings
+  competitors       String?
+  //inputDocumentUrls String[] @default([]) // Array of Strings
 
-  ipoValuationPdfUrl String
+  ipoValuationPdfUrl String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
