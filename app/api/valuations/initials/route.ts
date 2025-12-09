@@ -6,7 +6,7 @@ export async function POST(req: Request) {
 
       try {
             const body = await req.json();
-            const {clientId, npat, story, riskDescription, competitors, capitalRaise, percentageSold} = body;
+            const {clientId, companyName, ticker, sector, subSector, shares, friction, solution, mission, market, growth, landscape, moat, team} = body;
 
             if(!clientId){
                   console.error("Missing required field: clientId");
@@ -34,12 +34,21 @@ export async function POST(req: Request) {
                   data:{
                         generation_id: Find_Generation.generationId,
                         clientAccountId: clientId,
-                        projectedNetProfit: npat,
-                        companyNarrativeAndGrowthStrategy: story,
-                        keyBusinessRisks: riskDescription,
-                        competitors: competitors,
-                        capitalRaiseAmount: parseFloat(capitalRaise),
-                        percentageSold: parseFloat(percentageSold),
+                        companyName: companyName,
+                        ProposedTicker: ticker,
+                        Sector: sector,
+                        ReportProcessing: true,
+                        // IndustrySelection:
+                        SubSector: subSector,
+                        CurrentSharePrice: parseFloat(shares),
+                        the_problem: friction,
+                        the_solution: solution,
+                        the_mission: mission,
+                        the_market: market,
+                        growth_engine: growth,
+                        the_landscape: landscape,
+                        the_moat: moat,
+                        team_edge: team,
                   }
             })
 

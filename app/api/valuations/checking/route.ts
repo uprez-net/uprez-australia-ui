@@ -36,21 +36,27 @@ export async function POST(req: Request) {
             if (!find_in_IpoValuation) {
                   return NextResponse.json(
                         { success: false, msg: "No valuation record found for the provided clientId" },
-                        { status: 404 }
+                        { status: 201 }
                   );
             }
 
-            if( find_in_IpoValuation.inputJson !== "" && find_in_IpoValuation.outputJson !== "" && find_in_IpoValuation.ipoValuationPdfUrl ){
+            else if( find_in_IpoValuation.inputJson !== "" && find_in_IpoValuation.outputJson !== "" && find_in_IpoValuation.ipoValuationPdfUrl ){
                   const Url = find_in_IpoValuation.ipoValuationPdfUrl;
+                  if (!Url) {
+                        return NextResponse.json(
+                              { success: false, error: "Valuation report URL is missing" },
+                              { status: 400 }
+                        );
+                  }
                   const publicUrl = await getPublicUrl(Url);
                   return NextResponse.json(
-                        { success: true, data: find_in_IpoValuation, publicUrl, message: "Valuation report already generated" },
+                        { success: true, data: find_in_IpoValuation, publicUrl, msg: "Valuation report already generated" },
                         { status: 200 }
                   );
-            }else{
+            }else if (find_in_IpoValuation.ReportProcessing){
                   return NextResponse.json(
-                        { success: false, data: find_in_IpoValuation, msg: "Report Generating" },
-                        { status: 404 }
+                        { success: false, data: find_in_IpoValuation, msg: "Report processing Happening" },
+                        { status: 201 }
                   );
             }
 

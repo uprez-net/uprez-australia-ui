@@ -801,7 +801,7 @@ export default function WithoutProspectusPage() {
         {/* Generate Report Button */}
         <div className="text-center pt-4">
           <Button
-            asChild
+            // asChild
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-lg shadow-lg"
             onClick={handleValuationReportGeneration}
