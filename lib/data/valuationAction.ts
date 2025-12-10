@@ -87,16 +87,32 @@ export async function checkIpoValuationAction({
     }
 }
 
-// ---------- 2) Create IPO valuation record ----------
 
 interface CreateIpoValuationArgs {
     clientId: string;
-    npat?: number | string;
-    story?: string;
-    riskDescription?: string;
-    competitors?: string;
-    capitalRaise?: number | string;
-    percentageSold?: number | string;
+
+    // Original fields
+    npat?: number | string | null;
+    story?: string | null;
+    riskDescription?: string | null;
+    competitors?: string | null;
+    capitalRaise?: number | string | null;
+    percentageSold?: number | string | null;
+
+    // New fields from API endpoint
+    companyName?: string | null;
+    ticker?: string | null;
+    sector?: string | null;
+    subSector?: string | null;
+    shares?: number | string | null;
+    friction?: string | null;
+    solution?: string | null;
+    mission?: string | null;
+    market?: string | null;
+    growth?: string | null;
+    landscape?: string | null;
+    moat?: string | null;
+    team?: string | null;
 }
 
 export async function createIpoValuationAction({
@@ -107,6 +123,19 @@ export async function createIpoValuationAction({
     competitors,
     capitalRaise,
     percentageSold,
+    companyName,
+    ticker,
+    sector,
+    subSector,
+    shares,
+    friction,
+    solution,
+    mission,
+    market,
+    growth,
+    landscape,
+    moat,
+    team,
 }: CreateIpoValuationArgs) {
     try {
         if (!clientId) {
@@ -133,27 +162,49 @@ export async function createIpoValuationAction({
             };
         }
 
+        // Safe numeric parsing helpers
+        const parseNumberOrNull = (value?: number | string | null) => {
+            if (typeof value === "number") return value;
+            if (typeof value === "string") {
+                const parsed = parseFloat(value);
+                return Number.isNaN(parsed) ? null : parsed;
+            }
+            return null;
+        };
+
         const create = await prisma.iPOValuation.create({
             data: {
                 generation_id: Find_Generation.generationId,
                 clientAccountId: clientId,
+
+                // New fields from the API endpoint
+                companyName: companyName ?? null,
+                ProposedTicker: ticker ?? null,
+                Sector: sector ?? null,
+                ReportProcessing: true,
+                SubSector: subSector ?? null,
+                CurrentSharePrice: parseNumberOrNull(shares),
+                the_problem: friction ?? null,
+                the_solution: solution ?? null,
+                the_mission: mission ?? null,
+                the_market: market ?? null,
+                growth_engine: growth ?? null,
+                the_landscape: landscape ?? null,
+                the_moat: moat ?? null,
+                team_edge: team ?? null,
+
+                // Original valuation fields
                 projectedNetProfit:
                     typeof npat === "string"
                         ? npat
                         : typeof npat === "number"
                             ? npat.toString()
                             : null,
-                companyNarrativeAndGrowthStrategy: story,
-                keyBusinessRisks: riskDescription,
-                competitors: competitors,
-                capitalRaiseAmount:
-                    typeof capitalRaise === "string"
-                        ? parseFloat(capitalRaise)
-                        : (capitalRaise as number | null),
-                percentageSold:
-                    typeof percentageSold === "string"
-                        ? parseFloat(percentageSold)
-                        : (percentageSold as number | null),
+                companyNarrativeAndGrowthStrategy: story ?? null,
+                keyBusinessRisks: riskDescription ?? null,
+                competitors: competitors ?? null,
+                capitalRaiseAmount: parseNumberOrNull(capitalRaise),
+                percentageSold: parseNumberOrNull(percentageSold),
             },
         });
 
