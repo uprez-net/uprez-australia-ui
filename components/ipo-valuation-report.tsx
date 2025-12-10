@@ -39,6 +39,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 // --- Types ---
 interface IPOValuationReportProps {
       data: {
+            ticker: string;
             company_name: string;
             overall_risk_score: number; // 0-100 (Lower is better?) usually risk is high = bad. Let's assume 25 is Low Risk.
             base_case_valuation: number; // e.g. 2545.04 (in Millions usually, or raw number)
@@ -120,7 +121,7 @@ export default function IPOValuationReport({ data, pdfUrl }: IPOValuationReportP
                                     <Building2 size={24} />
                               </div>
                               <div>
-                                    <h1 className="text-xl font-bold text-slate-900">{data.company_name} (TNV)</h1>
+                                    <h1 className="text-xl font-bold text-slate-900">{data.company_name} {data.ticker}</h1>
                                     <p className="text-sm text-slate-500 font-medium">Sector: Technology | Status: <span className="text-amber-600 font-bold">Ready for Review</span></p>
                               </div>
                         </div>

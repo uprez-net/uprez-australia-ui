@@ -105,16 +105,19 @@ export default function WithoutProspectussecPage() {
           setLoadingValuationCheck(false);
           //setUpdateAt(data.data?.updatedAt ? new Date(data.data.updatedAt) : null);
         }
-        else {
+        else if( data.status == 201 && data.msg === "No valuation record found for the provided clientId") {
           setShowIpoValuation(false);
           setLoadingValuationCheck(false);
         }
+        setLoadingValuationCheck(false);
       } catch (err) {
         console.error("Error checking valuation:", err);
         setShowIpoValuation(false);
-      } finally {
+        setLoadingValuationCheck(false);
+      } 
+      // finally {
 
-      }
+      // }
     };
 
     if (clientId) {
@@ -211,9 +214,8 @@ export default function WithoutProspectussecPage() {
 
   }
 
-  console.log("Rendering WithoutProspectussecPage - showIpoValuation:", showIpoValuation, "valuationData:", valuationData, "loadingValuationCheck:", loadingValuationCheck, "clientId:", clientId);
 
-  if (loadingValuationCheck && !clientId) {
+  if (loadingValuationCheck ) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
@@ -230,20 +232,18 @@ export default function WithoutProspectussecPage() {
 
 
   if (showIpoValuation) {
-    // const valuationReportData = {
-    //       "company_name": "ABC Technologies",
-    //       "overall_risk_score": 25,
-    //       "base_case_valuation": 2545.044083466604,
-    //       "base_intrinsic_value": 1952.128264552796,
-    //       "overall_financial_health_score": 82.00000000000001,
-    //       "overall_narative_sentiment_score": 43.88
-    // };
+   const OutputJson= {
+      ...valuationData.outputJson,
+      ticker: valuationData.ProposedTicker,
+   }
 
-    return <IPOValuationReport data={valuationData.outputJson} pdfUrl={reportLink ?? ""} />;
+    return <IPOValuationReport data={OutputJson} pdfUrl={reportLink ?? ""} />;
   }
 
 
-  if (!showIpoValuation || !valuationprocessing || !loadingValuationCheck) {
+  // if (!showIpoValuation && !valuationprocessing && !loadingValuationCheck) {
+    console.log("Checking rendering valuation form...3");
+    console.log("showIpoValuation:", showIpoValuation, "valuationprocessing:", valuationprocessing, "loadingValuationCheck:", loadingValuationCheck);
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 md:p-8 font-sans text-slate-900">
 
@@ -306,7 +306,7 @@ export default function WithoutProspectussecPage() {
       </div>
     );
   }
-}
+// }
 
 
 // --- STAGE 1 COMPONENT ---
