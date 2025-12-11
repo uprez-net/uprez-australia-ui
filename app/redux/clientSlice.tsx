@@ -4,7 +4,7 @@ import {
   deleteDocument,
   fetchClientData,
 } from "@/lib/data/clientPageAction";
-import { SMECompany, Document } from "@prisma/client";
+import { SMECompany, Document, IPOValuation } from "@prisma/client";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface ClientPageState {
@@ -12,6 +12,7 @@ interface ClientPageState {
   error: string | null;
   clientData: SMECompany | null;
   documents: Document[];
+  ipoValuations: IPOValuation[];
   sessionToken?: string;
 }
 
@@ -20,10 +21,11 @@ const initialState: ClientPageState = {
   error: null,
   clientData: null,
   documents: [],
+  ipoValuations: [],
 };
 
 export const setClientData = createAsyncThunk<
-  SMECompany & { Documents: Document[] } & { sessionToken?: string },
+  SMECompany & { Documents: Document[] } & { sessionToken?: string } & { IPOValuations: IPOValuation[] },
   string,
   { rejectValue: string }
 >("clientPage/fetchClientData", async (clientId, { rejectWithValue }) => {
@@ -132,9 +134,10 @@ export const clientSlice = createSlice({
       })
       .addCase(setClientData.fulfilled, (state, action) => {
         state.isLoading = false;
-        const { Documents, sessionToken, ...rest } = action.payload;
+        const { Documents, sessionToken, IPOValuations, ...rest } = action.payload;
         state.clientData = rest;
         state.documents = Documents || [];
+        state.ipoValuations = IPOValuations || [];
         state.sessionToken = sessionToken;
       })
       .addCase(setClientData.rejected, (state, action) => {

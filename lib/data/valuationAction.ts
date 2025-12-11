@@ -13,14 +13,6 @@ export async function checkIpoValuationAction({
     clientId,
 }: CheckIpoValuationArgs) {
     try {
-        if (!clientId) {
-            console.error("Missing required field: clientId");
-            return {
-                success: false as const,
-                error: "clientId is required",
-                status: 400,
-            };
-        }
 
         const Find_Generation = await prisma.sMECompany.findFirst({
             where: {

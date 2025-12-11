@@ -27,7 +27,10 @@ export const fetchClientData = async (clientId: string) => {
     const [clientData, userRole] = await Promise.all([
       prisma.sMECompany.findUnique({
         where: { id: clientId },
-        include: { Documents: true },
+        include: { 
+          Documents: true,
+          ipoValuations: true,
+        },
       }),
       getUserRoleInOrg(user.id, organizationId || ""),
     ]);
@@ -56,7 +59,7 @@ export const fetchClientData = async (clientId: string) => {
     const sessionData: UserBackendSession = await clientSession.json();
     console.log("Session Data:", sessionData);
 
-    return { ...clientData, sessionToken: sessionData.access_token };
+    return { ...clientData, sessionToken: sessionData.access_token, IPOValuations: clientData.ipoValuations };
   } catch (error) {
     console.error("Error fetching client data:", error);
     throw new Error("Failed to fetch client data");

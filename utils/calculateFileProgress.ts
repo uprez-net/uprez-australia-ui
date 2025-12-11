@@ -2,7 +2,7 @@ import { documentCategories as dc } from "@/app/interface/interface";
 import { splitCamelCase } from "@/components/document-upload-dialog";
 import { DocumentType, Document } from "@prisma/client";
 
-export const documentCategories = {
+export const documentCategories: Record<string, DocumentType[]> = {
   "Corporate Governance & Formation": [
     DocumentType.CompanyConstitution,
     DocumentType.CorporateStructureChart,
