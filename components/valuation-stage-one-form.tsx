@@ -48,9 +48,9 @@ export function StageOneCard({ onNext, data, updateData, isLoading }: StageOnePr
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const subSectors = useMemo(
     () =>
-      isLoading
+      (isLoading
         ? []
-        : industrySubSectors[data.sector as IndustrySectorValue] ?? [],
+        : industrySubSectors[data.sector as IndustrySectorValue] ?? []),
     [data.sector, isLoading]
   );
 

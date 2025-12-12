@@ -12,6 +12,7 @@ import {
 import { generateTicker } from "@/utils/generateTickerName";
 import { StageOneCard } from "@/components/valuation-stage-one-form";
 import { StageTwoCard } from "@/components/valuation-stage-two-form";
+import { set } from "zod";
 
 type StageOneData = {
   companyName: string;
@@ -87,6 +88,7 @@ export default function WithoutProspectussecPage() {
         } else if (valData.msg === "Report Generating") {
           setValuationProcessing(true);
           setLoadingValuationCheck(false);
+          setValuationData(valData.data);
         } else if (
           valData.msg === "No valuation record found for the provided clientId"
         ) {
@@ -230,6 +232,7 @@ export default function WithoutProspectussecPage() {
     const OutputJson = {
       ...valuationData.outputJson,
       ticker: valuationData.ProposedTicker,
+      sector: valuationData.Sector,
     };
 
     return <IPOValuationReport data={OutputJson} pdfUrl={reportLink ?? ""} />;
