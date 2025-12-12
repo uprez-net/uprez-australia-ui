@@ -90,6 +90,8 @@ export async function POST(req: Request) {
 
             const Json = { ...Json_Output, client_id: client_account_id, generation_id: generation_id }
 
+            console.log("Prepared JSON for calculation backend:\n", Json);
+
             // data: updated,
 
             const reportResponse = await fetch(

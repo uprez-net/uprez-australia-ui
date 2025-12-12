@@ -38,7 +38,7 @@ type StageTwoData = {
 
 export default function WithoutProspectussecPage() {
 
-  const { clientData, documents } = useSelector((state: RootState) => state.client);
+  const { clientData, documents, isLoading } = useSelector((state: RootState) => state.client);
   const clientId = clientData?.id;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,6 +103,7 @@ export default function WithoutProspectussecPage() {
         else if (data.msg === "Report processing Happening") {
           setValuationProcessing(true);
           setLoadingValuationCheck(false);
+          setValuationData(data.data);
           //setUpdateAt(data.data?.updatedAt ? new Date(data.data.updatedAt) : null);
         }
         else if( data.status == 201 && data.msg === "No valuation record found for the provided clientId") {
@@ -214,6 +215,15 @@ export default function WithoutProspectussecPage() {
 
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        <p className="mt-4 text-blue-600 font-medium">Loading client data...</p>
+      </div>
+    );
+  }
+
 
   if (loadingValuationCheck ) {
     return (
@@ -226,7 +236,7 @@ export default function WithoutProspectussecPage() {
 
   if (valuationprocessing) {
     return (
-      <DocumentVerificationTimer updatedAt={valuationData.updatedAt ?? new Date()} description="Report is being processing, please wait..." />
+      <DocumentVerificationTimer updatedAt={valuationData?.updatedAt ?? new Date()} description="Report is being processing, please wait..." />
     )
   }
 
@@ -235,6 +245,7 @@ export default function WithoutProspectussecPage() {
    const OutputJson= {
       ...valuationData.outputJson,
       ticker: valuationData.ProposedTicker,
+      sector: valuationData.Sector,
    }
 
     return <IPOValuationReport data={OutputJson} pdfUrl={reportLink ?? ""} />;
