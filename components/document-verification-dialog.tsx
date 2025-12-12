@@ -113,7 +113,7 @@ export function DocumentVerificationDialog({
             documentCategories
               .find((cat) => cat.name === category.name)
               ?.required.filter(
-                (doc) => !documents.some((d) => d.documentType === doc)
+                (doc) => !documents.some((d) => splitCamelCase(d.documentType) === doc)
               ) || [],
         };
       }).filter((res) => res !== undefined) as {
@@ -316,7 +316,7 @@ export function DocumentVerificationDialog({
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>Overall Compliance Score</span>
+                    <span>Overall Completeness Score</span>
                     <span
                       className={`text-2xl font-bold ${overallStatus.color}`}
                     >
@@ -332,8 +332,7 @@ export function DocumentVerificationDialog({
                         {overallStatus.text}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        Based on document completeness and compliance
-                        requirements
+                        Based on document uploaded accross all categories
                       </span>
                     </div>
                   </div>
@@ -390,17 +389,17 @@ export function DocumentVerificationDialog({
                     {overallScore >= 90 ? (
                       <p className="text-green-700">
                         Excellent! Your document portfolio is comprehensive and
-                        meets all compliance requirements.
+                        meets all completeness requirements.
                       </p>
                     ) : overallScore >= 75 ? (
                       <p className="text-green-700">
                         Good progress! Address the missing documents to achieve
-                        full compliance.
+                        full completeness.
                       </p>
                     ) : (
                       <p className="text-amber-700">
                         Several documents are missing. Please upload the
-                        required documents to improve your compliance score.
+                        required documents to improve your completeness score.
                       </p>
                     )}
                   </div>

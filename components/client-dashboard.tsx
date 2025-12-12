@@ -30,6 +30,8 @@ import { RootState } from "@/app/redux/store";
 import CompanyBanner from "./CompanyBanner";
 import { downloadReports } from "@/utils/downloadReports";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { get } from "http";
 
 interface ClientDashboardProps {
   clientId: string;
@@ -37,9 +39,22 @@ interface ClientDashboardProps {
   complianceScore: number;
   documentProgress: CategoryProgress;
   reportStatus: "Completed" | "Processing" | "Failed" | "Pending";
+  valuationStatus: "Completed" | "Processing" | "Failed" | "Pending";
   reportGeneration: number;
   lastUpdated: string;
 }
+
+const getStageBorder = (state: "completed" | "current" | "pending") => {
+  return "border-l border-r border-[#dfe7e2]";
+};
+
+const getBackgroundColor = (state: "completed" | "current" | "pending") => {
+  if (state === "completed")
+    return "bg-[linear-gradient(135deg,#c6f2d3,#aeeac2,#d0efe0)]";
+  if (state === "current")
+    return "bg-[linear-gradient(135deg,#e7f7eb,#dfeee3,#ebf2ef)]";
+  return "bg-[linear-gradient(135deg,#f4f7f4,#ecefec,#e5e8e5)]";
+};
 
 export function ClientDashboard({
   clientId,
@@ -49,6 +64,7 @@ export function ClientDashboard({
   reportStatus = "Completed",
   reportGeneration = 3,
   lastUpdated = "20 May 2023, 14:30",
+  valuationStatus = "Pending",
 }: Partial<ClientDashboardProps>) {
   const router = useRouter();
   const { clientData, sessionToken, documents } = useSelector(
@@ -129,295 +145,187 @@ export function ClientDashboard({
       />
 
       {/* Status Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {/* Compliance Status Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Overall Compliance Status</CardTitle>
-            <CardDescription>Based on regulatory requirements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-4">
-              {clientData!.complianceStatus !== "pending" ? (
-                <div className="relative flex items-center justify-center">
-                  <svg className="w-32 h-32">
-                    <circle
-                      className="text-muted stroke-current"
-                      strokeWidth="8"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="58"
-                      cx="64"
-                      cy="64"
-                    />
-                    <circle
-                      className={`${getComplianceStatusColor(
-                        complianceScore
-                      )} stroke-current`}
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="58"
-                      cx="64"
-                      cy="64"
-                      strokeDasharray={`${(complianceScore / 100) * 365} 365`}
-                      strokeDashoffset="0"
-                      transform="rotate(-90 64 64)"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-3xl font-bold">
-                      {complianceScore}%
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      Compliant
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-32">
-                  <Clock className="h-12 w-12 text-amber-500 mb-2" />
-                  <span className="text-lg font-semibold">Pending</span>
-                  <span className="text-sm text-muted-foreground">
-                    Compliance status is being calculated
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={
-                clientData?.eligibilityStatus === "Pending" ||
-                clientData?.eligibilityStatus === "Failed"
-              }
-              onClick={() =>
-                router.push(
-                  `/dashboard/client/${encodeURIComponent(clientId!)}/report`
-                )
-              }
-            >
-              View Details
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Document Upload Progress Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Document Upload Progress</CardTitle>
-            <CardDescription>
-              Required documents for DRHP filing
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progress</span>
-                  <span className="font-medium">
-                    {documentProgress!.percentage.toFixed(2)}%
-                  </span>
-                </div>
-                <Progress
-                  value={documentProgress!.percentage}
-                  className="h-2"
-                />
+      <div className="mt-10 w-full overflow-hidden">
+        <div className="flex w-full">
+          {/* ========= STAGE 1 ========= */}
+          <div
+            className={cn(
+              "relative flex-1 bg-white px-6 py-6 pe-10 z-20", // removed inline border here
+              getStageBorder(
+                reportStatus === "Completed"
+                  ? "completed"
+                  : reportStatus === "Processing"
+                  ? "current"
+                  : "pending"
+              ),
+              getBackgroundColor(
+                reportStatus === "Completed"
+                  ? "completed"
+                  : reportStatus === "Processing"
+                  ? "current"
+                  : "pending"
+              )
+            )}
+            style={{
+              clipPath: "polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%)",
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Latest Report
+                </h3>
+                <p className="text-xs text-gray-500">Compliance status</p>
               </div>
-              <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                  <div>
-                    <div className="font-medium">
-                      {documentProgress!.uploadedCount}
-                    </div>
-                    <div className="text-muted-foreground">Uploaded</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {documentProgress!.requiredCount -
-                        documentProgress!.uploadedCount}
-                    </div>
-                    <div className="text-muted-foreground">Pending</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">0</div>
-                    <div className="text-muted-foreground">Rejected</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button variant="outline" className="w-full" asChild>
-              <Link
-                href={`/dashboard/client/${encodeURIComponent(
-                  clientId!
-                )}/upload`}
-              >
-                View Documents
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
 
-        {/* Latest Report Generation Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Latest Report Generation</CardTitle>
-            <CardDescription>Compliance report status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-4 space-y-4">
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-muted">
+              <div className="h-9 w-9 rounded-full bg-green-50 flex items-center justify-center">
                 {reportStatus === "Completed" ? (
-                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                 ) : reportStatus === "Processing" ? (
-                  <Clock className="h-8 w-8 text-blue-500" />
+                  <Clock className="h-5 w-5 text-green-400" />
                 ) : reportStatus === "Pending" ? (
-                  <Clock className="h-8 w-8 text-amber-500" />
+                  <Clock className="h-5 w-5 text-yellow-500" />
                 ) : (
-                  <AlertTriangle className="h-8 w-8 text-red-500" />
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
                 )}
-              </div>
-              <div className="text-center">
-                {reportStatus === "Completed" && (
-                  <div className="flex items-center justify-center space-x-2">
-                    {getReportStatusBadge(reportStatus)}
-                    <span className="text-sm font-medium">
-                      Gen #{reportGeneration}
-                    </span>
-                  </div>
-                )}
-                <p className="text-sm text-muted-foreground mt-1">
-                  {reportStatus === "Completed"
-                    ? "Report ready for download"
-                    : reportStatus === "Processing"
-                    ? "Report being generated"
-                    : reportStatus === "Pending"
-                    ? "Report generation pending"
-                    : "Report generation failed"}
-                </p>
               </div>
             </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                const toastId = toast.loading("Downloading reports...");
-                try {
-                  await downloadReports(
-                    sessionToken!,
-                    documents!.filter(
-                      (doc) => doc.basicCheckStatus === "Passed"
-                    ),
-                    clientData!.companyName!
-                  );
-                  toast.success("Reports downloaded successfully", {
-                    id: toastId,
-                  });
-                } catch (error) {
-                  console.error("Failed to download reports:", error);
-                  toast.error("Failed to download reports", { id: toastId });
-                } finally {
-                  toast.dismiss(toastId);
+
+            <p className="mt-3 text-xs text-gray-600">
+              {reportStatus === "Completed"
+                ? "Report ready for download"
+                : reportStatus === "Processing"
+                ? "Report being generated"
+                : reportStatus === "Pending"
+                ? "Report generation pending"
+                : "Report generation failed"}
+            </p>
+
+            <div className="mt-4">
+              <Button
+                className="h-8 w-full bg-green-600 hover:bg-green-700 text-sm"
+                disabled={
+                  reportStatus === "Processing" ||
+                  reportStatus === "Failed" ||
+                  reportStatus === "Pending"
                 }
-              }}
-              disabled={
-                reportStatus === "Processing" ||
-                reportStatus === "Failed" ||
-                reportStatus === "Pending"
-              }
-            >
-              Download Report
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Valuation Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Valuation</CardTitle>
-            <CardDescription>Automated IPO valuation tools</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-4 space-y-2 text-center">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-2xl font-bold">$</span>
-              </div>
-              {/* <Badge variant="outline" className="border-dashed">
-                Coming Soon
-              </Badge> */}
-              <p className="text-sm text-muted-foreground">
-                Automated valuation tools to help determine optimal IPO pricing
-              </p>
+                onClick={() =>
+                  downloadReports(
+                    sessionToken!,
+                    documents,
+                    clientData!.companyName
+                  )
+                }
+              >
+                Download Report
+              </Button>
             </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() =>
-                router.push(
-                  `/dashboard/client/${encodeURIComponent(clientId!)}/valuation`
-                )
-              }
-              // disabled={["pending", "failed"].includes(
-              //   clientData!.complianceStatus
-              // )}
-            >
-              Check Valuation
-            </Button>
-          </CardFooter>
-        </Card>
+          </div>
 
-        {/* Prospectus Card (Coming Soon) */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Prospectus</CardTitle>
-            <CardDescription>
-              Automated IPO prospectus generation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-4 space-y-2 text-center">
-              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-2xl font-bold">
-                  <FileText />
-                </span>
+          {/* ========= STAGE 2 ========= */}
+          <div
+            className={cn(
+              "relative flex-1 -ml-6 bg-white px-12 py-5 z-30", // middle on top
+              getStageBorder(
+                valuationStatus === "Completed" ? "completed" : "current"
+              ),
+              getBackgroundColor(
+                valuationStatus === "Completed" ? "completed" : "current"
+              )
+            )}
+            style={{
+              clipPath:
+                "polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%, 6% 50%)",
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-semibold">Valuation</h3>
+                <p className="text-xs text-gray-500">IPO pricing tools</p>
               </div>
-              <Badge variant="outline" className="border-dashed">
-                Coming Soon
-              </Badge>
-              <p className="text-sm text-muted-foreground">
-                Automated prospectus generation tools to help streamline the IPO
-                process
-              </p>
+
+              <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold">
+                $
+              </div>
             </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() =>
-                router.push(
-                  `/dashboard/client/${encodeURIComponent(
-                    clientId!
-                  )}/prospectus`
-                )
-              }
-              // disabled={["pending", "failed"].includes(
-              //   clientData!.complianceStatus
-              // )}
-            >
-              Generate Prospectus
-            </Button>
-          </CardFooter>
-        </Card>
+
+            <p className="mt-3 text-xs">
+              Automated valuation to determine optimal IPO pricing.
+            </p>
+
+            <div className="mt-4">
+              <Button
+                className="h-8 w-full bg-green-600 hover:bg-green-700 text-sm"
+                onClick={() =>
+                  router.push(
+                    `/dashboard/client/${encodeURIComponent(
+                      clientId!
+                    )}/valuation`
+                  )
+                }
+                disabled={["pending", "failed"].includes(
+                  clientData!.complianceStatus
+                )}
+              >
+                Check Valuation
+              </Button>
+            </div>
+          </div>
+
+          {/* ========= STAGE 3 ========= */}
+          <div
+            className={cn(
+              "relative flex-1 -ml-6 bg-white px-12 py-5 pe-4 z-10",
+              getStageBorder(
+                valuationStatus === "Completed" ? "current" : "pending"
+              ),
+              getBackgroundColor(
+                valuationStatus === "Completed" ? "current" : "pending"
+              )
+            )}
+            style={{
+              clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%, 6% 50%)",
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Prospectus
+                </h3>
+                <p className="text-xs text-gray-500">Document generation</p>
+              </div>
+
+              <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-gray-600" />
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-gray-600">
+              Automated IPO prospectus generation system.
+            </p>
+
+            <div className="mt-4">
+              <Button
+                className="h-8 w-full bg-green-600 hover:bg-green-700 text-sm"
+                onClick={() =>
+                  router.push(
+                    `/dashboard/client/${encodeURIComponent(
+                      clientId!
+                    )}/prospectus`
+                  )
+                }
+                disabled={
+                  ["pending", "failed"].includes(
+                    valuationStatus.toLowerCase()
+                  ) ||
+                  ["pending", "failed"].includes(clientData!.complianceStatus)
+                }
+              >
+                Generate Prospectus
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Separator className="my-6" />

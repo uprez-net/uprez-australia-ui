@@ -33,6 +33,7 @@ import { splitCamelCase } from "./document-upload-dialog";
 import { toast } from "sonner";
 import { downloadReports } from "@/utils/downloadReports";
 import Link from "next/link";
+import { calculateComplianceScore } from "@/utils/calculateComplianceScore";
 
 interface ComplianceReportViewerProps {
   reportGeneration?: number;
@@ -59,54 +60,10 @@ export function ComplianceReportViewer() {
   const generationDate = clientData?.updatedAt
     ? format(new Date(clientData.updatedAt), "PPp")
     : "";
-  const overallScore =
-    documentProgress.find((cat) => cat.category === "Overall")?.percentage || 0;
-  const categories = [
-    {
-      name: "Corporate Governance & Formation",
-      score:
-        documentProgress.find(
-          (cat) => cat.category === "Corporate Governance & Formation"
-        )?.percentage || 0,
-      findings:
-        documentProgress.find(
-          (cat) => cat.category === "Corporate Governance & Formation"
-        )?.uploadedCount || 0,
-    },
-    {
-      name: "Financial Reporting & Analysis",
-      score:
-        documentProgress.find(
-          (cat) => cat.category === "Financial Reporting & Analysis"
-        )?.percentage || 0,
-      findings:
-        documentProgress.find(
-          (cat) => cat.category === "Financial Reporting & Analysis"
-        )?.uploadedCount || 0,
-    },
-    {
-      name: "Shareholders & Related Parties Information",
-      score:
-        documentProgress.find(
-          (cat) => cat.category === "Shareholders & Related Parties Information"
-        )?.percentage || 0,
-      findings:
-        documentProgress.find(
-          (cat) => cat.category === "Shareholders & Related Parties Information"
-        )?.uploadedCount || 0,
-    },
-    {
-      name: "Directors & Officers Compliance",
-      score:
-        documentProgress.find(
-          (cat) => cat.category === "Directors & Officers Compliance"
-        )?.percentage || 0,
-      findings:
-        documentProgress.find(
-          (cat) => cat.category === "Directors & Officers Compliance"
-        )?.uploadedCount || 0,
-    },
-  ];
+  const { overallScore, categoryScores: categories } = useMemo(
+    () => calculateComplianceScore(docReport, documents),
+    [docReport, documents]
+  );
 
   // Helper function to determine status color based on score
   const getStatusColor = (score: number) => {
@@ -148,7 +105,7 @@ export function ComplianceReportViewer() {
       "non-compliant": "high",
     };
     docReport.forEach((doc) => {
-      console.log("Processing docReport item:", doc);
+      // console.log("Processing docReport item:", doc);
       const document = documents.find((d) => d.id === doc.id)!;
       const category = documentCategories.find(
         (cat) => cat.required.includes(splitCamelCase(document.documentType))
@@ -195,10 +152,10 @@ export function ComplianceReportViewer() {
         <Badge
           className={`px-3 py-1 text-sm ${
             getStatusColor(overallScore) === "green"
-              ? "bg-green-100 text-green-800 border-green-300"
+              ? "bg-green-100 text-green-800 border-green-300 hover:bg-green-200"
               : getStatusColor(overallScore) === "amber"
-              ? "bg-amber-100 text-amber-800 border-amber-300"
-              : "bg-red-100 text-red-800 border-red-300"
+              ? "bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200"
+              : "bg-red-100 text-red-800 border-red-300 hover:bg-red-200"
           }`}
         >
           {getStatusText(overallScore)}

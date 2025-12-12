@@ -160,23 +160,23 @@ model IPOValuation {
   inputJson       Json?
   outputJson      Json?
 
-  ReportProcessing  Boolean @default(false)
+  ReportProcessing Boolean @default(false)
 
-  companyName                String?
-  ProposedTicker        String?
-  Sector         String?
+  companyName       String?
+  ProposedTicker    String?
+  Sector            String?
   // IndustrySelection        String?
-  SubSector     String?
-  CurrentSharePrice         Float?
+  SubSector         String?
+  CurrentSharePrice Float?
 
-  the_problem                String?
-  the_solution               String?
-  the_mission                String?
-  the_market                 String?
-  growth_engine            String?
-  the_landscape              String?
-  the_moat                  String?
-  team_edge                 String?
+  the_problem   String?
+  the_solution  String?
+  the_mission   String?
+  the_market    String?
+  growth_engine String?
+  the_landscape String?
+  the_moat      String?
+  team_edge     String?
 
   ipoValuationPdfUrl String?
 

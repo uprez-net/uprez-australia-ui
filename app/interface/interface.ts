@@ -184,3 +184,182 @@ export interface CompanyInfo {
   businessAddress: string
   lodgeDate: string
 }
+
+export type IndustrySectorValue =
+  | "agriculture"
+  | "manufacturing"
+  | "automotive"
+  | "chemicals"
+  | "construction"
+  | "consumer_goods"
+  | "education"
+  | "electronics"
+  | "energy"
+  | "financial_services"
+  | "food_processing"
+  | "healthcare"
+  | "hospitality"
+  | "information_technology"
+  | "logistics"
+  | "media"
+  | "mining"
+  | "retail"
+  | "telecommunications"
+  | "textiles"
+  | "other";
+
+export const industrySubSectors: Record<IndustrySectorValue, string[]> = {
+  agriculture: [
+    "Crop Farming",
+    "Dairy & Poultry",
+    "Fisheries",
+    "Agricultural Machinery",
+    "Organic Farming",
+  ],
+
+  manufacturing: [
+    "Light Engineering",
+    "Heavy Machinery",
+    "Plastic Products",
+    "Metal Fabrication",
+    "Packaging",
+  ],
+
+  automotive: [
+    "Auto Components",
+    "EV Components",
+    "Two-Wheeler Manufacturing",
+    "Commercial Vehicles",
+  ],
+
+  chemicals: [
+    "Specialty Chemicals",
+    "Agrochemicals",
+    "Industrial Gases",
+    "Paints & Coatings",
+  ],
+
+  construction: [
+    "Residential Construction",
+    "Commercial Construction",
+    "Infrastructure",
+    "Building Materials",
+    "Interior & Fit-outs",
+  ],
+
+  consumer_goods: [
+    "FMCG",
+    "Home Essentials",
+    "Personal Care",
+    "Consumer Electronics",
+  ],
+
+  education: [
+    "EdTech",
+    "Coaching & Test Prep",
+    "Skill Development",
+    "Higher Education Services",
+  ],
+
+  electronics: [
+    "Consumer Electronics",
+    "PCB Manufacturing",
+    "Semiconductor Design",
+    "Embedded Systems",
+  ],
+
+  energy: [
+    "Solar Power",
+    "Wind Energy",
+    "Thermal Power",
+    "Energy Storage",
+  ],
+
+  financial_services: [
+    "NBFC",
+    "FinTech",
+    "Insurance Services",
+    "Wealth Management",
+    "Microfinance",
+  ],
+
+  food_processing: [
+    "Dairy Processing",
+    "Frozen Foods",
+    "Packaged Foods",
+    "Beverages",
+    "Spices & Condiments",
+  ],
+
+  healthcare: [
+    "Pharmaceuticals",
+    "Medical Devices",
+    "Diagnostics",
+    "Hospitals & Clinics",
+    "HealthTech",
+  ],
+
+  hospitality: [
+    "Hotels & Resorts",
+    "Travel Agencies",
+    "Restaurants & Cafes",
+    "Event Management",
+  ],
+
+  information_technology: [
+    "Software Development",
+    "SaaS",
+    "IT Consulting",
+    "Cloud Services",
+    "Cybersecurity",
+  ],
+
+  logistics: [
+    "Warehousing",
+    "Cold Chain Logistics",
+    "Freight Forwarding",
+    "Last-Mile Delivery",
+  ],
+
+  media: [
+    "Digital Media",
+    "Film & Television",
+    "Advertising",
+    "Content Creation",
+  ],
+
+  mining: [
+    "Coal Mining",
+    "Iron Ore",
+    "Mineral Processing",
+    "Stone & Aggregates",
+  ],
+
+  retail: [
+    "Brick & Mortar Retail",
+    "E-commerce",
+    "Wholesale Trading",
+    "D2C Brands",
+  ],
+
+  telecommunications: [
+    "Internet Service Providers",
+    "Network Infrastructure",
+    "Mobile Services",
+    "Satellite Communications",
+  ],
+
+  textiles: [
+    "Apparel Manufacturing",
+    "Technical Textiles",
+    "Garment Export",
+    "Yarn & Fabric",
+  ],
+
+  other: [
+    "Miscellaneous Services",
+    "Trading",
+    "Consulting",
+    "Uncategorized",
+  ],
+};
