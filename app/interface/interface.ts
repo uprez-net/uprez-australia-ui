@@ -55,14 +55,14 @@ export interface UserBackendSession {
 export type Plan = "basic" | "growth" | "corporate";
 
 export enum PlanToPriceId {
-  basic = "price_1RnFsDSEouEcSyI0OwEFfHUg",
-  growth = "price_1RnFsXSEouEcSyI0HhuBLnbh",
+  basic = "price_1SdRKWSEouEcSyI0hwkjLxn8",
+  growth = "price_1SdRJ3SEouEcSyI0YbZdXAiv",
   corporate = "not_a_product", // Placeholder for free trial
 }
 
 export enum PriceToPlan {
-  "price_1RnFsDSEouEcSyI0OwEFfHUg" = "basic",
-  "price_1RnFsXSEouEcSyI0HhuBLnbh" = "growth",
+  "price_1SdRKWSEouEcSyI0hwkjLxn8" = "basic",
+  "price_1SdRJ3SEouEcSyI0YbZdXAiv" = "growth",
   "not_a_product" = "corporate", // Placeholder for free trial
 }
 
