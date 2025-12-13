@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 
-const CALCULATION_BACKEND_URL = process.env.CALCULATION_BACKEND_URL || "http://localhost:5000";
+const CALCULATION_BACKEND_URL = process.env.NEXT_PUBLIC_VALUATION_BACKEND_URL || "http://localhost:5000";
 
 // ----------------------
 // POST /api/valuation
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
             // data: updated,
 
             const reportResponse = await fetch(
-                  `${CALCULATION_BACKEND_URL}/api/Ipo/valuation`,
+                  `${CALCULATION_BACKEND_URL}/Ipo/valuation`,
                   {
                         method: "POST",
                         headers: {
