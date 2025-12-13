@@ -183,7 +183,11 @@ export function ComplianceFindingItem({
         </div>
 
         {/* Description */}
-        <p className="text-sm text-gray-700">{description !== "NA" && description !== "N/A" ? description : "No Critical Components Available"}</p>
+        <p className="text-sm text-gray-700">
+          {description !== "NA" && description !== "N/A"
+            ? description
+            : "No Critical Components Available"}
+        </p>
 
         {/* Rule/Requirement */}
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center bg-white p-3 rounded border">
@@ -210,11 +214,12 @@ export function ComplianceFindingItem({
                   </h5>
                   <div className="bg-white p-3 rounded border text-sm text-gray-600">
                     <ol className="list-decimal pl-5 space-y-1">
-                      {reasoning
-                        .split(";")
-                        .map((item, index) => (
-                          <li key={index} className="text-gray-700">{item.trim()}</li>
-                        ))}
+                      {reasoning.split(";").map((item, index) => (
+                        <li key={index} className="text-gray-700">
+                          {item.trim().charAt(0).toUpperCase() +
+                            item.trim().slice(1)}
+                        </li>
+                      ))}
                     </ol>
                   </div>
                 </div>
@@ -227,7 +232,10 @@ export function ComplianceFindingItem({
                   <div className="bg-white p-3 rounded border text-sm text-gray-600">
                     <ol className="list-decimal pl-5 space-y-1">
                       {recommendation.split(";").map((item, index) => (
-                        <li key={index} className="text-gray-700">{item.trim()}</li>
+                        <li key={index} className="text-gray-700">
+                          {item.trim().charAt(0).toUpperCase() +
+                            item.trim().slice(1)}
+                        </li>
                       ))}
                     </ol>
                   </div>
