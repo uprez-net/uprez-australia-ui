@@ -176,7 +176,7 @@ export default function WithoutProspectussecPage() {
       setValuationProcessing(true);
 
       if (response.success) {
-        const url = `${VALUATION_BACKEND_URL}/api/v1/get-structured-data?generation_id=${response.value.generation_id}&client_account_id=${response.value.clientAccountId}`;
+        const url = `${VALUATION_BACKEND_URL}/get-structured-data?generation_id=${response.value.generation_id}&client_account_id=${response.value.clientAccountId}`;
 
         const secondResponse = await fetch(url, {
           method: "GET",

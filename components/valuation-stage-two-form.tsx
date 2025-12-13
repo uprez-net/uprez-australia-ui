@@ -126,7 +126,7 @@ export function StageTwoCard({
                 htmlFor={field.id}
                 className="flex items-center gap-2 font-semibold text-slate-700"
               >
-                {field.icon}
+                {/* {field.icon} */}
                 {field.label}
               </Label>
               <Textarea
