@@ -117,6 +117,8 @@ export const getReports = async (
     const reports: string[] = (await Promise.all(fetchPromises)).filter(
       (report): report is string => report !== null
     );
+
+    return reports;
   }, [cacheKey])()
 
   return reports;

@@ -75,19 +75,19 @@ export function ComplianceFindingItem({
     switch (status) {
       case "compliant":
         return (
-          <Badge className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
+          <Badge className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1 hover:bg-green-200">
             <CheckCircle className="h-3 w-3" /> Compliant
           </Badge>
         );
       case "partially-compliant":
         return (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-300 flex items-center gap-1">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-300 flex items-center gap-1 hover:bg-amber-200">
             <AlertTriangle className="h-3 w-3" /> Partially Compliant
           </Badge>
         );
       case "non-compliant":
         return (
-          <Badge className="bg-red-100 text-red-800 border-red-300 flex items-center gap-1">
+          <Badge className="bg-red-100 text-red-800 border-red-300 flex items-center gap-1 hover:bg-red-200">
             <XCircle className="h-3 w-3" /> Non-Compliant
           </Badge>
         );
@@ -183,7 +183,11 @@ export function ComplianceFindingItem({
         </div>
 
         {/* Description */}
-        <p className="text-sm text-gray-700">{description}</p>
+        <p className="text-sm text-gray-700">
+          {description !== "NA" && description !== "N/A"
+            ? description
+            : "No Critical Components Available"}
+        </p>
 
         {/* Rule/Requirement */}
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center bg-white p-3 rounded border">
@@ -209,7 +213,14 @@ export function ComplianceFindingItem({
                     System Reasoning/Evidence:
                   </h5>
                   <div className="bg-white p-3 rounded border text-sm text-gray-600">
-                    {reasoning}
+                    <ol className="list-decimal pl-5 space-y-1">
+                      {reasoning.split(";").map((item, index) => (
+                        <li key={index} className="text-gray-700">
+                          {item.trim().charAt(0).toUpperCase() +
+                            item.trim().slice(1)}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                 </div>
 
@@ -219,7 +230,14 @@ export function ComplianceFindingItem({
                     Automated Recommendation:
                   </h5>
                   <div className="bg-white p-3 rounded border text-sm text-gray-600">
-                    {recommendation}
+                    <ol className="list-decimal pl-5 space-y-1">
+                      {recommendation.split(";").map((item, index) => (
+                        <li key={index} className="text-gray-700">
+                          {item.trim().charAt(0).toUpperCase() +
+                            item.trim().slice(1)}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                 </div>
 

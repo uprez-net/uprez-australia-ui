@@ -206,7 +206,7 @@ export function ComplianceReportViewer() {
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-4xl font-bold">{overallScore}%</span>
+                  <span className="text-3xl font-bold">{overallScore}%</span>
                   <span className="text-sm text-muted-foreground">
                     Overall Score
                   </span>
