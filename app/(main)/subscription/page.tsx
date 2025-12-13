@@ -20,6 +20,15 @@ import { cn } from "@/lib/utils";
 import { Countdown } from "@/components/CountDown";
 import { useMemo } from "react";
 
+function convertINRtoAUD(inr: number ): string {
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "AUD",
+  });
+
+  return formatter.format(inr);
+}
+
 export default function Component() {
   const { userId, subscriptionId, plan, planStatus, planEndDate, isLoading } =
     useSubscription();
@@ -29,7 +38,7 @@ export default function Component() {
         name: "Basic",
         id: "basic",
         description: "Perfect for individuals and small teams.",
-        price: "₹20,000",
+        price: convertINRtoAUD(300),
         priceSuffix: "/month",
         features: [
           "Up to 5 users",
@@ -49,7 +58,7 @@ export default function Component() {
         name: "Growth",
         id: "growth",
         description: "Scale your business with advanced features.",
-        price: "₹1,00,000",
+        price: convertINRtoAUD(1600),
         priceSuffix: "/month",
         features: [
           "Up to 10 users",
