@@ -40,7 +40,7 @@ function mapIntermediateEligibility(status: WebhookStatus): EligibilityStatus {
  */
 function bucketComplianceFromScore(score: number): ComplianceStatus {
   if (score > 80) return ComplianceStatus.high;
-  if (score > 50) return ComplianceStatus.medium;
+  if (score > 60) return ComplianceStatus.medium;
   return ComplianceStatus.low;
 }
 
