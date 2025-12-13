@@ -186,17 +186,17 @@ export async function createIpoValuationAction({
                 team_edge: team ?? null,
 
                 // Original valuation fields
-                projectedNetProfit:
-                    typeof npat === "string"
-                        ? npat
-                        : typeof npat === "number"
-                            ? npat.toString()
-                            : null,
-                companyNarrativeAndGrowthStrategy: story ?? null,
-                keyBusinessRisks: riskDescription ?? null,
-                competitors: competitors ?? null,
-                capitalRaiseAmount: parseNumberOrNull(capitalRaise),
-                percentageSold: parseNumberOrNull(percentageSold),
+                // projectedNetProfit:
+                //     typeof npat === "string"
+                //         ? npat
+                //         : typeof npat === "number"
+                //             ? npat.toString()
+                //             : null,
+                // companyNarrativeAndGrowthStrategy: story ?? null,
+                //keyBusinessRisks: riskDescription ?? null,
+                //competitors: competitors ?? null,
+                //capitalRaiseAmount: parseNumberOrNull(capitalRaise),
+                //percentageSold: parseNumberOrNull(percentageSold),
             },
         });
 
