@@ -244,6 +244,32 @@ export const triggerGeneration = async (
   Document: Document
 ) => {
   try {
+    // Only process new/pending docs; avoid starting a new generation while one is in-flight.
+    const [pendingUnassignedCount, pendingAssignedCount] = await Promise.all([
+      prisma.document.count({
+        where: {
+          smeCompanyId: Document.smeCompanyId,
+          basicCheckStatus: BasicCheckStatus.Pending,
+          generationId: null,
+        },
+      }),
+      prisma.document.count({
+        where: {
+          smeCompanyId: Document.smeCompanyId,
+          basicCheckStatus: BasicCheckStatus.Pending,
+          generationId: { not: null },
+        },
+      }),
+    ]);
+
+    if (pendingAssignedCount > 0) {
+      throw new Error("A generation is already in progress for this client.");
+    }
+
+    if (pendingUnassignedCount === 0) {
+      throw new Error("No new/pending documents to process.");
+    }
+
     const response = await fetch(`${BACKEND_URL}/api/v1/generation/trigger`, {
       method: "POST",
       headers: {
@@ -288,10 +314,8 @@ export const triggerGeneration = async (
         Documents: {
           updateMany: {
             where: {
-              smeCompanyId: Document.smeCompanyId,
-              NOT: {
-                basicCheckStatus: BasicCheckStatus.Passed
-              }
+              basicCheckStatus: BasicCheckStatus.Pending,
+              generationId: null,
             },
             data: {
               generationId: generationData.generation_id,

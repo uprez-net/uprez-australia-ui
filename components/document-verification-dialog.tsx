@@ -155,7 +155,9 @@ export function DocumentVerificationDialog({
       router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
       console.error("Error triggering generation:", error);
-      toast.error("Failed to trigger document generation");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to trigger document generation"
+      );
       setIsVerifying(false);
       return;
     }
