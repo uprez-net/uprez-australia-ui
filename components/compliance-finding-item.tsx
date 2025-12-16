@@ -31,6 +31,8 @@ import { generatePDF } from "@/utils/convertMarkdownToPDF";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { getPublicUrl } from "@/lib/data/bucketAction";
+import { DocumentType } from "@prisma/client";
+import { ProfessionBadge } from "./profession-badge";
 
 interface ComplianceFindingItemProps {
   id: string;
@@ -47,6 +49,7 @@ interface ComplianceFindingItemProps {
   expertVerified?: boolean;
   isExpertRole?: boolean;
   generationId: string;
+  docType: DocumentType;
 }
 
 export function ComplianceFindingItem({
@@ -64,6 +67,7 @@ export function ComplianceFindingItem({
   expertVerified = false,
   isExpertRole = true,
   generationId,
+  docType,
 }: ComplianceFindingItemProps) {
   const [notes, setNotes] = useState(userNotes);
   const [verified, setVerified] = useState(expertVerified);
@@ -167,7 +171,17 @@ export function ComplianceFindingItem({
       <div className="space-y-4">
         {/* Header with title and status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h4 className="font-medium text-gray-900">{title}</h4>
+          <div className="flex flex-col gap-3">
+            <h4 className="font-medium text-gray-900">{title}</h4>
+            {["non-compliant", "partially-compliant"].includes(status) && (
+              <div className="flex items-center gap-2">
+                <h5 className="text-sm font-medium text-gray-700">
+                  Consultation Recommendation:
+                </h5>
+                <ProfessionBadge documentType={docType} />
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {getStatusBadge()}
             {getPriorityBadge()}
@@ -199,6 +213,7 @@ export function ComplianceFindingItem({
             </Button>
           </div>
         </div>
+        <Separator />
 
         {/* Description */}
         <p className="text-sm text-gray-700">
@@ -208,7 +223,7 @@ export function ComplianceFindingItem({
         </p>
 
         {/* Rule/Requirement */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center bg-white p-3 rounded border">
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-start bg-white p-3 rounded border">
           <span className="text-sm font-medium text-gray-700">
             Rule/Requirement:
           </span>

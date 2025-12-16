@@ -24,6 +24,7 @@ import {
 } from "@/app/redux/prospectusSlice";
 import { toast } from "sonner";
 import { AddSubsectionModal } from "@/components/add-subsection-dialog";
+import { ProspectusWorkflowVisualizer } from "@/components/prospectus-timeline";
 
 export default function ProspectusEditor() {
   const [activeSection, setActiveSection] = useState("important-notices");
@@ -351,130 +352,139 @@ export default function ProspectusEditor() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Navigation Sidebar - Fixed */}
-      <div className="w-80 flex-shrink-0">
-        <NavigationSidebar
-          key={activeSubsection} // Force remount to reset expanded state
-          activeSection={activeSection}
-          activeSubsection={activeSubsection}
-          prospectusData={activeProspectus}
-          onSectionClick={handleSectionClick}
-          onSubsectionClick={handleSubsectionClick}
-          openAddDialog={(sectionId) => setAddingSubsectionTo(sectionId)}
+    <>
+      <ProspectusWorkflowVisualizer currentStage={"collaboration"} />
+      <div className="flex h-screen bg-gray-50">
+        {/* Left Navigation Sidebar - Fixed */}
+        <div className="w-80 flex-shrink-0">
+          <NavigationSidebar
+            key={activeSubsection} // Force remount to reset expanded state
+            activeSection={activeSection}
+            activeSubsection={activeSubsection}
+            prospectusData={activeProspectus}
+            onSectionClick={handleSectionClick}
+            onSubsectionClick={handleSubsectionClick}
+            openAddDialog={(sectionId) => setAddingSubsectionTo(sectionId)}
+          />
+        </div>
+
+        {/* Main Content Area - Scrollable */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Navigation Bar - Fixed */}
+          <div className="flex-shrink-0">
+            <TopNavigation
+              onCommentsClick={() => handleSidebarOpen("comments")}
+              onHistoryClick={() => handleSidebarOpen("history")}
+              onAiClick={() => handleSidebarOpen("ai")}
+            />
+          </div>
+
+          {/* Document Viewer - Scrollable */}
+          <div className="flex-1 overflow-hidden" id="document-container">
+            <DocumentViewer
+              editingSubsection={editingSubsection}
+              onEditSection={handleEditSection}
+              onUploadBrief={handleUploadBrief}
+              onGenerateAll={handleGenerateAll}
+              handleSaveSection={handleSaveSection}
+              companyData={{
+                name: clientData!.companyName,
+                acn: clientData!.acn ?? "N/A",
+                industry: clientData!.industrySector ?? "N/A",
+                employees: "50-100", // Placeholder
+                markets: "Australia", // Placeholder
+                founded: clientData!.incorporationDate
+                  ? getYear(clientData!.incorporationDate).toString()
+                  : "N/A",
+                headquarters:
+                  australianStates.find(
+                    (state) => state.value === clientData?.stateOfRegistration
+                  )?.label ?? "N/A",
+                businessAddress: "N/A", // Placeholder
+                lodgeDate: format(new Date(), "dd/MM/yyyy"),
+                companyLogo: clientData!.companyLogo ?? undefined,
+              }}
+              prospectusData={activeProspectus}
+              disabled={locked}
+            />
+          </div>
+        </div>
+
+        {/* Right Sidebar Panel */}
+        <SidebarPanel
+          isOpen={sidebarType !== null}
+          onClose={handleSidebarClose}
+          title={
+            sidebarType === "comments"
+              ? "Comments & Collaboration"
+              : sidebarType === "history"
+              ? "Version History"
+              : sidebarType === "ai"
+              ? "AI Assistant"
+              : ""
+          }
+        >
+          {sidebarType && (
+            <SidebarContent
+              type={sidebarType}
+              comments={prospectusData.flatMap((p) => p.comments)}
+              versionHistory={prospectusData.map((p) => ({
+                version: p.version.toString(),
+                createdBy: p.createdBy,
+                createdAt: p.createdAt,
+                isCurrent: p.id === activeProspectusId,
+                id: p.id,
+              }))}
+            />
+          )}
+        </SidebarPanel>
+
+        {/* Upload/Brief Modal */}
+        <UploadBriefModal
+          isOpen={uploadBriefSubsection !== null}
+          onClose={() => setUploadBriefSubsection(null)}
+          onSubmit={handleUploadBriefSubmit}
+          sectionTitle={
+            uploadBriefSubsection
+              ? getSubsectionTitle(uploadBriefSubsection)
+              : ""
+          }
+        />
+
+        {/* Generation Modal */}
+        <GenerationModal
+          isOpen={showGenerationModal}
+          onClose={() => setShowGenerationModal(false)}
+        />
+
+        <AddSubsectionModal
+          isOpen={addingSubsectionTo !== null}
+          onClose={() => setAddingSubsectionTo(null)}
+          sectionName={
+            activeProspectus.sections.find((s) => s.id === addingSubsectionTo)
+              ?.title || ""
+          }
+          onConfirm={({ title, type }) => {
+            console.log("Add subsection to", addingSubsectionTo, {
+              title,
+              type,
+            });
+            const newSubsection: ProspectusSubsection = {
+              id: title.toLowerCase().replace(/\s+/g, "-"),
+              title,
+              contentType: type as "text" | "table" | "chart" | "list",
+              content: `New ${type} subsection. Click edit to add content.`,
+            };
+            dispatch(
+              addNewSubsection({
+                sectionId: addingSubsectionTo!,
+                subsection: newSubsection,
+              })
+            );
+            dispatch(saveProgress({ clientId: clientData?.id! }));
+          }}
         />
       </div>
-
-      {/* Main Content Area - Scrollable */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation Bar - Fixed */}
-        <div className="flex-shrink-0">
-          <TopNavigation
-            onCommentsClick={() => handleSidebarOpen("comments")}
-            onHistoryClick={() => handleSidebarOpen("history")}
-            onAiClick={() => handleSidebarOpen("ai")}
-          />
-        </div>
-
-        {/* Document Viewer - Scrollable */}
-        <div className="flex-1 overflow-hidden" id="document-container">
-          <DocumentViewer
-            editingSubsection={editingSubsection}
-            onEditSection={handleEditSection}
-            onUploadBrief={handleUploadBrief}
-            onGenerateAll={handleGenerateAll}
-            handleSaveSection={handleSaveSection}
-            companyData={{
-              name: clientData!.companyName,
-              acn: clientData!.acn ?? "N/A",
-              industry: clientData!.industrySector ?? "N/A",
-              employees: "50-100", // Placeholder
-              markets: "Australia", // Placeholder
-              founded: clientData!.incorporationDate
-                ? getYear(clientData!.incorporationDate).toString()
-                : "N/A",
-              headquarters:
-                australianStates.find(
-                  (state) => state.value === clientData?.stateOfRegistration
-                )?.label ?? "N/A",
-              businessAddress: "N/A", // Placeholder
-              lodgeDate: format(new Date(), "dd/MM/yyyy"),
-            }}
-            prospectusData={activeProspectus}
-            disabled={locked}
-          />
-        </div>
-      </div>
-
-      {/* Right Sidebar Panel */}
-      <SidebarPanel
-        isOpen={sidebarType !== null}
-        onClose={handleSidebarClose}
-        title={
-          sidebarType === "comments"
-            ? "Comments & Collaboration"
-            : sidebarType === "history"
-            ? "Version History"
-            : sidebarType === "ai"
-            ? "AI Assistant"
-            : ""
-        }
-      >
-        {sidebarType && (
-          <SidebarContent
-            type={sidebarType}
-            comments={prospectusData.flatMap((p) => p.comments)}
-            versionHistory={prospectusData.map((p) => ({
-              version: p.version.toString(),
-              createdBy: p.createdBy,
-              createdAt: p.createdAt,
-              isCurrent: p.id === activeProspectusId,
-              id: p.id,
-            }))}
-          />
-        )}
-      </SidebarPanel>
-
-      {/* Upload/Brief Modal */}
-      <UploadBriefModal
-        isOpen={uploadBriefSubsection !== null}
-        onClose={() => setUploadBriefSubsection(null)}
-        onSubmit={handleUploadBriefSubmit}
-        sectionTitle={
-          uploadBriefSubsection ? getSubsectionTitle(uploadBriefSubsection) : ""
-        }
-      />
-
-      {/* Generation Modal */}
-      <GenerationModal
-        isOpen={showGenerationModal}
-        onClose={() => setShowGenerationModal(false)}
-      />
-
-      <AddSubsectionModal
-        isOpen={addingSubsectionTo !== null}
-        onClose={() => setAddingSubsectionTo(null)}
-        sectionName={
-          activeProspectus.sections.find((s) => s.id === addingSubsectionTo)
-            ?.title || ""
-        }
-        onConfirm={({ title, type }) => {
-          console.log("Add subsection to", addingSubsectionTo, { title, type });
-          const newSubsection: ProspectusSubsection = {
-            id: title.toLowerCase().replace(/\s+/g, "-"),
-            title,
-            contentType: type as "text" | "table" | "chart" | "list",
-            content: `New ${type} subsection. Click edit to add content.`,
-          };
-          dispatch(
-            addNewSubsection({
-              sectionId: addingSubsectionTo!,
-              subsection: newSubsection,
-            })
-          );
-          dispatch(saveProgress({ clientId: clientData?.id! }));
-        }}
-      />
-    </div>
+    </>
   );
 }

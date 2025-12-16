@@ -1,4 +1,4 @@
-import { EligibilityStatus, IntermediaryType, UserRole, Comments } from "@prisma/client";
+import { EligibilityStatus, IntermediaryType, UserRole, Comments, DocumentType } from "@prisma/client";
 
 export interface Organisation {
   orgType: "sme" | "intermediary";
@@ -184,6 +184,7 @@ export interface CompanyInfo {
   headquarters: string
   businessAddress: string
   lodgeDate: string
+  companyLogo?: string
 }
 
 export type IndustrySectorValue =
@@ -363,4 +364,110 @@ export const industrySubSectors: Record<IndustrySectorValue, string[]> = {
     "Consulting",
     "Uncategorized",
   ],
+};
+
+export const ProfessionPerDocumentType: Record<DocumentType, string> = {
+  // ─────────────────────────────
+  // Corporate Structure
+  // ─────────────────────────────
+  CompanyConstitution: "Corporate Lawyer / Company Secretary",
+  CorporateStructureChart: "Corporate Lawyer / Company Secretary",
+  BoardResolutionConstitution: "Company Secretary / Corporate Lawyer",
+  BoardResolutionASXContact: "Company Secretary / Corporate Lawyer",
+
+  // ─────────────────────────────
+  // Financial Documents
+  // ─────────────────────────────
+  AuditedFinancialStatements: "Registered Auditor / Chartered Accountant",
+  ProFormaStatementOfFinancialPosition: "Financial Advisor / Chartered Accountant",
+  InvestigatingAccountantsReport: "Investigating Accountant (Audit Firm)",
+  WorkingCapitalStatement: "Financial Advisor / Chartered Accountant",
+
+  // ─────────────────────────────
+  // Market Integrity
+  // ─────────────────────────────
+  ShareholderSpreadAnalysisReport: "Corporate Advisor / Share Registry Consultant",
+  FreeFloatAnalysis: "Corporate Advisor / Investment Banker",
+  RelatedPartiesAndPromotersList: "Corporate Lawyer / Company Secretary",
+
+  // ─────────────────────────────
+  // Governance & Personnel
+  // ─────────────────────────────
+  DirectorConsentForms: "Company Secretary / Corporate Lawyer",
+  DirectorQuestionnaires: "Company Secretary / Legal Advisor",
+  PoliceAndBankruptcyChecks: "Compliance Consultant / Legal Advisor",
+  ASXListingRuleCourseCertificate: "ASX-Accredited Training Provider",
+  SecuritiesTradingPolicy: "Corporate Lawyer",
+  CorporateGovernanceStatement: "Corporate Governance Consultant / Company Secretary",
+  BoardAndCommitteeCharters: "Corporate Lawyer / Governance Consultant",
+
+  // ─────────────────────────────
+  // Escrow & Restricted Securities
+  // ─────────────────────────────
+  ExecutedRestrictionDeeds: "Corporate Lawyer",
+
+  // ─────────────────────────────
+  // The Offer
+  // ─────────────────────────────
+  FinalProspectusDocument: "Corporate Lawyer / Investment Banker",
+  DueDiligenceCommitteeDocuments: "Corporate Lawyer / Lead Manager",
+  ExpertConsentLetters: "Corporate Lawyer / Relevant Technical Expert",
+
+  // ─────────────────────────────
+  // Capital Structure
+  // ─────────────────────────────
+  OptionAndPerformanceRightTerms: "Corporate Lawyer / Equity Incentive Specialist",
+  CompanyOptionSecurityRegister: "Company Secretary / Share Registry Provider",
+
+  // ─────────────────────────────
+  // Legal & Agreements
+  // ─────────────────────────────
+  LegalDueDiligenceReport: "Corporate Law Firm",
+  SummaryOfMaterialContracts: "Corporate Lawyer",
+  RelatedPartyAgreements: "Corporate Lawyer",
+  AdvisorMandates: "Corporate Lawyer / Investment Banker",
+
+  // ─────────────────────────────
+  // Asset Ownership & Tax
+  // ─────────────────────────────
+  AssetTitleDocuments: "Property Lawyer / Legal Advisor",
+  IPAssignmentDeeds: "IP Lawyer",
+  SpecialistTaxDueDiligenceReport: "Tax Advisor / Big-4 or Specialist Tax Firm",
+  CompanyTaxReturns: "Chartered Accountant / Tax Agent",
+
+  // ─────────────────────────────
+  // Sector-Specific
+  // ─────────────────────────────
+  IndependentGeologistsReport: "Independent Geologist / Mining Consultant",
+  TherapeuticGoodsAdministrationApprovals: "Regulatory Affairs Consultant",
+  AustralianFinancialServicesLicence: "AFSL Compliance Consultant / Financial Services Lawyer",
+
+  // ─────────────────────────────
+  // Valuation Inputs
+  // ─────────────────────────────
+  CapitalisationTable: "Company Secretary / Financial Advisor",
+  InvestorPresentationPitchDeck: "Corporate Advisor / Investment Banker",
+  FormalBusinessPlan: "Management Consultant / Strategy Advisor",
+  InformationMemorandum: "Corporate Advisor / Investment Banker",
+  InternalRiskRegister: "Risk & Compliance Consultant",
+  DueDiligenceQuestionnaire: "Corporate Lawyer / Lead Manager",
+  BoardMeetingMinutes: "Company Secretary",
+
+  // ─────────────────────────────
+  // Legacy / General Corporate
+  // ─────────────────────────────
+  CertificateOfIncorporation: "Company Secretary",
+  MemorandumOfAssociation: "Corporate Lawyer",
+  ArticlesOfAssociation: "Corporate Lawyer",
+  ShareholderAgreements: "Corporate Lawyer",
+  IntellectualPropertyDocuments: "IP Lawyer",
+  TaxComplianceCertificates: "Chartered Accountant / Tax Agent",
+  RegulatoryApprovals: "Regulatory Consultant / Legal Advisor",
+
+  // ─────────────────────────────
+  // Miscellaneous
+  // ─────────────────────────────
+  EscrowAgreements: "Corporate Lawyer",
+  ShareRegisterAnalysis: "Share Registry Provider / Corporate Advisor",
+  BankruptcyRegisterSearches: "Compliance Consultant / Legal Advisor",
 };

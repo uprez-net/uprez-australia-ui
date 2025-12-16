@@ -342,6 +342,10 @@ export function ComplianceReportViewer() {
                             documents.find((doc) => doc.id === finding.id)
                               ?.generationId!
                           }
+                          docType={
+                            documents.find((doc) => doc.id === finding.id)
+                              ?.documentType!
+                          }
                         />
                       ))}
 

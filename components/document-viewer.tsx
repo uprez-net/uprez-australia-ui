@@ -16,6 +16,7 @@ import {
 import { RichTextEditor } from "./rich-text-editor";
 import { cn } from "@/lib/utils";
 import SlateToHtmlBlock from "./slate-to-html";
+import { CompanyLogo } from "./company-logo";
 
 interface DocumentViewerProps {
   editingSubsection: ProspectusSubsection | null;
@@ -147,20 +148,34 @@ export function DocumentViewer({
               {/* Document Header for first section */}
               {section.id === "important-notices" && (
                 <div className="text-center mb-12 pb-8 border-b border-gray-100">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-xl">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  <div
+                    className={cn(
+                      "w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-xl",
+                      companyInfo.companyLogo &&
+                        "from-inherit to-inherit bg-white"
+                    )}
+                  >
+                    {companyInfo.companyLogo ? (
+                      <CompanyLogo
+                        filePath={companyInfo.companyLogo}
+                        width={64}
+                        height={64}
                       />
-                    </svg>
+                    ) : (
+                      <svg
+                        className="w-8 h-8 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                    )}
                   </div>
                   <h1 className="text-4xl font-black text-gray-900 mb-3">
                     {companyInfo.name}

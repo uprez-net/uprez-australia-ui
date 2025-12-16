@@ -20,6 +20,7 @@ import {
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { getPublicUrl } from "@/lib/data/bucketAction";
 import Image from "next/image";
+import { CompanyLogo } from "./company-logo";
 
 const getEligibilityStatusConfig = (status: EligibilityStatus) => {
   switch (status) {
@@ -110,40 +111,6 @@ interface CompanyData {
 
 interface CompanyBannerProps {
   data: CompanyData;
-}
-
-function CompanyLogo({ filePath }: { filePath: string }) {
-  const [publicUrl, setPublicUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchPublicUrl() {
-      try {
-        const url = await getPublicUrl(filePath);
-        setPublicUrl(url);
-      } catch (error) {
-        console.error("Error fetching public URL:", error);
-        setError("Failed to load company logo.");
-      }
-    }
-    fetchPublicUrl();
-  }, [filePath]);
-
-  if (!publicUrl && !error) {
-    return <div className="w-6 h-6 bg-gray-200 animate-pulse rounded" />;
-  }
-
-  if (error && !publicUrl) {
-    return (
-      <div className="p-2 bg-blue-100 rounded-lg">
-        <Building2 className="h-6 w-6 text-blue-600" />
-      </div>
-    );
-  }
-
-  return (
-      <Image src={publicUrl!} alt="Company Logo" width={30} height={30} />
-  );
 }
 
 export default function CompanyBanner({ data }: CompanyBannerProps) {
