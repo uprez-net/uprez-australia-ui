@@ -60,7 +60,7 @@ export const getPublicUrl = async (filePath: string) => {
     const [url] = await bucket.file(filePath).getSignedUrl({
       version: "v4",
       action: "read",
-      expires: Date.now() + 1000 * 60 * 15, // 15 minutes
+      expires: Date.now() + 1000 * 60 * 30, // 30 minutes
     });
     return url;
   } catch (err) {

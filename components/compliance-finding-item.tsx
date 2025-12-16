@@ -27,9 +27,10 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { AIChatInterface } from "@/components/ai-chat-interface";
-import { convertMarkdownToPDFDownload } from "@/utils/convertMarkdownToPDF";
+import { generatePDF } from "@/utils/convertMarkdownToPDF";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
+import { getPublicUrl } from "@/lib/data/bucketAction";
 
 interface ComplianceFindingItemProps {
   id: string;
@@ -171,9 +172,26 @@ export function ComplianceFindingItem({
             {getStatusBadge()}
             {getPriorityBadge()}
             <Button
-              onClick={() =>
-                convertMarkdownToPDFDownload(report, `${title}.pdf`)
-              }
+              onClick={async () => {
+                const iconUrl = clientData?.companyLogo
+                  ? await getPublicUrl(clientData!.companyLogo)
+                  : undefined;
+                const fileName = `${
+                  clientData?.companyName || "Client"
+                } - ${title}.pdf`;
+                const base64 = await generatePDF({
+                  markdown: report,
+                  title: fileName,
+                  iconUrl: iconUrl,
+                });
+                // Save the base64 PDF
+                const link = document.createElement("a");
+                link.href = `data:application/pdf;base64,${base64}`;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
               variant="ghost"
               size="sm"
             >

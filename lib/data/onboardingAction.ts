@@ -22,6 +22,7 @@ export async function onBoardNewSme(sme: SWE) {
         const newSme = await prisma.sMECompany.create({
             data: {
                 ...smeData,
+                companyLogo: smeData.companyLogo ?? null,
                 smeProfileId: orgType === "sme" ? organizationId : undefined,
                 intermediaryId: orgType === "intermediary" ? organizationId : undefined,
                 complianceStatus: ComplianceStatus.pending, // or another default/status as per your schema

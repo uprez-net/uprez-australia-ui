@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { downloadReports } from "@/utils/downloadReports";
 import Link from "next/link";
 import { calculateComplianceScore } from "@/utils/calculateComplianceScore";
+import { getPublicUrl } from "@/lib/data/bucketAction";
 
 interface ComplianceReportViewerProps {
   reportGeneration?: number;
@@ -380,10 +381,14 @@ export function ComplianceReportViewer() {
           onClick={async () => {
             const toastId = toast.loading("Downloading reports...");
             try {
+              const iconUrl = clientData!.companyLogo
+                ? await getPublicUrl(clientData!.companyLogo)
+                : undefined;
               await downloadReports(
                 sessionToken!,
                 documents!.filter((doc) => doc.basicCheckStatus === "Passed"),
-                clientData!.companyName!
+                clientData!.companyName!,
+                iconUrl
               );
               toast.success("Reports downloaded successfully", {
                 id: toastId,

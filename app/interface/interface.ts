@@ -10,6 +10,7 @@ export interface SWE {
   id: string;
   userId: string;
   companyName: string;
+  companyLogo?: string;
   acn: string;
   abn: string;
   paygWithholding: boolean;

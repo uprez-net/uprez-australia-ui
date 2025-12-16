@@ -32,6 +32,7 @@ import { downloadReports } from "@/utils/downloadReports";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { get } from "http";
+import { getPublicUrl } from "@/lib/data/bucketAction";
 
 interface ClientDashboardProps {
   clientId: string;
@@ -115,6 +116,7 @@ export function ClientDashboard({
       <CompanyBanner
         data={{
           companyName: clientData!.companyName,
+          companyLogoPath: clientData!.companyLogo ?? undefined,
           eligibilityStatus: clientData!.eligibilityStatus,
           complianceStatus: clientData!.complianceStatus,
           paygWithholding: clientData!.paygWithholding ?? undefined,
@@ -209,13 +211,26 @@ export function ClientDashboard({
                   reportStatus === "Failed" ||
                   reportStatus === "Pending"
                 }
-                onClick={() =>
-                  downloadReports(
-                    sessionToken!,
-                    documents,
-                    clientData!.companyName
-                  )
-                }
+                onClick={async () => {
+                  const toastId = toast.loading("Preparing download...");
+                  try {
+                    const iconUrl = clientData!.companyLogo
+                      ? await getPublicUrl(clientData!.companyLogo)
+                      : undefined;
+                    await downloadReports(
+                      sessionToken!,
+                      documents,
+                      clientData!.companyName,
+                      iconUrl
+                    );
+                    toast.success("Reports downloaded successfully", {
+                      id: toastId,
+                    });
+                  } catch (error) {
+                    console.error("Error downloading reports:", error);
+                    toast.error("Failed to download reports", { id: toastId });
+                  }
+                }}
               >
                 Download Report
               </Button>

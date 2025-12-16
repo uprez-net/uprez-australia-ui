@@ -18,11 +18,15 @@ import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "./ui/date-picker";
+import { deleteJustFile, generateSignedUrl } from "@/lib/data/bucketAction";
+import { getContentType } from "@/utils/uploadHelper";
+import axios from "axios";
 
 const companyFormSchema = z.object({
   legalName: z.string().min(2, {
     error: "Company name must be at least 2 characters.",
   }),
+  companyLogo: z.string().optional(),
   acn: z.string().regex(/^\d{9}$/, {
     error: "Please enter a valid 9-digit ACN.",
   }),
@@ -41,6 +45,7 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
 const defaultValues: CompanyFormValues = {
   legalName: "",
+  companyLogo: undefined,
   acn: "",
   abn: "",
   paygWithholding: false,
@@ -57,6 +62,7 @@ export type CompanyIdentificationFormHandle = {
 
 const fieldLabels: Record<keyof CompanyFormValues, string> = {
   legalName: "Legal Company Name",
+  companyLogo: "Company Logo",
   acn: "ACN (Australian Company Number)",
   abn: "ABN (Australian Business Number)",
   paygWithholding: "PAYG Withholding Registration",
@@ -66,6 +72,33 @@ const fieldLabels: Record<keyof CompanyFormValues, string> = {
   austracRegistered: "AUSTRAC Registration",
   chessHin: "CHESS Holding Identification Number (HIN)",
 };
+
+async function putWithProgress(
+  url: string,
+  file: File,
+  onProgress: (pct: number) => void
+) {
+  try {
+    console.log("Upload Url:", url);
+    console.log("File Type:", getContentType(file.name));
+    await axios.put(url, file, {
+      headers: {
+        "Content-Type": getContentType(file.name),
+      },
+      onUploadProgress: (evt) => {
+        if (evt.total) {
+          const pct = (evt.loaded / evt.total) * 100;
+          onProgress(pct);
+        }
+      },
+    });
+  } catch (err: any) {
+    console.error("Upload failed:", err);
+    throw new Error(
+      `Upload failed: ${err.response?.status || ""} ${err.message}`
+    );
+  }
+}
 
 export const CompanyIdentificationForm = forwardRef<
   CompanyIdentificationFormHandle,
@@ -81,6 +114,7 @@ export const CompanyIdentificationForm = forwardRef<
   });
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   useImperativeHandle(ref, () => ({
     async submit() {
@@ -98,19 +132,33 @@ export const CompanyIdentificationForm = forwardRef<
     },
   }));
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const { url: signedUrl, filePath } = await generateSignedUrl(
+        {
+          name: file.name,
+          type: file.type,
+        },
+        "logos" // assuming a fixed folder for logos; adjust as needed
+      );
+      await putWithProgress(signedUrl, file, (pct) => setUploadProgress(pct));
       const reader = new FileReader();
       reader.onload = (e) => {
+        setUploadProgress(null);
+        form.setValue("companyLogo", filePath);
         setLogoPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const removeImage = () => {
+  const removeImage = async() => {
+    const logoPath = form.getValues("companyLogo");
+    if (!logoPath) return;
     setLogoPreview(null);
+    await deleteJustFile(logoPath);
+    form.setValue("companyLogo", undefined);
   };
 
   return (
@@ -150,6 +198,18 @@ export const CompanyIdentificationForm = forwardRef<
                             SVG, PNG, JPG or GIF (Max. 2MB)
                           </p>
                         </label>
+                      </div>
+                    ) : uploadProgress !== null ? (
+                      <div className="w-40 h-40 mx-auto flex flex-col items-center justify-center">
+                        <p className="mb-2">
+                          Uploading: {uploadProgress.toFixed(0)}%
+                        </p>
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                          <div
+                            className="bg-blue-600 h-4 rounded-full"
+                            style={{ width: `${uploadProgress}%` }}
+                          ></div>
+                        </div>
                       </div>
                     ) : (
                       <div className="relative w-40 h-40 mx-auto">
@@ -200,9 +260,11 @@ export const CompanyIdentificationForm = forwardRef<
                 <FormItem>
                   <FormLabel>{fieldLabels[fieldName]}</FormLabel>
                   <FormControl>
-                    {["paygWithholding", "gstRegistered", "austracRegistered"].includes(
-                      fieldName
-                    ) ? (
+                    {[
+                      "paygWithholding",
+                      "gstRegistered",
+                      "austracRegistered",
+                    ].includes(fieldName) ? (
                       <Checkbox
                         checked={field.value as boolean}
                         onCheckedChange={field.onChange}
@@ -210,8 +272,14 @@ export const CompanyIdentificationForm = forwardRef<
                       />
                     ) : fieldName === "gstEffectiveDate" ? (
                       <DatePicker
-                        value={field.value ? new Date(field.value as string) : undefined}
-                        onChange={(date) => field.onChange(date?.toISOString() || '')}
+                        value={
+                          field.value
+                            ? new Date(field.value as string)
+                            : undefined
+                        }
+                        onChange={(date) =>
+                          field.onChange(date?.toISOString() || "")
+                        }
                         placeholder="Select GST effective date"
                         error={form.formState.errors.gstEffectiveDate?.message}
                         disabled={{ after: new Date() }}

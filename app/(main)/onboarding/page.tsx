@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { onBoardNewSme, updateSme } from "@/lib/data/onboardingAction";
 import { set } from "date-fns";
 import { fetchClientData } from "@/lib/data/clientPageAction";
+import Image from "next/image";
+import { getPublicUrl } from "@/lib/data/bucketAction";
 
 // Example form content components for other steps
 function ComplianceDocumentsForm() {
@@ -69,6 +71,7 @@ function ReviewInformationForm({
   smeData: {
     industrySector: string;
     legalName: string;
+    companyLogo?: string;
     acn: string;
     abn: string;
     paygWithholding: boolean;
@@ -90,6 +93,28 @@ function ReviewInformationForm({
     chessHin: string;
   };
 }) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (smeData.companyLogo) {
+      (async () => {
+        try {
+          const url = await getPublicUrl(smeData.companyLogo!);
+          if (mounted) setLogoUrl(url);
+        } catch (err) {
+          console.error("Failed to load company logo URL", err);
+          if (mounted) setLogoUrl(null);
+        }
+      })();
+    } else {
+      setLogoUrl(null);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [smeData.companyLogo]);
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Review Information</h2>
@@ -105,6 +130,15 @@ function ReviewInformationForm({
               Company Details
             </h3>
             <div className="mt-2 space-y-1">
+              {logoUrl && (
+                <Image
+                  src={logoUrl}
+                  alt="Company Logo"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-md border object-cover"
+                />
+              )}
               <p className="text-sm">
                 <span className="font-medium">Legal Name:</span>{" "}
                 {smeData.legalName}
@@ -245,9 +279,30 @@ export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const [smeDetails, setSmeDetails] = useState({
+  const [smeDetails, setSmeDetails] = useState<{
+    industrySector: string;
+    legalName: string;
+    companyLogo: string | null;
+    acn: string;
+    abn: string;
+    paygWithholding: boolean;
+    gstRegistered: boolean;
+    gstEffectiveDate: string;
+    paidUpCapital: number;
+    turnover: number;
+    netWorth: number;
+    yearsOperational: number;
+    last3YearsRevenue: Array<{ year: number; revenue: number }>;
+    companyType: string;
+    stateOfRegistration: string;
+    incorporationDate: string;
+    asicRegistration: string;
+    austracRegistered: boolean;
+    chessHin: string;
+  }>({
     industrySector: "",
     legalName: "",
+    companyLogo: null,
     acn: "", // Australian Company Number
     abn: "", // Australian Business Number
     paygWithholding: false, // PAYG Withholding registration (yes/no)
@@ -261,7 +316,7 @@ export default function Home() {
       { year: new Date().getFullYear() - 2, revenue: NaN },
       { year: new Date().getFullYear() - 1, revenue: NaN },
       { year: new Date().getFullYear(), revenue: NaN },
-    ] as Array<{ year: number; revenue: number }>, // Array of { year: number, revenue: number }
+    ], // Array of { year: number, revenue: number }
 
     // Company details
     companyType: "", // Public / Proprietary Limited
@@ -294,6 +349,7 @@ export default function Home() {
           setSmeDetails({
             industrySector: res.industrySector || "",
             legalName: res.companyName || "",
+            companyLogo: res.companyLogo ?? null,
 
             // AU Identifiers
             acn: res.acn || "", // Australian Company Number
@@ -344,6 +400,7 @@ export default function Home() {
         <CompanyIdentificationForm
           data={{
             legalName: smeDetails.legalName,
+            companyLogo: smeDetails.companyLogo ?? undefined,
             acn: smeDetails.acn,
             abn: smeDetails.abn,
             paygWithholding: smeDetails.paygWithholding,
@@ -356,6 +413,7 @@ export default function Home() {
           ref={companyIdentificationRef}
           onSubmitData={(data: {
             legalName: string;
+            companyLogo?: string;
             acn: string;
             abn: string;
             paygWithholding: boolean;
@@ -368,6 +426,7 @@ export default function Home() {
             setSmeDetails((prev) => ({
               ...prev,
               legalName: data.legalName,
+              companyLogo: data.companyLogo ?? null,
               acn: data.acn,
               abn: data.abn,
               paygWithholding: data.paygWithholding,
@@ -443,7 +502,7 @@ export default function Home() {
     },
     {
       title: "Review",
-      content: <ReviewInformationForm smeData={smeDetails} />,
+      content: <ReviewInformationForm smeData={{...smeDetails, companyLogo: smeDetails.companyLogo ?? undefined}} />,
     },
   ];
 
@@ -470,6 +529,7 @@ export default function Home() {
         userId: "",
         id: id ?? "",
         companyName: smeDetails.legalName,
+        companyLogo: smeDetails.companyLogo ?? undefined,
         eligibilityStatus: "Pending",
         acn: smeDetails.acn,
         abn: smeDetails.abn,

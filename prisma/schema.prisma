@@ -2,7 +2,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -81,6 +80,7 @@ model SMEProfile {
 model SMECompany {
   id          String @id @default(uuid())
   companyName String
+  companyLogo String?
 
   // AU company identifiers
   acn String? // Australian Company Number (replaces CIN)

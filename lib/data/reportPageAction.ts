@@ -111,11 +111,14 @@ export const getReports = async (
         report: string;
       } = await res.json();
 
-      return data.report;
+      return {
+        report: data.report,
+        title: `Report_${doc.fileName}`
+      };
     });
 
-    const reports: string[] = (await Promise.all(fetchPromises)).filter(
-      (report): report is string => report !== null
+    const reports: { report: string; title: string }[] = (await Promise.all(fetchPromises)).filter(
+      (report): report is { report: string; title: string } => report !== null
     );
 
     return reports;

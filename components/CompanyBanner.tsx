@@ -17,6 +17,9 @@ import {
   companyTypes,
   industrySectors,
 } from "./business-details-form";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { getPublicUrl } from "@/lib/data/bucketAction";
+import Image from "next/image";
 
 const getEligibilityStatusConfig = (status: EligibilityStatus) => {
   switch (status) {
@@ -68,6 +71,7 @@ const formatCurrency = (amount?: number) => {
 
 interface CompanyData {
   companyName: string;
+  companyLogoPath?: string;
 
   // AU company identifiers
   acn?: string;
@@ -108,6 +112,40 @@ interface CompanyBannerProps {
   data: CompanyData;
 }
 
+function CompanyLogo({ filePath }: { filePath: string }) {
+  const [publicUrl, setPublicUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPublicUrl() {
+      try {
+        const url = await getPublicUrl(filePath);
+        setPublicUrl(url);
+      } catch (error) {
+        console.error("Error fetching public URL:", error);
+        setError("Failed to load company logo.");
+      }
+    }
+    fetchPublicUrl();
+  }, [filePath]);
+
+  if (!publicUrl && !error) {
+    return <div className="w-6 h-6 bg-gray-200 animate-pulse rounded" />;
+  }
+
+  if (error && !publicUrl) {
+    return (
+      <div className="p-2 bg-blue-100 rounded-lg">
+        <Building2 className="h-6 w-6 text-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+      <Image src={publicUrl!} alt="Company Logo" width={30} height={30} />
+  );
+}
+
 export default function CompanyBanner({ data }: CompanyBannerProps) {
   const eligibilityConfig = getEligibilityStatusConfig(data.eligibilityStatus);
   const complianceConfig = getComplianceStatusConfig(data.complianceStatus);
@@ -119,9 +157,13 @@ export default function CompanyBanner({ data }: CompanyBannerProps) {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
           <div className="flex items-center gap-3 mb-4 lg:mb-0">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-blue-600" />
-            </div>
+            {data.companyLogoPath ? (
+              <CompanyLogo filePath={data.companyLogoPath} />
+            ) : (
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Building2 className="h-6 w-6 text-blue-600" />
+              </div>
+            )}
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 {data.companyName}
