@@ -3,6 +3,7 @@ import {
   createDocument,
   deleteDocument,
   fetchClientData,
+  refreshAccessToken,
 } from "@/lib/data/clientPageAction";
 import { SMECompany, Document, IPOValuation } from "@prisma/client";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
@@ -33,6 +34,24 @@ export const setClientData = createAsyncThunk<
     const res = await fetchClientData(clientId);
 
     return res;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+});
+
+export const refreshToken = createAsyncThunk<
+string,
+{ sessionToken: string },
+  { rejectValue: string }
+>("clientPage/refreshAccessToken", async ({ sessionToken }, { rejectWithValue }) => {
+  try {
+    // Implement refresh token logic here
+    // For now, we will just return a dummy response
+    const session_token = await refreshAccessToken(sessionToken);
+
+    return session_token;
   } catch (error) {
     return rejectWithValue(
       error instanceof Error ? error.message : "Unknown error"
@@ -169,6 +188,12 @@ export const clientSlice = createSlice({
       .addCase(deleteDocumentClient.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to delete document";
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.sessionToken = action.payload;
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.error = action.payload || "Failed to refresh session token";
       });
   },
 });

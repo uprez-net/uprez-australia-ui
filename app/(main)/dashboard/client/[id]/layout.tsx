@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import {
   clearClient,
   setClientData as fetchData,
+  refreshToken,
 } from "@/app/redux/clientSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
@@ -16,11 +17,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // const { id } = use(params);
   const params = useParams();
   const id = params.id as string;
-  const { clientData } = useSelector((state: RootState) => state.client);
+  const { clientData, sessionToken } = useSelector(
+    (state: RootState) => state.client
+  );
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchClientData = async () => {
       try {
         console.log("Fetching client data for ID:", id);
@@ -34,40 +35,57 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             (response.payload as string) || "Failed to fetch client data"
           );
         }
-
-        if (isMounted) {
-          //   const { Documents, sessionToken, ...rest } =
-          //     response.payload as unknown as SMECompany & {
-          //       Documents: Document[];
-          //     } & { sessionToken?: string };
-          //   setClientData(rest);
-          //   const progress = getDocumentUploadProgress(Documents);
-          //   setDocumentProgress(progress);
-          //   setOverallProgress(progress.find((p) => p.category === "Overall")!);
-          //   setIsLoading(false);
-        }
       } catch (error) {
-        // if (isMounted) {
-        //   setError(
-        //     error instanceof Error
-        //       ? error.message
-        //       : "An error occurred while fetching client data"
-        //   );
-        //   setIsLoading(false);
-        // }
+        console.error(
+          error instanceof Error
+            ? error.message
+            : "An error occurred while fetching client data"
+        );
       }
     };
 
     fetchClientData();
+  }, [id]);
 
-    return () => {
-      isMounted = false;
-      // Only clear if navigating to a different client ID
-      if (clientData?.id && clientData.id !== id) {
-        dispatch(clearClient());
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    const reloadToken = async () => {
+      try {
+        if (!sessionToken) return;
+
+        // Assuming the token expires in 15 minutes, refresh every 14 minutes
+        interval = setInterval(async () => {
+          console.log("Refreshing session token for client ID:", id);
+          const response = await dispatch(refreshToken({ sessionToken }));
+
+          if (response.meta.requestStatus === "rejected") {
+            throw new Error(
+              (response.payload as string) || "Failed to refresh session token"
+            );
+          }
+        }, 30 * 60 * 1000); // 30 minutes
+      } catch (error) {
+        console.error(
+          error instanceof Error
+            ? error.message
+            : "An error occurred while refreshing session token"
+        );
       }
     };
-  }, [id]);
+
+    reloadToken();
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [sessionToken]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearClient());
+    };
+  }, []);
 
   return <>{children}</>;
 }

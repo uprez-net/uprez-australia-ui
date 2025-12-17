@@ -66,6 +66,29 @@ export const fetchClientData = async (clientId: string) => {
   }
 };
 
+export const refreshAccessToken = async (sessionToken: string) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`,
+      },
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      console.log(`Error: ${error}`);
+      throw new Error("Failed to refresh access token");
+    }
+    const data: { access_token: string, token_type: string } = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    throw new Error("Failed to refresh access token");
+  }
+};
+
 export const createDocument = async (
   Document: Document,
   sessionToken: string,
