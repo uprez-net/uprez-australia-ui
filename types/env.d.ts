@@ -27,3 +27,5 @@ namespace NodeJS {
     GCP_PROJECT_ID: string;
   }
 }
+
+declare module 'wink-bm25-text-search';

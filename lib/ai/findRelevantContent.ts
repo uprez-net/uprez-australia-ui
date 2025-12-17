@@ -1,6 +1,7 @@
 "use server";
 import { createEmbedding } from "./createEmbeddings";
 import pinecone from "../pinecone";
+import { encodeBM25 } from "@/utils/getEncoding";
 
 export async function getRelevantContent(query: string, topK: number = 5) {
   try {
@@ -72,10 +73,12 @@ export async function getClientData(clientId: string, topK: number = 5, query: s
     console.log(`Fetching data for clientId: ${clientId} with query: ${query}`);
     const clientIndex = pinecone.Index("hybrid-search-index");
     const embedding = await createEmbedding(query);
+    const sparseVector = encodeBM25(query);
     // Fetch client data with clientId as namespace
     const namespace = clientIndex.namespace(clientId)
     const results = await namespace.query({
       vector: embedding,
+      sparseVector,
       topK,
       includeValues: true,
       includeMetadata: true,
@@ -84,12 +87,15 @@ export async function getClientData(clientId: string, topK: number = 5, query: s
     const allTexts = results.matches
       .map((match) => {
         try {
-          const nodeContentRaw = match.metadata!;
-          if (!nodeContentRaw) return null;
-          const nodeContent = JSON.parse(nodeContentRaw._node_content as string);
-          return nodeContent.text as string;
+          const metadataContent = match.metadata;
+          // console.log("Match metadata:", metadataContent);
+          // Check if context exists
+          if(!metadataContent) {
+            return null;
+          }
+          return metadataContent.context as string;
         } catch (error) {
-          console.error("Failed to parse _node_content:", error);
+          console.error("Failed to parse metadataContent:", error);
           return null;
         }
       })

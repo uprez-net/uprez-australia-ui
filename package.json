@@ -140,6 +140,9 @@
     "unified": "^11.0.5",
     "use-file-picker": "^2.1.4",
     "vaul": "^0.9.6",
+    "wink-bm25-text-search": "^3.1.2",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-nlp": "^2.4.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
