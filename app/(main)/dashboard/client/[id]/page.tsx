@@ -6,6 +6,8 @@ import { useMemo } from "react";
 import { getDocumentUploadProgress } from "@/utils/calculateFileProgress";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function ClientDashboardPage() {
   const {
@@ -76,6 +78,25 @@ export default function ClientDashboardPage() {
     <main className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+          <div className="relative mb-5">
+            {/* Icon */}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+            {/* Input */}
+            <Input
+              type="text"
+              placeholder="Search for documents, clients, or actions..."
+              className="
+          pl-10
+          text-sm
+          rounded-lg
+          focus-visible:ring-2
+          focus-visible:ring-emerald-700/20
+          focus-visible:ring-offset-0
+          focus-visible:border-emerald-700
+        "
+            />
+          </div>
           <ClientDashboard
             clientId={clientData!.id}
             overallDocumentProgress={overallProgress!}

@@ -264,7 +264,7 @@ function InfoBlock({
   highlight?: boolean;
 }) {
   return (
-    <div>
+    <div className="border-r border-gray-200 px-4">
       <div className="flex items-center gap-2 font-semibold mb-3">
         {icon}
         {title}
