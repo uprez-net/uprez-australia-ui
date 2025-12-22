@@ -2,7 +2,7 @@
 import { ClientDashboard } from "@/components/client-dashboard";
 import { DocumentChecklistSection } from "@/components/document-checklist-section";
 import { useMemo } from "react";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 import { getDocumentUploadProgress } from "@/utils/calculateFileProgress";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
@@ -78,13 +78,7 @@ export default function ClientDashboardPage() {
         <div className="space-y-8">
           <ClientDashboard
             clientId={clientData!.id}
-            clientName={clientData!.companyName}
-            complianceScore={overallProgress?.percentage || 0}
-            documentProgress={overallProgress!}
-            reportStatus={complianceStatus}
-            valuationStatus={valuationStatus}
-            reportGeneration={clientData?.generationNumber ?? 1}
-            lastUpdated={format(new Date(clientData!.updatedAt), "PPp")}
+            overallDocumentProgress={overallProgress!}
           />
 
           {/* Document Checklist Section */}

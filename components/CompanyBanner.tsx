@@ -1,322 +1,292 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ComplianceStatus, EligibilityStatus } from "@prisma/client";
 import {
   Building2,
+  Clock,
   FileText,
   DollarSign,
   Calendar,
   Factory,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Clock,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { ComplianceStatus, EligibilityStatus } from "@prisma/client";
+import { CompanyLogo } from "./company-logo";
 import {
   australianStates,
   companyTypes,
   industrySectors,
 } from "./business-details-form";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { getPublicUrl } from "@/lib/data/bucketAction";
-import Image from "next/image";
-import { CompanyLogo } from "./company-logo";
 
 const getEligibilityStatusConfig = (status: EligibilityStatus) => {
   switch (status) {
     case "Mainboard_Eligible":
       return {
-        color: "bg-green-500",
-        text: "Mainboard Eligible",
-        icon: CheckCircle,
+        label: "Mainboard Eligible",
+        className: "bg-yellow-100 text-yellow-800",
       };
     case "SME_Eligible":
-      return { color: "bg-blue-500", text: "SME Eligible", icon: CheckCircle };
+      return { label: "SME Eligible", className: "bg-blue-100 text-blue-800" };
     case "Pending":
-      return { color: "bg-yellow-500", text: "Pending", icon: Clock };
+      return { label: "Pending", className: "bg-yellow-100 text-yellow-800" };
     case "Failed":
-      return { color: "bg-red-500", text: "Failed", icon: XCircle };
     case "Not_Eligible":
-      return { color: "bg-gray-500", text: "Not Eligible", icon: XCircle };
+      return { label: "Not Eligible", className: "bg-red-100 text-red-700" };
     default:
-      return { color: "bg-gray-500", text: status, icon: AlertCircle };
+      return { label: status, className: "bg-gray-100 text-gray-700" };
   }
 };
 
 const getComplianceStatusConfig = (status: ComplianceStatus) => {
   switch (status) {
     case "high":
-      return { color: "bg-green-500", text: "High Compliance" };
+      return {
+        label: "High Compliance",
+        className: "bg-green-100 text-green-700",
+      };
     case "medium":
-      return { color: "bg-yellow-500", text: "Medium Compliance" };
+      return {
+        label: "Medium Compliance",
+        className: "bg-yellow-100 text-yellow-700",
+      };
     case "low":
-      return { color: "bg-orange-500", text: "Low Compliance" };
+      return {
+        label: "Low Compliance",
+        className: "bg-orange-100 text-orange-700",
+      };
     case "pending":
-      return { color: "bg-blue-500", text: "Pending Review" };
+      return {
+        label: "Pending Review",
+        className: "bg-blue-100 text-blue-700",
+      };
     case "failed":
-      return { color: "bg-red-500", text: "Failed Compliance" };
+      return { label: "Failed", className: "bg-red-100 text-red-700" };
     default:
-      return { color: "bg-gray-500", text: status };
+      return { label: status, className: "bg-gray-100 text-gray-700" };
   }
 };
 
-const formatCurrency = (amount?: number) => {
-  if (!amount) return "N/A";
-  return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-interface CompanyData {
-  companyName: string;
-  companyLogoPath?: string;
-
-  // AU company identifiers
-  acn?: string;
-  abn?: string;
-
-  paygWithholding?: boolean;
-  gstRegistered?: boolean;
-  gstEffectiveDate?: string;
-
-  // Registrations
-  asicRegistration?: string;
-  austracRegistered?: boolean;
-  chessHin?: string;
-
-  // Financials
-  paidUpCapital?: number;
-  turnover?: number;
-  netWorth?: number;
-  yearsOperational?: number;
-  last3YearsRevenue?: {
-    year: number;
-    revenue: number;
-  }[];
-
-  // Business Info
-  industrySector?: string;
-  companyType?: string;
-  stateOfRegistration?: string;
-  incorporationDate?: string;
-
-  // Status tracking
-  eligibilityStatus: EligibilityStatus;
-  complianceStatus: ComplianceStatus;
-  lastUpdatedAt: string;
-}
+const formatCurrency = (amount?: number) =>
+  amount
+    ? new Intl.NumberFormat("en-AU", {
+        style: "currency",
+        currency: "AUD",
+        maximumFractionDigits: 0,
+      }).format(amount)
+    : "N/A";
 
 interface CompanyBannerProps {
-  data: CompanyData;
+  data: {
+    companyName: string;
+    companyLogoPath?: string;
+    acn?: string;
+    abn?: string;
+    paygWithholding?: boolean;
+    gstRegistered?: boolean;
+    gstEffectiveDate?: string;
+    asicRegistration?: string;
+    austracRegistered?: boolean;
+    chessHin?: string;
+    paidUpCapital?: number;
+    turnover?: number;
+    netWorth?: number;
+    yearsOperational?: number;
+    last3YearsRevenue?: { year: number; revenue: number }[];
+    industrySector?: string;
+    companyType?: string;
+    stateOfRegistration?: string;
+    incorporationDate?: string;
+    eligibilityStatus: EligibilityStatus;
+    complianceStatus: ComplianceStatus;
+    lastUpdatedAt: string;
+    overallProgress: number;
+  };
 }
 
 export default function CompanyBanner({ data }: CompanyBannerProps) {
-  const eligibilityConfig = getEligibilityStatusConfig(data.eligibilityStatus);
-  const complianceConfig = getComplianceStatusConfig(data.complianceStatus);
-  const EligibilityIcon = eligibilityConfig.icon;
+  const eligibility = getEligibilityStatusConfig(data.eligibilityStatus);
+  const compliance = getComplianceStatusConfig(data.complianceStatus);
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-      <div className="container mx-auto p-6">
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-          <div className="flex items-center gap-3 mb-4 lg:mb-0">
+    <Card className="shadow-md">
+      <CardHeader className="pb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Left: Company Identity */}
+          <div className="flex items-center gap-4">
             {data.companyLogoPath ? (
               <CompanyLogo filePath={data.companyLogoPath} />
             ) : (
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Building2 className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-700 flex items-center justify-center text-white shadow">
+                <Building2 />
               </div>
             )}
+
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {data.companyName}
-              </h1>
-              {/* <p className="text-sm text-gray-600">Company Overview</p> */}
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Clock className="mr-1 h-4 w-4" />
-                <span>Last updated: {data.lastUpdatedAt}</span>
+              <h1 className="text-xl font-bold">{data.companyName}</h1>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <Clock className="h-3.5 w-3.5" />
+                Last updated: {data.lastUpdatedAt}
               </div>
             </div>
           </div>
 
-          {/* Status Badges */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Badge
-              className={`${eligibilityConfig.color} text-white hover:${eligibilityConfig.color}/90`}
-            >
-              <EligibilityIcon className="w-4 h-4 mr-1" />
-              {eligibilityConfig.text}
-            </Badge>
-            <Badge
-              className={`${complianceConfig.color} text-white hover:${complianceConfig.color}/90`}
-            >
-              {complianceConfig.text}
-            </Badge>
+          {/* Right: Status Badges */}
+          <div className="flex gap-2">
+            <Badge className={eligibility.className}>{eligibility.label}</Badge>
+            <Badge className={compliance.className}>{compliance.label}</Badge>
           </div>
         </div>
+      </CardHeader>
 
-        {/* Information Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Identification & Registrations */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Company Identifiers
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs">
-              <div>
-                <span className="font-medium">ACN:</span> {data.acn || "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">ABN:</span> {data.abn || "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">PAYG Withholding:</span>{" "}
-                {data.paygWithholding ? "Yes" : "No"}
-              </div>
-              <div>
-                <span className="font-medium">GST Registered:</span>{" "}
-                {data.gstRegistered ? "Yes" : "No"}
-                {data.gstEffectiveDate && (
-                  <span className="ml-1 text-muted-foreground">
-                    (since{" "}
-                    {new Date(data.gstEffectiveDate).toLocaleDateString()})
-                  </span>
-                )}
-              </div>
-              <div>
-                <span className="font-medium">ASIC Registration:</span>{" "}
-                {data.asicRegistration || "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">AUSTRAC Registered:</span>{" "}
-                {data.austracRegistered ? "Yes" : "No"}
-              </div>
-              <div>
-                <span className="font-medium">CHESS HIN:</span>{" "}
-                {data.chessHin || "N/A"}
-              </div>
-            </CardContent>
-          </Card>
+      <CardContent>
+        {/* Info Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-sm">
+          {/* Column 1 */}
+          <InfoBlock
+            title="Company Identifiers"
+            icon={<FileText className="h-4 w-4" />}
+            rows={[
+              ["ACN", data.acn],
+              ["ABN", data.abn],
+              ["PAYG Withholding", data.paygWithholding ? "Yes" : "No"],
+              [
+                "GST Registered",
+                data.gstRegistered
+                  ? `Yes (since ${new Date(
+                      data.gstEffectiveDate!
+                    ).toLocaleDateString()})`
+                  : "No",
+              ],
+              ["ASIC Registration", data.asicRegistration],
+              ["AUSTRAC Registered", data.austracRegistered ? "Yes" : "No"],
+              ["CHESS HIN", data.chessHin],
+            ]}
+          />
 
-          {/* Financial Information */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Financial Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs">
-              <div>
-                <span className="font-medium">Paid-up Capital:</span>
-                <div className="font-semibold text-green-600">
-                  {formatCurrency(data.paidUpCapital)}
-                </div>
-              </div>
-              <div>
-                <span className="font-medium">Turnover:</span>
-                <div className="font-semibold text-blue-600">
-                  {formatCurrency(data.turnover)}
-                </div>
-              </div>
-              <div>
-                <span className="font-medium">Net Worth:</span>
-                <div className="font-semibold text-purple-600">
-                  {formatCurrency(data.netWorth)}
-                </div>
-              </div>
-              {data.last3YearsRevenue && (
-                <div>
-                  <span className="font-medium">Last 3 Years Revenue:</span>
-                  <ul className="list-disc list-inside">
-                    {data.last3YearsRevenue.map((r) => (
-                      <li key={r.year}>
-                        {r.year}: {formatCurrency(r.revenue)}
+          {/* Column 2 */}
+          <InfoBlock
+            title="Financial Details"
+            icon={<DollarSign className="h-4 w-4" />}
+            highlight
+            rows={[
+              ["Paid-up Capital", formatCurrency(data.paidUpCapital)],
+              ["Turnover", formatCurrency(data.turnover)],
+              ["Net Worth", formatCurrency(data.netWorth)],
+              [
+                "Last 3 Years Revenue",
+                data.last3YearsRevenue && data.last3YearsRevenue.length > 0 ? (
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {data.last3YearsRevenue.map((rev) => (
+                      <li key={rev.year} className="flex items-baseline gap-3">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+                        <span className="flex-1 font-medium text-foreground">
+                          {rev.year}
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {formatCurrency(rev.revenue)}
+                        </span>
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <span className="text-muted-foreground">N/A</span>
+                ),
+              ],
+            ]}
+          />
 
-          {/* Operational Information */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Operations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs">
-              <div>
-                <span className="font-medium">Company Type:</span>{" "}
-                {companyTypes.find((ct) => ct.value === data.companyType)
-                  ?.label ||
-                  data.companyType ||
-                  "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">State of Registration:</span>{" "}
-                {australianStates.find(
-                  (as) => as.value === data.stateOfRegistration
-                )?.label ||
-                  data.stateOfRegistration ||
-                  "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">Incorporation Date:</span>{" "}
-                {data.incorporationDate
-                  ? new Date(data.incorporationDate).toLocaleDateString()
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">Years Operational:</span>{" "}
-                {data.yearsOperational
+          {/* Column 3 */}
+          <InfoBlock
+            title="Operations"
+            icon={<Calendar className="h-4 w-4" />}
+            rows={[
+              [
+                "Company Type",
+                companyTypes.find((c) => c.value === data.companyType)?.label ??
+                  data.companyType,
+              ],
+              [
+                "State",
+                australianStates.find(
+                  (s) => s.value === data.stateOfRegistration
+                )?.label ?? data.stateOfRegistration,
+              ],
+              [
+                "Incorporation Date",
+                data.incorporationDate &&
+                  new Date(data.incorporationDate).toLocaleDateString(),
+              ],
+              [
+                "Industry",
+                industrySectors.find((i) => i.value === data.industrySector)
+                  ?.label ?? data.industrySector,
+              ],
+              [
+                "Years Operational",
+                data.yearsOperational
                   ? `${data.yearsOperational} years`
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-medium">Industry Sector:</span>{" "}
-                {industrySectors.find((is) => is.value === data.industrySector)
-                  ?.label ||
-                  data.industrySector ||
-                  "N/A"}
-              </div>
-            </CardContent>
-          </Card>
+                  : "N/A",
+              ],
+            ]}
+          />
 
-          {/* Status Summary */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Factory className="h-4 w-4" />
-                Status Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-xs">
-                <span className="font-medium block mb-1">Eligibility:</span>
-                <Badge variant="outline" className="text-xs">
-                  {eligibilityConfig.text}
-                </Badge>
+          {/* Column 4 */}
+          <div>
+            <div className="flex items-center gap-2 font-semibold mb-3">
+              <Factory className="h-4 w-4" />
+              Status Summary
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-medium mb-1">Overall Progress</p>
+                <Progress value={data.overallProgress} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {data.overallProgress}% complete
+                </p>
               </div>
-              <div className="text-xs">
-                <span className="font-medium block mb-1">Compliance:</span>
-                <Badge variant="outline" className="text-xs">
-                  {complianceConfig.text}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function InfoBlock({
+  title,
+  icon,
+  rows,
+  highlight,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: [string, string | number | React.ReactNode | null | undefined][];
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 font-semibold mb-3">
+        {icon}
+        {title}
+      </div>
+
+      <div className="space-y-1 text-muted-foreground">
+        {rows.map(([label, value]) => {
+          const isEmpty = value === null || value === undefined;
+
+          return (
+            <p key={label}>
+              <span className="font-medium text-foreground">{label}:</span>{" "}
+              <span
+                className={
+                  highlight && !isEmpty ? "font-semibold text-foreground" : ""
+                }
+              >
+                {isEmpty ? "N/A" : value}
+              </span>
+            </p>
+          );
+        })}
       </div>
     </div>
   );

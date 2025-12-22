@@ -246,11 +246,12 @@
 }
 
 [data-sonner-toast] {
-  background: hsl(var(--card));
+  background: hsl(var(--card)); /* ALWAYS white / dark-card */
   color: hsl(var(--card-foreground));
   border-radius: var(--radius-lg);
   padding: 0.875rem 1rem;
   margin-bottom: 0.625rem;
+
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 
   display: flex;
