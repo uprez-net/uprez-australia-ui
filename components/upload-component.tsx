@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import UploadDropzone from "./ui/upload-dropzone";
 import { cn } from "@/lib/utils";
+import { CircleCheck, CircleX } from "lucide-react";
 
 interface UploadComponentProps {
   setUploadedFiles?: (file: Document) => void;
@@ -85,7 +86,9 @@ export function UploadDropZoneComponent({
         } else {
           await dispatch(dispatchFunction({ Document: doc, sessionToken, isIPO }));
         }
-        toast.success("File Uploaded Successfully");
+        toast.success("File Uploaded Successfully", {
+          icon: <CircleCheck className="notification-icon" />
+        });
       }
     );
   };
@@ -97,7 +100,9 @@ export function UploadDropZoneComponent({
         onClientUploadComplete={(res) => {
           handleUploadComplete(res);
         }}
-        onUploadError={(error) => toast.error(`ERROR! ${error.message}`)}
+        onUploadError={(error) => toast.error(`ERROR! ${error.message}`, {
+          icon: <CircleX className="notification-icon" />
+        })}
         heading={heading}
         subtext={subtext}
       />

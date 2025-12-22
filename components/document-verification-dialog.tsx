@@ -7,6 +7,7 @@ import {
   XCircle,
   FileText,
   RefreshCw,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,30 +94,35 @@ export function DocumentVerificationDialog({
 
   const verificationResults = useMemo(
     () =>
-      documentCategories.map((category) => {
-        if (category.isIPO) return;
-        const progress = documentProgress.find(
-          (p) => p.category === category.name
-        );
+      documentCategories
+        .map((category) => {
+          if (category.isIPO) return;
+          const progress = documentProgress.find(
+            (p) => p.category === category.name
+          );
 
-        return {
-          category: category.name,
-          uploaded: progress?.uploadedCount || 0,
-          required: progress?.requiredCount || 0,
-          status:
-            progress?.percentage === 100
-              ? "complete"
-              : progress?.percentage === 0
-              ? "missing"
-              : "partial",
-          missingDocuments:
-            documentCategories
-              .find((cat) => cat.name === category.name)
-              ?.required.filter(
-                (doc) => !documents.some((d) => splitCamelCase(d.documentType) === doc)
-              ) || [],
-        };
-      }).filter((res) => res !== undefined) as {
+          return {
+            category: category.name,
+            uploaded: progress?.uploadedCount || 0,
+            required: progress?.requiredCount || 0,
+            status:
+              progress?.percentage === 100
+                ? "complete"
+                : progress?.percentage === 0
+                ? "missing"
+                : "partial",
+            missingDocuments:
+              documentCategories
+                .find((cat) => cat.name === category.name)
+                ?.required.filter(
+                  (doc) =>
+                    !documents.some(
+                      (d) => splitCamelCase(d.documentType) === doc
+                    )
+                ) || [],
+          };
+        })
+        .filter((res) => res !== undefined) as {
         category: string;
         uploaded: number;
         required: number;
@@ -138,7 +144,9 @@ export function DocumentVerificationDialog({
     const doc = documents.length > 0 ? documents[0] : null; // Assuming we have at least one document
     if (!doc || !sessionToken) {
       console.error("No documents available for verification");
-      toast.error("No documents available for verification");
+      toast.error("No documents available for verification", {
+        icon: <XCircle className="notification-icon" />,
+      });
       setIsVerifying(false);
       return;
     }
@@ -148,15 +156,23 @@ export function DocumentVerificationDialog({
       dispatch(setGenerationId(res.generationId));
       dispatch(setGenerationNumber(res.generationNumber)); //Add after migrating to new schema
       setIsVerifying(true);
-      toast.success("Document verification started successfully");
+      toast.success("Document verification started successfully", {
+        icon: <CheckCircle className="notification-icon" />,
+      });
       await new Promise((resolve) => setTimeout(resolve, 2000));
       if (!redirect) return;
-      toast.info("Redirecting to client dashboard...");
+      toast.info("Redirecting to client dashboard...", {
+        icon: <Info className="notification-icon" />,
+      });
       router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
       console.error("Error triggering generation:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to trigger document generation"
+        error instanceof Error
+          ? error.message
+          : "Failed to trigger document generation", {
+            icon: <XCircle className="notification-icon" />,
+          }
       );
       setIsVerifying(false);
       return;

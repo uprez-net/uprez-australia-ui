@@ -22,6 +22,7 @@ import { createOrganizationAction } from "@/app/actions/organisationAction";
 import { Organisation } from "@/app/interface/interface";
 import { EligibilityStatus } from "@prisma/client";
 import { toast } from "sonner";
+import { CircleCheck, CircleX, RefreshCw } from "lucide-react";
 
 interface SmeOnboardingFormProps {
   onComplete?: (smeCompanyId?: string) => void;
@@ -379,7 +380,9 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
               undefined
             );
             toast.dismiss();
-            toast.success("Organization created successfully!");
+            toast.success("Organization created successfully!", {
+              icon: <CircleCheck className="notification-icon" />
+            });
 
             if (onComplete && result?.smeCompanyId) {
               onComplete(result.smeCompanyId);
@@ -389,7 +392,9 @@ export function SmeOnboardingForm({ onComplete }: SmeOnboardingFormProps) {
           } catch (error) {
             console.error("Error creating organization:", error);
             toast.dismiss();
-            toast.error("Failed to create organization. Please try again.");
+            toast.error("Failed to create organization. Please try again.", {
+              icon: <CircleX className="notification-icon" />
+            });
             return;
           }
         }}

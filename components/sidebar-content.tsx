@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { addComment, loadProspectusData, setActiveProspectusId } from "@/app/redux/prospectusSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
-import { ChevronDown, CornerDownRight, X } from "lucide-react";
+import { ChevronDown, CircleX, CornerDownRight, RefreshCw, X } from "lucide-react";
 import { AIChatInterface } from "./ai-chat-interface";
 
 interface SidebarContentProps {
@@ -153,7 +153,9 @@ export function SidebarContent({
           toast.error(
             `Failed to post comment: ${
               error instanceof Error ? error.message : "Unknown error"
-            }`
+            }`, {
+              icon: <CircleX className="notification-icon" />
+            }
           );
           console.error("Error posting comment:", error);
         } finally {

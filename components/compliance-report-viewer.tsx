@@ -9,6 +9,7 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
+  CircleX,
 } from "lucide-react";
 import {
   Card,
@@ -396,10 +397,11 @@ export function ComplianceReportViewer() {
               );
               toast.success("Reports downloaded successfully", {
                 id: toastId,
+                icon: <CheckCircle className="notification-icon" />,
               });
             } catch (error) {
               console.error("Failed to download reports:", error);
-              toast.error("Failed to download reports", { id: toastId });
+              toast.error("Failed to download reports", { id: toastId, icon: <CircleX className="notification-icon" /> });
             } finally {
               toast.dismiss(toastId);
             }

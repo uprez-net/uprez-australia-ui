@@ -1,6 +1,16 @@
 "use client";
 
-import { FileText, Download, Trash2, Eye, Upload } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Trash2,
+  Eye,
+  Upload,
+  RefreshCw,
+  CircleX,
+  CheckCircle,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -117,7 +127,9 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
       setIsPreviewOpen(true);
     } catch (error) {
       console.error("Error loading document preview:", error);
-      toast.error("Failed to load document preview");
+      toast.error("Failed to load document preview", {
+        icon: <CircleX className="notification-icon" />,
+      });
     } finally {
       toast.dismiss(toastId);
     }
@@ -129,7 +141,9 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
     const file = documents.find((doc) => doc.id === id)!;
     try {
       // const isReviewed = file.tag.includes("reviewed");
-      toast.loading("Downloading file...");
+      toast.loading("Downloading file...", {
+        icon: <RefreshCw className="notification-icon" />,
+      });
       const response = await fetch(file.uploadThingKey);
       // if (!isReviewed && role === UserRole.CUSTOMER) await dispatch(createProjectFile({ ...file, tag: [...file.tag.split(","), "reviewed"].join(", ") }));
       console.log("This is relatesTo field: ", response);
@@ -150,10 +164,14 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
       link.remove();
       window.URL.revokeObjectURL(url);
       toast.dismiss();
-      toast.success("File downloaded successfully");
+      toast.success("File downloaded successfully", {
+        icon: <CheckCircle className="notification-icon" />,
+      });
     } catch (error) {
       console.error("Download failed:", error);
-      toast.error("Failed to download file");
+      toast.error("Failed to download file", {
+        icon: <CircleX className="notification-icon" />,
+      });
     } finally {
       toast.dismiss();
     }
@@ -187,10 +205,14 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
         console.error("Failed to delete document from server", errorData);
       }
       toast.dismiss(toastId);
-      toast.success("Document deleted successfully");
+      toast.success("Document deleted successfully", {
+        icon: <CheckCircle className="notification-icon" />,
+      });
     } catch (error) {
       toast.dismiss(toastId);
-      toast.error("Failed to delete document");
+      toast.error("Failed to delete document", {
+        icon: <CircleX className="notification-icon" />,
+      });
       console.error("Error deleting document:", error);
       return;
     }
@@ -327,18 +349,23 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
                         if (
                           document.basicCheckStatus === BasicCheckStatus.Passed
                         ) {
-                          toast.info(
-                            <>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                Processed Document can't be deleted
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                This document has already been processed and
-                                cannot be deleted. If you need to update it,
-                                please upload a new version.
-                              </div>
-                            </>
-                          );
+                          // toast.info(
+                          //   <>
+                          //     <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          //       Processed Document can't be deleted
+                          //     </div>
+                          //     <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          //       This document has already been processed and
+                          //       cannot be deleted. If you need to update it,
+                          //       please upload a new version.
+                          //     </div>
+                          //   </>
+                          // );
+                          toast.info("Processed Document can't be deleted", {
+                            icon: <Info className="notification-icon" />,
+                            description:
+                              "This document has already been processed and cannot be deleted. If you need to update it, please upload a new version.",
+                          });
                           return;
                         }
                         onDelete(document.id, document.uploadThingKey);

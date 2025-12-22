@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { AddSubsectionModal } from "@/components/add-subsection-dialog";
 import { ProspectusWorkflowVisualizer } from "@/components/prospectus-timeline";
+import { CircleCheck, CircleX, RefreshCcw } from "lucide-react";
 
 export default function ProspectusEditor() {
   const [activeSection, setActiveSection] = useState("important-notices");
@@ -71,10 +72,14 @@ export default function ProspectusEditor() {
           throw new Error(res.payload as string);
         }
         if (mounted) {
-          toast.success("Prospectus data loaded");
+          toast.success("Prospectus data loaded", {
+            icon: <CircleCheck className="notification-icon" />
+          });
         }
       } catch (error) {
-        toast.error("Error fetching prospectus data");
+        toast.error("Error fetching prospectus data", {
+          icon: <CircleX className="notification-icon" />,
+        });
         console.error("Error fetching prospectus data:", error);
       } finally {
         toast.dismiss(toastId);
@@ -229,10 +234,14 @@ export default function ProspectusEditor() {
         if (saveProgress.rejected.match(res)) {
           throw new Error(res.payload as string);
         }
-        toast.success("Section saved successfully");
+        toast.success("Section saved successfully", {
+          icon: <CircleCheck className="notification-icon" />
+        });
         setEditingSubsection(null);
       } catch (error) {
-        toast.error("Error saving section");
+        toast.error("Error saving section", {
+          icon: <CircleX className="notification-icon" />
+        });
         console.error("Error saving section:", error);
       } finally {
         toast.dismiss(toastId);

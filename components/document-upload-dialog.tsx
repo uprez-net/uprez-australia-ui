@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { use, useEffect, useState } from "react";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, CircleCheck, CircleX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -101,7 +101,9 @@ export function DocumentUploadDialog({
           throw new Error(res.error.message);
         }
       });
-      toast.success("Document uploaded successfully");
+      toast.success("Document uploaded successfully", {
+        icon: <CircleCheck className="notification-icon" />
+      });
       setSelectedFile([]);
       setYear(years[0]); // Reset to the most recent year after upload
       setDocumentType(
@@ -113,7 +115,9 @@ export function DocumentUploadDialog({
       onOpenChange(false);
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Failed to upload document");
+      toast.error("Failed to upload document", {
+        icon: <CircleX className="notification-icon" />
+      });
       setIsUploading(false);
     }
   };

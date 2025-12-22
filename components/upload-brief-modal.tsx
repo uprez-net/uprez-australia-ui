@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, CircleX } from "lucide-react";
 import { UploadDropZoneComponent } from "./upload-component";
 import UploadDropzone from "./ui/upload-dropzone";
 import { toast } from "sonner";
@@ -79,7 +79,9 @@ export function UploadBriefModal({
             onClientUploadComplete={(res) => {
               setFile([...file, ...res]);
             }}
-            onUploadError={(error) => toast.error(`Upload failed! ${error.message}`)}
+            onUploadError={(error) => toast.error(`Upload failed! ${error.message}`, {
+              icon: <CircleX className="notification-icon" />
+            })}
             heading="Upload supporting documents"
             subtext={`Drag and drop files here or click to browse.
                Supports DOCX, PDF, and TXT files (MAX. 30MB each)`}

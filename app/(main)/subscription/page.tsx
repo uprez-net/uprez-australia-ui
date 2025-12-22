@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, CircleX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -128,12 +128,16 @@ export default function Component() {
       });
       if (error) {
         console.error("Stripe checkout error:", error);
-        toast.error("Failed to redirect to checkout. Please try again.");
+        toast.error("Failed to redirect to checkout. Please try again.", {
+          icon: <CircleX className="notification-icon" />,
+        });
       }
     } catch (error) {
       console.error("Error during checkout:", error);
       toast.error(
-        "An error occurred while processing your request. Please try again later."
+        "An error occurred while processing your request. Please try again later.", {
+          icon: <CircleX className="notification-icon" />,
+        }
       );
       return;
     }
@@ -149,7 +153,9 @@ export default function Component() {
       window.location.href = url; // Redirect to the billing portal
     } catch (error) {
       console.error("Error canceling subscription:", error);
-      toast.error("Failed to cancel subscription. Please try again later.");
+      toast.error("Failed to cancel subscription. Please try again later.", {
+        icon: <CircleX className="notification-icon" />,
+      });
       return;
     }
   };

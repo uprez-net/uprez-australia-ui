@@ -13,6 +13,7 @@ import { RootState } from "@/app/redux/store"
 import { useAppDispatch } from "@/app/redux/use-dispatch"
 import { generateProspectus } from "@/app/redux/prospectusSlice"
 import { toast } from "sonner"
+import { CircleCheck } from "lucide-react"
 
 interface GenerationModalProps {
   isOpen: boolean
@@ -44,7 +45,9 @@ export function GenerationModal({ isOpen, onClose }: GenerationModalProps) {
       if (generateProspectus.rejected.match(res)) {
         throw new Error(res.payload as string)
       }
-      toast.success("AI Generation completed successfully!")
+      toast.success("AI Generation completed successfully!", {
+        icon: <CircleCheck className="notification-icon" />
+      })
     } catch (error) {
       console.error("Generation failed:", error)
     }

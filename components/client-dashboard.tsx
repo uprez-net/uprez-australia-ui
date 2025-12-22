@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Bot,
+  RefreshCw,
+  CircleX,
 } from "lucide-react";
 import {
   Card,
@@ -225,10 +227,14 @@ export function ClientDashboard({
                     );
                     toast.success("Reports downloaded successfully", {
                       id: toastId,
+                      icon: <CheckCircle className="notification-icon" />,
                     });
                   } catch (error) {
                     console.error("Error downloading reports:", error);
-                    toast.error("Failed to download reports", { id: toastId });
+                    toast.error("Failed to download reports", {
+                      id: toastId,
+                      icon: <CircleX className="notification-icon" />,
+                    });
                   }
                 }}
               >

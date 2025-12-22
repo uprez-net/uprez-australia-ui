@@ -4,7 +4,7 @@ import type React from "react";
 
 import { deleteJustFile, generateSignedUrl } from "@/lib/data/bucketAction";
 import { useState } from "react";
-import { Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
 import axios from "axios";
 import { getContentType } from "@/utils/uploadHelper";
 import { toast } from "sonner";
@@ -209,12 +209,19 @@ export default function UploadDropzone({
 
     if (oversized.length > 0) {
       if (oversized.length === files.length) {
-        toast.warning("All selected files must be smaller than 30 MB");
+        toast.warning("All selected files must be smaller than 30 MB", {
+          icon: <AlertTriangle className="notification-icon" />
+        });
       } else if (oversized.length === 1) {
-        toast.warning("One file is too large. File size must be less than 30 MB");
+        toast.warning("One file is too large. File size must be less than 30 MB", {
+          icon: <AlertTriangle className="notification-icon" />
+        });
       } else {
         toast.warning(
-          "Some files are too large. Each file must be less than 30 MB"
+          "Some files are too large. Each file must be less than 30 MB",
+          {
+            icon: <AlertTriangle className="notification-icon" />
+          }
         );
       }
     }

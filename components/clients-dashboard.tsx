@@ -9,6 +9,9 @@ import {
   Search,
   Filter,
   Download,
+  RefreshCw,
+  CheckCircle,
+  CircleX,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -304,13 +307,22 @@ export function ClientsDashboard() {
                                     );
                                   }
                                   toast.dismiss();
-                                  toast.success("Client deleted successfully");
+                                  toast.success("Client deleted successfully", {
+                                    icon: (
+                                      <CheckCircle className="notification-icon" />
+                                    ),
+                                  });
                                 } catch (error) {
                                   toast.dismiss();
                                   toast.error(
                                     error instanceof Error
                                       ? error.message
-                                      : "Failed to delete client"
+                                      : "Failed to delete client",
+                                    {
+                                      icon: (
+                                        <CircleX className="notification-icon" />
+                                      ),
+                                    }
                                   );
                                   console.error(
                                     "Error deleting client:",

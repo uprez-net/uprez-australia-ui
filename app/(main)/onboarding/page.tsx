@@ -28,6 +28,7 @@ import { set } from "date-fns";
 import { fetchClientData } from "@/lib/data/clientPageAction";
 import Image from "next/image";
 import { getPublicUrl } from "@/lib/data/bucketAction";
+import { CircleCheck, CircleX } from "lucide-react";
 
 // Example form content components for other steps
 function ComplianceDocumentsForm() {
@@ -568,12 +569,16 @@ export default function Home() {
       }
 
       setIsSubmitting(false);
-      toast.success("Onboarding completed successfully!");
+      toast.success("Onboarding completed successfully!", {
+        icon: <CircleCheck className="notification-icon" />,
+      });
     } catch (error) {
       setIsSubmitting(false);
       console.error("Error during onboarding completion:", error);
       toast.error(
-        "An error occurred while processing your onboarding. Please try again."
+        "An error occurred while processing your onboarding. Please try again.", {
+          icon: <CircleX className="notification-icon" />,
+        }
       );
       return;
     }

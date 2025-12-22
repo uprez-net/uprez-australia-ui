@@ -6,7 +6,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Upload, X } from "lucide-react";
+import { CircleCheck, CircleX, RefreshCw, Upload, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +50,7 @@ const formSchema = z.object({
     message: "Organization name must be at least 2 characters.",
   }),
   type: z.nativeEnum(IntermediaryType, {
-    errorMap: () => ({ message: "Please select a valid organization type." }),
+    error: "Please select a valid organization type.",
   }),
 });
 
@@ -84,7 +84,9 @@ export function IntermediaryForm({ onComplete }: IntermediaryFormProps) {
         type: values.type,
       });
       toast.dismiss();
-      toast.success("Organization created successfully!");
+      toast.success("Organization created successfully!", {
+        icon: <CircleCheck className="notification-icon" />
+      });
 
       if (onComplete && result?.intermediaryId) {
         onComplete(result.intermediaryId);
@@ -94,7 +96,9 @@ export function IntermediaryForm({ onComplete }: IntermediaryFormProps) {
     } catch (error) {
       console.error("Error creating organization:", error);
       toast.dismiss();
-      toast.error("Failed to create organization. Please try again.");
+      toast.error("Failed to create organization. Please try again.", {
+        icon: <CircleX className="notification-icon" />
+      });
       return;
     }
   }
