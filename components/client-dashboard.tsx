@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   Activity,
   ArrowUpRight,
+  CircleCheck,
+  XCircle,
 } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -28,11 +30,55 @@ import { useAppDispatch } from "@/app/redux/use-dispatch";
 import { clearReportData, fetchReportData } from "@/app/redux/reportSlice";
 import { calculateComplianceScore } from "@/utils/calculateComplianceScore";
 import { useOrganization } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { getPublicUrl } from "@/lib/data/bucketAction";
+import { downloadReports } from "@/utils/downloadReports";
 
 interface ClientDashboardProps {
   clientId: string;
   overallDocumentProgress: CategoryProgress;
 }
+
+// Import TimelineStatus and TimelineItem types from the timeline component
+import { type TimelineStatus, type TimelineItem, HorizontalTimeline,  } from "./Client-Timeline";
+
+const timelineItems: TimelineItem[] = [
+  {
+    id: "1",
+    date: "Nov 15, 2025",
+    title: "Initial Assessment",
+    description: "Company eligibility assessment completed",
+    status: "completed" as TimelineStatus,
+  },
+  {
+    id: "2",
+    date: "Dec 1, 2025",
+    title: "Document Collection",
+    description: "Required documents uploaded and verified",
+    status: "completed" as TimelineStatus,
+  },
+  {
+    id: "3",
+    date: "Dec 20, 2025",
+    title: "Compliance Review",
+    description: "Regulatory compliance review in progress",
+    status: "active" as TimelineStatus,
+  },
+  {
+    id: "4",
+    date: "Jan 10, 2026",
+    title: "Valuation Report",
+    description: "Company valuation and IPO pricing strategy",
+    status: "upcoming" as TimelineStatus,
+  },
+  {
+    id: "5",
+    date: "Feb 5, 2026",
+    title: "Prospectus Generation",
+    description: "Draft IPO prospectus preparation",
+    status: "upcoming" as TimelineStatus,
+  },
+];
 
 export function ClientDashboard({
   clientId,
@@ -183,6 +229,31 @@ export function ClientDashboard({
     [docReport, documents]
   );
 
+  const valuationStatus = useMemo(() => {
+    const latestValuation = ipoValuations?.at(-1);
+
+    const valuationStatus = !latestValuation
+      ? "Pending"
+      : latestValuation.ipoValuationPdfUrl
+      ? "Completed"
+      : "Processing";
+
+    return valuationStatus;
+  }, [ipoValuations]);
+
+  const complianceStatus = useMemo(() => {
+    if (!clientData) return "Pending";
+    const reportStatus =
+      clientData?.eligibilityStatus === "Failed"
+        ? "Failed"
+        : clientData?.eligibilityStatus === "Pending"
+        ? clientData?.generationId
+          ? "Processing"
+          : "Pending"
+        : "Completed";
+    return reportStatus;
+  }, [clientData]);
+
   if (!clientData) return null;
 
   return (
@@ -308,43 +379,12 @@ export function ClientDashboard({
       </Card>
 
       {/* ---------------- Timeline ---------------- */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>IPO Journey</CardTitle>
-            <span className="text-sm text-muted-foreground">
-              2 of 5 steps completed
-            </span>
-          </div>
-        </CardHeader>
-
-        <CardContent>
-          <Progress value={40} />
-          <div className="mt-6 grid grid-cols-5 text-xs text-center">
-            {[
-              "Assessment",
-              "Documents",
-              "Compliance",
-              "Valuation",
-              "Prospectus",
-            ].map((step, i) => (
-              <div key={step} className="space-y-1">
-                <div
-                  className={cn(
-                    "mx-auto h-3 w-3 rounded-full",
-                    i < 2
-                      ? "bg-green-600"
-                      : i === 2
-                      ? "bg-green-400"
-                      : "bg-gray-300"
-                  )}
-                />
-                <p>{step}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <HorizontalTimeline
+        title="IPO Journey Timeline"
+        completedSteps={2}
+        totalSteps={5}
+        items={timelineItems}
+      />
 
       {/* ---------------- Workflow Actions ---------------- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -353,20 +393,64 @@ export function ClientDashboard({
           description="Compliance status"
           icon={<CheckCircle />}
           action="Download Report"
+          disabled={
+            complianceStatus === "Processing" ||
+            complianceStatus === "Failed" ||
+            complianceStatus === "Pending"
+          }
+          onClick={async () => {
+            const toastId = toast.loading("Preparing download...");
+            try {
+              const iconUrl = clientData!.companyLogo
+                ? await getPublicUrl(clientData!.companyLogo)
+                : undefined;
+              await downloadReports(
+                sessionToken!,
+                documents,
+                clientData!.companyName,
+                iconUrl
+              );
+              toast.success("Reports downloaded successfully", {
+                id: toastId,
+                icon: <CircleCheck className="notification-icon" />,
+              });
+            } catch (error) {
+              console.error("Error downloading reports:", error);
+              toast.error("Failed to download reports", {
+                id: toastId,
+                icon: <XCircle className="notification-icon" />,
+              });
+            }
+          }}
         />
         <WorkflowCard
           title="Valuation"
           description="IPO pricing tools"
           icon={<DollarSign />}
           action="Check Valuation"
-          disabled
+          onClick={() =>
+            router.push(
+              `/dashboard/client/${encodeURIComponent(clientId!)}/valuation`
+            )
+          }
+          disabled={["pending", "failed"].includes(
+            clientData!.complianceStatus
+          )}
         />
         <WorkflowCard
           title="Prospectus"
           description="Document generation"
           icon={<FileText />}
           action="Generate Prospectus"
-          disabled
+          onClick={() =>
+            router.push(
+              `/dashboard/client/${encodeURIComponent(clientId!)}/prospectus`
+            )
+          }
+          disabled={
+            ["pending", "failed"].includes(valuationStatus.toLowerCase()) ||
+            ["pending", "failed"].includes(clientData!.complianceStatus)
+          }
         />
       </div>
 
@@ -488,12 +572,14 @@ function WorkflowCard({
   icon,
   action,
   disabled,
+  onClick,
 }: {
   title: string;
   description: string;
   icon: React.ReactNode;
   action: string;
   disabled?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <Card>
@@ -503,7 +589,7 @@ function WorkflowCard({
           {icon}
         </div>
         <p className="text-xs text-muted-foreground">{description}</p>
-        <Button disabled={disabled} className="w-full">
+        <Button disabled={disabled} className="w-full" onClick={onClick}>
           {action}
         </Button>
       </CardContent>
