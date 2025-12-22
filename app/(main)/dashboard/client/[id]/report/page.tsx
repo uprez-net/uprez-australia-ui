@@ -3,6 +3,7 @@ import { clearReportData, fetchReportData } from "@/app/redux/reportSlice";
 import { RootState } from "@/app/redux/store";
 import { useAppDispatch } from "@/app/redux/use-dispatch";
 import { ComplianceReportViewer } from "@/components/compliance-report-viewer";
+import { ComplianceReportViewerSkeleton } from "@/components/compliance-report-viewer-skeleton";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -69,7 +70,8 @@ export default function ComplianceReportPage() {
       }
     };
 
-    if (documents.length > 0 && sessionToken && invokationRef.current === 0) fetchData();
+    if (documents.length > 0 && sessionToken && invokationRef.current === 0)
+      fetchData();
 
     return () => {
       // mounted = false;
@@ -78,7 +80,11 @@ export default function ComplianceReportPage() {
   }, [documents, sessionToken, clientError]);
 
   if (isLoading) {
-    return <div className="text-center">Loading compliance report...</div>;
+    return (
+      <main className="container mx-auto py-8 px-4">
+        <ComplianceReportViewerSkeleton />;
+      </main>
+    );
   }
 
   if (error) {

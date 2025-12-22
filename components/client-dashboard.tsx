@@ -40,7 +40,11 @@ interface ClientDashboardProps {
 }
 
 // Import TimelineStatus and TimelineItem types from the timeline component
-import { type TimelineStatus, type TimelineItem, HorizontalTimeline,  } from "./Client-Timeline";
+import {
+  type TimelineStatus,
+  type TimelineItem,
+  HorizontalTimeline,
+} from "./Client-Timeline";
 
 const timelineItems: TimelineItem[] = [
   {
@@ -509,24 +513,54 @@ export function ClientDashboard({
 }
 
 /* ---------------- Small Components ---------------- */
-
-function StatCard({ title, value, icon, trend, negative = false }: any) {
+function StatCard({
+  title,
+  value,
+  icon,
+  trend,
+  negative = false,
+}: {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  trend: string | React.ReactNode;
+  negative?: boolean;
+}) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-xs text-muted-foreground">{title}</p>
-          {icon}
+    <Card
+      className={cn(
+        "relative overflow-hidden",
+        "transition-all duration-300 ease-in-out",
+        "hover:-translate-y-1 hover:shadow-xl",
+        "shadow-md rounded-xl bg-white"
+      )}
+    >
+      {/* Left accent bar */}
+      <span className="absolute left-0 top-0 h-full w-1 bg-green-600" />
+
+      <CardContent className="p-5">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+
+          {/* Icon container */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-600">
+            {icon}
+          </div>
         </div>
-        <p className="text-2xl font-bold">{value}</p>
-        <p
+
+        {/* Value */}
+        <p className="text-2xl font-bold mb-2">{value}</p>
+
+        {/* Trend */}
+        <div
           className={cn(
-            "text-xs mt-1",
+            "flex items-center gap-1 text-xs font-medium",
             negative ? "text-red-500" : "text-green-600"
           )}
         >
           {trend}
-        </p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -541,25 +575,40 @@ function KpiCard({
   value: number | string;
   target: number;
 }) {
-  const calcoffTarget = (Number(value) / target) * 100;
+  const percent = !isNaN(Number(value)) ? Number(value) : 0;
+  const calcoffTarget = (percent / target) * 100;
+
   return (
-    <Card className="bg-muted/40">
-      <CardContent className="pt-6 space-y-2">
-        <p className="text-xs text-muted-foreground">{title}</p>
-        <p className="text-xl font-bold">{value}%</p>
-        <Progress value={!isNaN(Number(value)) ? Number(value) : 0} />
-        <div className="flex justify-between items-center mt-2">
-          <p className="text-xs text-muted-foreground">Target: {target}%</p>
-          <p
+    <Card
+      className={cn("rounded-lg", "bg-gradient-to-r from-green-50 to-white")}
+    >
+      <CardContent className="p-4 space-y-2">
+        {/* KPI Title */}
+        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+
+        {/* KPI Value */}
+        <p className="text-xl font-bold text-foreground">{value}%</p>
+
+        {/* Progress Bar */}
+        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-green-600 transition-all"
+            style={{ width: `${Math.min(percent, 100)}%` }}
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <span>Target: {target}%</span>
+          <span
             className={cn(
-              calcoffTarget >= 100 ? "text-green-600" : "text-red-500",
-              "text-xs"
+              calcoffTarget >= 100 ? "text-green-600" : "text-red-500"
             )}
           >
             {calcoffTarget >= 100
               ? `+${(calcoffTarget - 100).toFixed(2)}% Above Target`
               : `${(100 - calcoffTarget).toFixed(2)}% Below Target`}
-          </p>
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -573,6 +622,7 @@ function WorkflowCard({
   action,
   disabled,
   onClick,
+  active,
 }: {
   title: string;
   description: string;
@@ -580,16 +630,54 @@ function WorkflowCard({
   action: string;
   disabled?: boolean;
   onClick?: () => void;
+  active?: boolean;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-3">
-        <div className="flex justify-between items-center">
-          <p className="font-semibold">{title}</p>
-          {icon}
+    <Card
+      onClick={!disabled ? onClick : undefined}
+      className={cn(
+        "relative overflow-hidden cursor-pointer",
+        "rounded-lg shadow-md",
+        "bg-gradient-to-r from-emerald-50 to-emerald-100",
+        "transition-all duration-300 ease-in-out",
+        "hover:-translate-y-1 hover:shadow-xl",
+        active && "bg-gradient-to-r from-emerald-200 to-emerald-100",
+        disabled && "cursor-not-allowed opacity-80"
+      )}
+    >
+      {/* Corner ribbon */}
+      <span
+        className="
+          absolute top-0 right-0
+          w-0 h-0
+          border-t-0 border-l-[20px] border-b-[20px] border-r-0
+          border-l-transparent border-b-emerald-100
+        "
+      />
+
+      <CardContent className="p-6 space-y-3">
+        {/* Header */}
+        <div className="flex justify-between items-center text-base font-semibold">
+          <p>{title}</p>
+          <span className="text-emerald-600">{icon}</span>
         </div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-        <Button disabled={disabled} className="w-full" onClick={onClick}>
+
+        {/* Description */}
+        <span className="block text-xs text-muted-foreground mb-3">
+          {description}
+        </span>
+
+        {/* Action Button */}
+        <Button
+          disabled={disabled}
+          className={cn(
+            "w-full text-xs font-semibold rounded-md",
+            "bg-gradient-to-r from-green-300 to-green-500 text-white",
+            "shadow-sm transition-all",
+            "hover:-translate-y-0.5 hover:shadow-md",
+            disabled && "bg-gradient-to-r from-gray-300 to-gray-400 opacity-70"
+          )}
+        >
           {action}
         </Button>
       </CardContent>
@@ -609,14 +697,17 @@ function ActivityItem({
   time: string;
 }) {
   return (
-    <div className="flex gap-3 items-start">
-      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+    <div className="flex gap-4 py-4 border-b border-border last:border-b-0">
+      {/* Icon */}
+      <div className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center bg-muted">
         {icon}
       </div>
-      <div>
-        <p className="text-sm font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">{desc}</p>
-        <p className="text-xs text-muted-foreground">{time}</p>
+
+      {/* Content */}
+      <div className="flex-1">
+        <p className="text-[13px] font-semibold mb-1">{title}</p>
+        <p className="text-xs text-muted-foreground mb-1">{desc}</p>
+        <p className="text-[11px] text-muted-foreground">{time}</p>
       </div>
     </div>
   );
@@ -633,12 +724,24 @@ function QuickAction({
 }) {
   return (
     <Button
-      variant="outline"
-      className="flex flex-col gap-2 h-auto py-4"
+      variant="ghost"
       onClick={onClick}
+      className="
+        h-auto
+        p-4
+        flex flex-col items-center gap-2
+        rounded-lg
+        transition-colors
+        hover:bg-green-50
+      "
     >
-      {icon}
-      <span className="text-xs">{label}</span>
+      {/* Icon */}
+      <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-green-50 text-green-600">
+        {icon}
+      </div>
+
+      {/* Label */}
+      <span className="text-xs font-semibold text-center">{label}</span>
     </Button>
   );
 }

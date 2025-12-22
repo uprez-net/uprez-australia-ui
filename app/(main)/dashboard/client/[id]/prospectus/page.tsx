@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { AddSubsectionModal } from "@/components/add-subsection-dialog";
 import { ProspectusWorkflowVisualizer } from "@/components/prospectus-timeline";
 import { CircleCheck, CircleX, RefreshCcw } from "lucide-react";
+import { ProspectusEditorSkeleton } from "@/components/ProspectusEditorSkeleton";
 
 export default function ProspectusEditor() {
   const [activeSection, setActiveSection] = useState("important-notices");
@@ -291,12 +292,7 @@ export default function ProspectusEditor() {
       `Client loading: ${clientLoading}, Prospectus loading: ${prospectusLoading}`
     );
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="text-gray-600 font-medium">Loading...</p>
-        </div>
-      </div>
+      <ProspectusEditorSkeleton />
     );
   }
 

@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import ClientDashboardSkeleton from "@/components/ClientDashboardSkeleton";
 
 export default function ClientDashboardPage() {
   const {
@@ -54,11 +55,7 @@ export default function ClientDashboardPage() {
 
   if (!clientData && !reduxError) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-lg text-gray-600">Loading client data...</p>
-        </div>
-      </div>
+      <ClientDashboardSkeleton />
     );
   }
 

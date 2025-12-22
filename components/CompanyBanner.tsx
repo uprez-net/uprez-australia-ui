@@ -16,6 +16,7 @@ import {
   companyTypes,
   industrySectors,
 } from "./business-details-form";
+import { cn } from "@/lib/utils";
 
 const getEligibilityStatusConfig = (status: EligibilityStatus) => {
   switch (status) {
@@ -63,6 +64,22 @@ const getComplianceStatusConfig = (status: ComplianceStatus) => {
     default:
       return { label: status, className: "bg-gray-100 text-gray-700" };
   }
+};
+
+const eligibilityStyles: Record<EligibilityStatus, string> = {
+  Pending: "bg-amber-100 text-amber-800",
+  Failed: "bg-red-100 text-red-800",
+  Not_Eligible: "bg-red-100 text-red-800",
+  SME_Eligible: "bg-emerald-100 text-emerald-800",
+  Mainboard_Eligible: "bg-blue-100 text-blue-800",
+};
+
+const complianceStyles: Record<ComplianceStatus, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  low: "bg-yellow-100 text-yellow-800",
+  medium: "bg-blue-100 text-blue-800",
+  high: "bg-emerald-100 text-emerald-800",
+  failed: "bg-red-100 text-red-800",
 };
 
 const formatCurrency = (amount?: number) =>
@@ -237,9 +254,44 @@ export default function CompanyBanner({ data }: CompanyBannerProps) {
             </div>
 
             <div className="space-y-4">
+              {/* Compliance */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Compliance:
+                </p>
+                <span
+                  className={cn(
+                    "inline-block mt-1 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+                    complianceStyles[data.complianceStatus]
+                  )}
+                >
+                  {data.complianceStatus.charAt(0).toUpperCase() +
+                    data.complianceStatus.slice(1)}
+                </span>
+              </div>
+
+              {/* Eligibility */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Eligibility:
+                </p>
+                <span
+                  className={cn(
+                    "inline-block mt-1 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+                    eligibilityStyles[data.eligibilityStatus]
+                  )}
+                >
+                  {data.eligibilityStatus.replace("_", " ")}
+                </span>
+              </div>
               <div>
                 <p className="text-xs font-medium mb-1">Overall Progress</p>
-                <Progress value={data.overallProgress} />
+                <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-green-600 transition-all"
+                    style={{ width: `${Math.min(data.overallProgress, 100)}%` }}
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {data.overallProgress}% complete
                 </p>
