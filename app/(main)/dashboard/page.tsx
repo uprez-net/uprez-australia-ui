@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { getPostLoginRedirectUrl } from "@/lib/utils";
+import { ClientsDashboardSkeleton } from "@/components/ClientsDashboardSkeleton";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -80,9 +81,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <main className="container mx-auto py-8 px-4 bg-slate-50">
-        <div className="flex justify-center items-center h-full">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
-        </div>
+        <ClientsDashboardSkeleton />
       </main>
     );
   }

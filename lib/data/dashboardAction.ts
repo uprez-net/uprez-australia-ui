@@ -99,6 +99,17 @@ export async function deleteSMECompanyAction(id: string) {
       );
     }
 
+    await prisma.clientProspectus.deleteMany({
+      where: {
+        smeCompanyId: id,
+      },
+    });
+    await prisma.iPOValuation.deleteMany({
+      where: {
+        clientAccountId: id,
+      },
+    });
+
     const deletedSMECompany = await prisma.sMECompany.delete({
       where: {
         id,

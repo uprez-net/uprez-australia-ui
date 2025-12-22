@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { title } from "process";
+import { AppSidebarSkeleton } from "./sidebar-skeleton";
 
 // Menu items.
 const items = [
@@ -48,7 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
 
   if (!isLoaded) {
-    return <div>loading...</div>;
+    return <AppSidebarSkeleton />;
   }
 
   if (!isSignedIn) {

@@ -163,7 +163,7 @@ model Comments {
   parentId     String? // null means it's a top-level comment
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  Prospectus   ClientProspectus @relation(fields: [prospectusId], references: [id])
+  Prospectus   ClientProspectus @relation(fields: [prospectusId], references: [id], onDelete: Cascade)
   User         User             @relation(fields: [userId], references: [id])
   parent       Comments?        @relation("CommentReplies", fields: [parentId], references: [id])
   replies      Comments[]       @relation("CommentReplies")
