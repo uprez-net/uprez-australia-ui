@@ -2,6 +2,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -33,25 +34,40 @@ model ClientTeamMember {
 }
 
 model Document {
-  id               String           @id
+  id               String            @id
   generationId     String?
   generationNumber Int?
   // clientAccountId  String
-  customKey        String           @default("custom_key")
+  customKey        String            @default("custom_key")
   smeCompanyId     String
   uploadedById     String
   documentType     DocumentType
   fileName         String
-  uploadThingKey   String           @unique
+  uploadThingKey   String            @unique
   fileSize         Int
   periodYear       Int?
-  createdAt        DateTime         @default(now())
+  createdAt        DateTime          @default(now())
   updatedAt        DateTime
   basicCheckStatus BasicCheckStatus
   basicCheckReason String?
   // ClientAccount    ClientAccount    @relation(fields: [clientAccountId], references: [id])
-  SMECompany       SMECompany       @relation(fields: [smeCompanyId], references: [id])
-  User             User             @relation(fields: [uploadedById], references: [id])
+  SMECompany       SMECompany        @relation(fields: [smeCompanyId], references: [id])
+  User             User              @relation(fields: [uploadedById], references: [id])
+  reportUserNotes  ReportUserNotes[]
+}
+
+model ReportUserNotes {
+  id               String   @id @default(uuid())
+  documentId       String
+  generationId     String
+  generationNumber Int
+  userId           String
+  content          String
+  expertVerified   Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  Document         Document @relation(fields: [documentId], references: [id])
+  User             User     @relation(fields: [userId], references: [id])
 }
 
 model IntermediaryProfile {
@@ -78,7 +94,7 @@ model SMEProfile {
 }
 
 model SMECompany {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   companyName String
   companyLogo String?
 
@@ -201,6 +217,7 @@ model User {
   ClientProspectus    ClientProspectus[]
   IntermediaryProfile IntermediaryProfile?
   SMEProfile          SMEProfile?
+  reportUserNotes     ReportUserNotes[]
 }
 
 enum BasicCheckStatus {

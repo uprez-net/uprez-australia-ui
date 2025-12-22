@@ -134,6 +134,7 @@ export function ComplianceReportViewer() {
           category: category.name,
           priority: priorities[doc.status as keyof typeof priorities],
           report: doc.report, // Complete report data
+          userNotes: doc.userNotes,
         });
       }
     });
@@ -339,6 +340,7 @@ export function ComplianceReportViewer() {
                           category={finding.category}
                           priority={finding.priority}
                           report={finding.report}
+                          userNotes={finding.userNotes}
                           generationId={
                             documents.find((doc) => doc.id === finding.id)
                               ?.generationId!
@@ -346,6 +348,10 @@ export function ComplianceReportViewer() {
                           docType={
                             documents.find((doc) => doc.id === finding.id)
                               ?.documentType!
+                          }
+                          genNumber={
+                            documents.find((doc) => doc.id === finding.id)
+                              ?.generationNumber!
                           }
                         />
                       ))}
@@ -401,7 +407,10 @@ export function ComplianceReportViewer() {
               });
             } catch (error) {
               console.error("Failed to download reports:", error);
-              toast.error("Failed to download reports", { id: toastId, icon: <CircleX className="notification-icon" /> });
+              toast.error("Failed to download reports", {
+                id: toastId,
+                icon: <CircleX className="notification-icon" />,
+              });
             } finally {
               toast.dismiss(toastId);
             }

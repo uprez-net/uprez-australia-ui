@@ -31,8 +31,13 @@ import { generatePDF } from "@/utils/convertMarkdownToPDF";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { getPublicUrl } from "@/lib/data/bucketAction";
-import { DocumentType } from "@prisma/client";
+import { DocumentType, ReportUserNotes } from "@prisma/client";
 import { ProfessionBadge } from "./profession-badge";
+import { toast } from "sonner";
+import { saveNote } from "@/app/redux/reportSlice";
+import { useAppDispatch } from "@/app/redux/use-dispatch";
+import { set } from "zod";
+import { UserNotesList } from "./notes-scrolllist";
 
 interface ComplianceFindingItemProps {
   id: string;
@@ -45,11 +50,13 @@ interface ComplianceFindingItemProps {
   category: string;
   priority: "high" | "medium" | "low";
   report: string; // Complete report data Markdown
-  userNotes?: string;
+  // userNotes?: string;
   expertVerified?: boolean;
   isExpertRole?: boolean;
   generationId: string;
   docType: DocumentType;
+  genNumber: number;
+  userNotes: (ReportUserNotes & { userName: string })[];
 }
 
 export function ComplianceFindingItem({
@@ -62,18 +69,22 @@ export function ComplianceFindingItem({
   recommendation,
   category,
   priority,
-  userNotes = "",
+  // userNotes = "",
   report,
   expertVerified = false,
   isExpertRole = true,
   generationId,
+  genNumber,
   docType,
+  userNotes,
 }: ComplianceFindingItemProps) {
-  const [notes, setNotes] = useState(userNotes);
+  const [notes, setNotes] = useState("");
   const [verified, setVerified] = useState(expertVerified);
   const [chatOpen, setChatOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const { clientData } = useSelector((state: RootState) => state.client);
+  const dispatch = useAppDispatch();
 
   // Helper function to get status badge
   const getStatusBadge = () => {
@@ -164,6 +175,32 @@ export function ComplianceFindingItem({
       priority,
       userNotes: notes,
     };
+  };
+
+  const handleSaveNotes = async () => {
+    const toastId = toast.loading("Saving notes...");
+    setSubmitting(true);
+    try {
+      await dispatch(
+        saveNote({
+          content: notes,
+          documentId: id,
+          generationId: generationId,
+          genNumber: genNumber,
+          isVerified: verified,
+          smeCompanyId: clientData!.id,
+        })
+      );
+      toast.success("Notes saved successfully!", { id: toastId });
+    } catch (error) {
+      toast.error("Error saving notes.", { id: toastId });
+      console.error("Error saving notes:", error);
+    } finally {
+      toast.dismiss(toastId);
+      setNotes("");
+      setVerified(false);
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -277,36 +314,40 @@ export function ComplianceFindingItem({
                 <Separator />
 
                 {/* User Notes/Justification */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-gray-700">
-                    User Notes/Justification:
-                  </h5>
-                  <Textarea
-                    placeholder="Add your notes or justification here..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
+                <div className="space-y-4">
+                  <UserNotesList notes={userNotes} />
 
-                {/* Expert Verification */}
-                {isExpertRole && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`expert-verified-${id}`}
-                      checked={verified}
-                      onCheckedChange={(checked) =>
-                        setVerified(checked === true)
-                      }
+                  <div className="space-y-2 px-2">
+                    <h5 className="text-sm font-medium text-gray-700">
+                      User Notes/Justification:
+                    </h5>
+                    <Textarea
+                      placeholder="Add your notes or justification here..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[100px]"
                     />
-                    <label
-                      htmlFor={`expert-verified-${id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Expert Verified
-                    </label>
                   </div>
-                )}
+
+                  {/* Expert Verification */}
+                  {isExpertRole && (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`expert-verified-${id}`}
+                        checked={verified}
+                        onCheckedChange={(checked) =>
+                          setVerified(checked === true)
+                        }
+                      />
+                      <label
+                        htmlFor={`expert-verified-${id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Expert Verified
+                      </label>
+                    </div>
+                  )}
+                </div>
 
                 {/* Action Buttons */}
                 <div className="flex justify-end space-x-2 pt-2">
@@ -335,7 +376,12 @@ export function ComplianceFindingItem({
                     </SheetContent>
                   </Sheet>
 
-                  <Button size="sm" className="bg-[#027055] hover:bg-[#025a44]">
+                  <Button
+                    size="sm"
+                    className="bg-[#027055] hover:bg-[#025a44]"
+                    onClick={handleSaveNotes}
+                    disabled={submitting}
+                  >
                     Save Notes
                   </Button>
                 </div>

@@ -1,6 +1,9 @@
-import { getReportsFromBackend } from "@/lib/data/reportPageAction";
+import {
+  getReportsFromBackend,
+  saveUserNote,
+} from "@/lib/data/reportPageAction";
 import { ReportSummary } from "@/utils/convertReport";
-import { Document } from "@prisma/client";
+import { Document, ReportUserNotes } from "@prisma/client";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface DocumentReport {
@@ -8,6 +11,7 @@ interface DocumentReport {
   report: string;
   summary: ReportSummary;
   status: string;
+  userNotes: (ReportUserNotes & { userName: string })[];
 }
 
 interface ReportPageState {
@@ -42,6 +46,43 @@ export const fetchReportData = createAsyncThunk<
   }
 );
 
+export const saveNote = createAsyncThunk<
+  (ReportUserNotes & { userName: string }),
+  {
+    content: string;
+    documentId: string;
+    generationId: string;
+    genNumber: number;
+    isVerified: boolean;
+    smeCompanyId: string;
+  },
+  { rejectValue: string }
+>(
+  "report/saveUserNote",
+  async (
+    { content, documentId, generationId, genNumber, isVerified, smeCompanyId },
+    { rejectWithValue }
+  ) => {
+    try {
+      const newNote = await saveUserNote(
+        content,
+        documentId,
+        generationId,
+        genNumber,
+        isVerified,
+        smeCompanyId
+      );
+      return newNote;
+    } catch (error) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 export const reportSlice = createSlice({
   name: "report",
   initialState,
@@ -64,6 +105,18 @@ export const reportSlice = createSlice({
       })
       .addCase(fetchReportData.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(saveNote.fulfilled, (state, action) => {
+        const newNote = action.payload;
+        const docReport = state.docReport.find(
+          (report) => report.id === newNote.documentId
+        );
+        if (docReport) {
+          docReport.userNotes.push(newNote);
+        }
+      })
+      .addCase(saveNote.rejected, (state, action) => {
         state.error = action.payload as string;
       });
   },
