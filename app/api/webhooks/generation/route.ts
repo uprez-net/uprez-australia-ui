@@ -118,6 +118,11 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
+    if(status !== "Completed") {
+      // If not completed, no further processing needed
+      return new NextResponse("Intermediate statuses updated", { status: 200 });
+    }
+
     // Build login payload from fetched user info (we validated doc exists above)
     const user = doc.SMECompany.SMEProfile?.User;
     if (!user) {
