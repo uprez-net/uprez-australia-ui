@@ -120,7 +120,7 @@ export const clientSlice = createSlice({
 
         state.documents = state.documents.map((doc) => ({
           ...doc,
-          generationId: doc.generationId || action.payload, // Ensure all documents have the new generation ID
+          generationId: doc.generationId ?? action.payload, // Ensure all documents have the new generation ID
         })); // Reset documents to pending status
       }
     },
@@ -129,7 +129,7 @@ export const clientSlice = createSlice({
         state.clientData.generationNumber = action.payload; // Add after migrating to new schema
         state.documents = state.documents.map((doc) => ({
           ...doc,
-          generationNumber: doc.generationNumber || action.payload, // Ensure all documents have the new generation ID
+          generationNumber: doc.generationNumber ?? action.payload, // Ensure all documents have the new generation ID
         })); // Reset documents to pending status
       }
     },

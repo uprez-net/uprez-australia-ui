@@ -360,7 +360,13 @@ export function ClientDashboard({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <KpiCard
             title="IPO Readiness"
-            value={isLoading ? "Loading..." : overallScore}
+            value={
+              clientData.complianceStatus !== "pending"
+                ? isLoading
+                  ? "Loading..."
+                  : overallScore
+                : "Pending"
+            }
             target={75}
           />
           <KpiCard
@@ -371,11 +377,13 @@ export function ClientDashboard({
           <KpiCard
             title="Financial Health"
             value={
-              isLoading
-                ? "Loading..."
-                : categoryScores.find(
-                    (score) => score.name === "Financial Reporting & Analysis"
-                  )!.score
+              clientData.complianceStatus !== "pending"
+                ? isLoading
+                  ? "Loading..."
+                  : categoryScores.find(
+                      (score) => score.name === "Financial Reporting & Analysis"
+                    )!.score
+                : "Pending"
             }
             target={80}
           />
@@ -587,7 +595,9 @@ function KpiCard({
         <p className="text-xs font-medium text-muted-foreground">{title}</p>
 
         {/* KPI Value */}
-        <p className="text-xl font-bold text-foreground">{value}%</p>
+        <p className="text-xl font-bold text-foreground">
+          {isNaN(Number(value)) ? `${value}` : `${Number(value)}%`}
+        </p>
 
         {/* Progress Bar */}
         <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
@@ -600,15 +610,17 @@ function KpiCard({
         {/* Footer */}
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
           <span>Target: {target}%</span>
-          <span
-            className={cn(
-              calcoffTarget >= 100 ? "text-green-600" : "text-red-500"
-            )}
-          >
-            {calcoffTarget >= 100
-              ? `+${(calcoffTarget - 100).toFixed(2)}% Above Target`
-              : `${(100 - calcoffTarget).toFixed(2)}% Below Target`}
-          </span>
+          {!isNaN(Number(value)) && (
+            <span
+              className={cn(
+                calcoffTarget >= 100 ? "text-green-600" : "text-red-500"
+              )}
+            >
+              {calcoffTarget >= 100
+                ? `+${(calcoffTarget - 100).toFixed(2)}% Above Target`
+                : `${(100 - calcoffTarget).toFixed(2)}% Below Target`}
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
