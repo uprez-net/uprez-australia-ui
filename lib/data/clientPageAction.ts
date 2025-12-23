@@ -27,7 +27,7 @@ export const fetchClientData = async (clientId: string) => {
     const [clientData, userRole] = await Promise.all([
       prisma.sMECompany.findUnique({
         where: { id: clientId },
-        include: { 
+        include: {
           Documents: true,
           ipoValuations: true,
         },
@@ -75,7 +75,7 @@ export const refreshAccessToken = async (sessionToken: string) => {
         Authorization: `Bearer ${sessionToken}`,
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.text();
       console.log(`Error: ${error}`);
@@ -268,7 +268,7 @@ export const triggerGeneration = async (
 ) => {
   try {
     // Only process new/pending docs; avoid starting a new generation while one is in-flight.
-    const [pendingUnassignedCount, pendingAssignedCount] = await Promise.all([
+    const [pendingUnassignedCount, pendingAssignedCount, failedDocumentCount] = await Promise.all([
       prisma.document.count({
         where: {
           smeCompanyId: Document.smeCompanyId,
@@ -283,14 +283,21 @@ export const triggerGeneration = async (
           generationId: { not: null },
         },
       }),
+      prisma.document.count({
+        where: {
+          smeCompanyId: Document.smeCompanyId,
+          basicCheckStatus: BasicCheckStatus.Failed,
+          generationId: { not: null },
+        },
+      }),
     ]);
 
     if (pendingAssignedCount > 0) {
       throw new Error("A generation is already in progress for this client.");
     }
 
-    if (pendingUnassignedCount === 0) {
-      throw new Error("No new/pending documents to process.");
+    if (pendingUnassignedCount === 0 && failedDocumentCount === 0) {
+      throw new Error("No documents to process.");
     }
 
     const response = await fetch(`${BACKEND_URL}/api/v1/generation/trigger`, {
