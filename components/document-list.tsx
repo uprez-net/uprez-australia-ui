@@ -84,19 +84,19 @@ export function DocumentList({ documents, onUpload }: DocumentListProps) {
       case BasicCheckStatus.Passed:
         const status = findDocCompliantStatus(doc);
         return (
-          <Badge className="bg-green-100 text-green-800 border-green-300">
+          <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-200 hover:border-green-400 cursor-default">
             {status}
           </Badge>
         );
       case BasicCheckStatus.Pending:
         return (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-300">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 hover:border-amber-400 cursor-default">
             Pending
           </Badge>
         );
       case BasicCheckStatus.Failed:
         return (
-          <Badge className="bg-red-100 text-red-800 border-red-300">
+          <Badge className="bg-red-100 text-red-800 border-red-300 hover:bg-red-200 hover:border-red-400 cursor-default">
             Rejected
           </Badge>
         );

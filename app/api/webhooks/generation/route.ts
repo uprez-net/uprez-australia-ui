@@ -64,32 +64,51 @@ export async function POST(req: NextRequest) {
 
   try {
     // Fetch a single document that matches generation_id and include SME + user info in one go.
-    const doc = await prisma.document.findFirstOrThrow({
-      where: { generationId: generation_id },
+    // const doc = await prisma.document.findFirstOrThrow({
+    //   where: { generationId: generation_id },
+    //   select: {
+    //     id: true,
+    //     smeCompanyId: true,
+    //     // include related SME company -> profile -> user for backend login
+    //     SMECompany: {
+    //       select: {
+    //         id: true,
+    //         SMEProfile: {
+    //           select: {
+    //             User: {
+    //               select: {
+    //                 name: true,
+    //                 email: true,
+    //                 role: true,
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
+    const smeCompany = await prisma.sMECompany.findFirstOrThrow({
+      where: {
+        generationId: generation_id,
+      },
       select: {
         id: true,
-        smeCompanyId: true,
-        // include related SME company -> profile -> user for backend login
-        SMECompany: {
+        SMEProfile: {
           select: {
-            id: true,
-            SMEProfile: {
+            User: {
               select: {
-                User: {
-                  select: {
-                    name: true,
-                    email: true,
-                    role: true,
-                  },
-                },
+                name: true,
+                email: true,
+                role: true,
               },
             },
-          },
-        },
-      },
+          }
+        }
+      }
     });
 
-    if (!doc) {
+    if (!smeCompany) {
       console.error("No document found for generationId:", generation_id);
       return new NextResponse("Document/SME not found", { status: 404 });
     }
@@ -101,15 +120,15 @@ export async function POST(req: NextRequest) {
     // This ensures both updates succeed or fail together.
     await prisma.$transaction([
       prisma.document.updateMany({
-        where: { generationId: generation_id, id: { in: document_ids } },
-        data: { basicCheckStatus: "Passed" },
+        where: { id: { in: document_ids } },
+        data: { basicCheckStatus: "Passed", generationId: generation_id },
       }),
       prisma.document.updateMany({
-        where: { generationId: generation_id, id: { notIn: document_ids } },
+        where: { smeCompanyId: smeCompany.id, id: { notIn: document_ids } },
         data: { basicCheckStatus: "Failed" },
       }),
       prisma.sMECompany.update({
-        where: { id: doc.smeCompanyId },
+        where: { id: smeCompany.id },
         data: {
           complianceStatus: intermediateCompliance,
           eligibilityStatus: intermediateEligibility,
@@ -118,15 +137,15 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
-    if(status !== "Completed") {
+    if (status !== "Completed") {
       // If not completed, no further processing needed
       return new NextResponse("Intermediate statuses updated", { status: 200 });
     }
 
     // Build login payload from fetched user info (we validated doc exists above)
-    const user = doc.SMECompany.SMEProfile?.User;
+    const user = smeCompany.SMEProfile?.User;
     if (!user) {
-      console.error("SME user missing for smeCompanyId:", doc.smeCompanyId);
+      console.error("SME user missing for smeCompanyId:", smeCompany.id);
       return new NextResponse("SME user not found", { status: 404 });
     }
 
@@ -137,7 +156,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         username: user.name,
         email: user.email,
-        company_id: doc.smeCompanyId,
+        company_id: smeCompany.id,
         role: user.role,
       }),
     });
@@ -165,7 +184,7 @@ export async function POST(req: NextRequest) {
 
     // Update SME company with final compliance score (only one more write)
     await prisma.sMECompany.update({
-      where: { id: doc.smeCompanyId },
+      where: { id: smeCompany.id },
       data: {
         complianceStatus: finalCompliance,
         updatedAt: new Date(),
