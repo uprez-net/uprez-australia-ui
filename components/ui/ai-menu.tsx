@@ -385,7 +385,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     icon: <Wand2 />,
     label: "Generate Section",
     value: "generateSubSection",
-    onSelect: ({ editor, input, editingSubsectionId, clientId }) => {
+    onSelect: ({ editor, input, editingSubsectionId, clientId, generationId }) => {
       // const { editingSubsectionId } = useSelector(
       //   (state: RootState) => state.prospectus
       // );
@@ -394,7 +394,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: `${
           SECTION_PROMPTS[editingSubsectionId as keyof typeof SECTION_PROMPTS]
-        } \n\n CLIENT ID: ${clientId}`,
+        } \n\n CLIENT ID: ${clientId} \n\n GENERATION ID: ${generationId}`,
         toolName: "generate",
       });
     },
@@ -516,6 +516,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       input: string;
       editingSubsectionId: string | undefined;
       clientId: string | undefined;
+      generationId: string | undefined;
     }) => void;
   }
 >;
@@ -624,6 +625,7 @@ export const AIMenuItems = ({
                   input,
                   editingSubsectionId: editingSubsectionId ?? undefined,
                   clientId: clientData?.id ?? undefined,
+                  generationId: clientData?.generationId ?? undefined,
                 });
                 setInput("");
               }}

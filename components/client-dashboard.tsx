@@ -170,7 +170,7 @@ export function ClientDashboard({
     const fetchData = async () => {
       invokationRef.current += 1;
       console.log(`Fetch invocation #${invokationRef.current}`);
-      if (mounted && sessionToken) {
+      if (mounted && sessionToken && clientData && clientData.generationId) {
         try {
           setIsLoading(true);
           setError(null);
@@ -180,6 +180,8 @@ export function ClientDashboard({
                 (doc) => doc.basicCheckStatus === "Passed"
               ),
               sessionToken,
+              smeCompanyId: clientData.id,
+              generationId: clientData.generationId,
             })
           );
 
@@ -222,7 +224,7 @@ export function ClientDashboard({
       // mounted = false;
       dispatch(clearReportData());
     };
-  }, [documents, sessionToken, clientError]);
+  }, [documents, sessionToken, clientError, clientData]);
 
   const overallProgress = useMemo(() => {
     return calculateOverallProgress();
@@ -419,6 +421,8 @@ export function ClientDashboard({
               await downloadReports(
                 sessionToken!,
                 documents,
+                clientData!.id,
+                clientData!.generationId!,
                 clientData!.companyName,
                 iconUrl
               );
@@ -460,7 +464,7 @@ export function ClientDashboard({
             )
           }
           disabled={
-            ["pending", "failed"].includes(valuationStatus.toLowerCase()) ||
+            ["pending", "processing"].includes(valuationStatus.toLowerCase()) ||
             ["pending", "failed"].includes(clientData!.complianceStatus)
           }
         />

@@ -35,6 +35,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { documentCategories } from "@/app/interface/interface";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { set } from "zod";
+import { se } from "date-fns/locale";
 
 // interface VerificationResult {
 //   category: string;
@@ -64,6 +66,7 @@ export function DocumentVerificationDialog({
   );
   const dispatch = useAppDispatch();
   const { isLoading, attemptGeneration } = useSubscription();
+  const [isTriggered, setIsTriggered] = useState(false);
   const router = useRouter();
 
   const [isVerifying, setIsVerifying] = useState(
@@ -150,6 +153,8 @@ export function DocumentVerificationDialog({
       setIsVerifying(false);
       return;
     }
+    const toastId = toast.loading("Starting document verification...");
+    setIsTriggered(true);
     try {
       const res = await triggerGeneration(sessionToken, doc);
       console.log("Generation triggered successfully:", res);
@@ -158,11 +163,13 @@ export function DocumentVerificationDialog({
       setIsVerifying(true);
       toast.success("Document verification started successfully", {
         icon: <CheckCircle className="notification-icon" />,
+        id: toastId,
       });
       await new Promise((resolve) => setTimeout(resolve, 2000));
       if (!redirect) return;
       toast.info("Redirecting to client dashboard...", {
         icon: <Info className="notification-icon" />,
+        id: toastId,
       });
       router.push(`/dashboard/client/${clientData!.id}`);
     } catch (error) {
@@ -170,12 +177,16 @@ export function DocumentVerificationDialog({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to trigger document generation", {
-            icon: <XCircle className="notification-icon" />,
-          }
+          : "Failed to trigger document generation",
+        {
+          icon: <XCircle className="notification-icon" />,
+          id: toastId,
+        }
       );
       setIsVerifying(false);
-      return;
+    } finally {
+      toast.dismiss(toastId);
+      setIsTriggered(false);
     }
   };
 
@@ -443,6 +454,7 @@ export function DocumentVerificationDialog({
                   }
                 }}
                 className="bg-[#027055] hover:bg-[#025a44]"
+                disabled={isTriggered}
               >
                 {onComplete ? "Continue to Next Step" : "Re-Verify Documents"}
               </Button>

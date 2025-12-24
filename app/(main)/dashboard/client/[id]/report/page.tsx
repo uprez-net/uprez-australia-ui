@@ -25,7 +25,7 @@ export default function ComplianceReportPage() {
     const fetchData = async () => {
       invokationRef.current += 1;
       console.log(`Fetch invocation #${invokationRef.current}`);
-      if (mounted && sessionToken) {
+      if (mounted && sessionToken && clientData && clientData.generationId) {
         try {
           setIsLoading(true);
           setError(null);
@@ -35,6 +35,8 @@ export default function ComplianceReportPage() {
                 (doc) => doc.basicCheckStatus === "Passed"
               ),
               sessionToken,
+              smeCompanyId: clientData.id,
+              generationId: clientData.generationId,
             })
           );
 

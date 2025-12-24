@@ -38,13 +38,13 @@ const initialState: ProspectusState = {
 
 export const loadProspectusData = createAsyncThunk<
   { data: Prospectus[]; hasMore: boolean; offset: number },
-  { clientId: string; offset?: number },
+  { clientId: string; generationId: string; offset?: number },
   { rejectValue: string }
 >(
   "prospectus/loadProspectusData",
-  async ({ clientId, offset }, { rejectWithValue }) => {
+  async ({ clientId, generationId, offset }, { rejectWithValue }) => {
     try {
-      const res = await fetchOrCreateClientProspectus(clientId, offset);
+      const res = await fetchOrCreateClientProspectus(clientId, generationId, offset);
       return {
         data: res.data,
         hasMore: res.hasMore,
@@ -119,14 +119,14 @@ export const saveProgress = createAsyncThunk<
 
 export const generateProspectus = createAsyncThunk<
   Prospectus,
-  { clientId: string },
+  { clientId: string; generationId: string },
   { rejectValue: string }
 >(
   "prospectus/generateProspectus",
-  async ({ clientId }, { rejectWithValue, dispatch }) => {
+  async ({ clientId, generationId }, { rejectWithValue, dispatch }) => {
     try {
       dispatch(setLock(true));
-      const res = await generateNewProspectusVersion(clientId);
+      const res = await generateNewProspectusVersion(clientId, generationId);
       
       return res;
     } catch (error) {

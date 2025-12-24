@@ -68,14 +68,14 @@ export async function getRelevantContent(query: string, topK: number = 5) {
   }
 }
 
-export async function getClientData(clientId: string, topK: number = 5, query: string) {
+export async function getClientData(clientId: string, generationId: string, topK: number = 5, query: string) {
   try {
     console.log(`Fetching data for clientId: ${clientId} with query: ${query}`);
     const clientIndex = pinecone.Index("hybrid-search-index");
     const embedding = await createEmbedding(query);
     const sparseVector = encodeBM25(query);
     // Fetch client data with clientId as namespace
-    const namespace = clientIndex.namespace(clientId)
+    const namespace = clientIndex.namespace(`${clientId}:${generationId}`);
     const results = await namespace.query({
       vector: embedding,
       sparseVector,
@@ -100,8 +100,9 @@ export async function getClientData(clientId: string, topK: number = 5, query: s
         }
       })
       .filter(m => m !== null);
-    return allTexts;
 
+    console.log(`Retrived Results`, allTexts);
+    return allTexts;
   }
   catch (error) {
     console.error("Error in getClientData:", error);

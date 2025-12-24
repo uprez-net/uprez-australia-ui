@@ -28,13 +28,13 @@ const initialState: ReportPageState = {
 
 export const fetchReportData = createAsyncThunk<
   DocumentReport[],
-  { documents: Document[]; sessionToken: string },
+  { documents: Document[]; sessionToken: string; smeCompanyId: string; generationId: string },
   { rejectValue: string }
 >(
   "report/fetchReportData",
-  async ({ documents, sessionToken }, { rejectWithValue }) => {
+  async ({ documents, sessionToken, smeCompanyId, generationId }, { rejectWithValue }) => {
     try {
-      const res = await getReportsFromBackend(documents, sessionToken);
+      const res = await getReportsFromBackend(documents, smeCompanyId, generationId, sessionToken);
       return res;
     } catch (error) {
       let errorMessage = "An unknown error occurred";

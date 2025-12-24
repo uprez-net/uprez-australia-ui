@@ -51,22 +51,6 @@ export default function UploadDocumentsPage() {
       });
       // return;
     }
-    // toast.info(
-    //   <div className="flex items-start gap-3">
-    //     <div className="p-2 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300">
-    //       <Info className="h-5 w-5" />
-    //     </div>
-    //     <div className="flex flex-col">
-    //       <span className="text-sm font-semibold text-gray-900 dark:text-white">
-    //         Starting a New Generation
-    //       </span>
-    //       <p className="text-sm text-muted-foreground mt-1">
-    //         This will discard the previous result and generate a new version of
-    //         the document.
-    //       </p>
-    //     </div>
-    //   </div>
-    // );
     toast.info("Starting a new generation will discard the previous result.", {
       icon: <Info className="notification-icon" />,
       description: "This will discard the previous result and generate a new version of the document.",
@@ -76,7 +60,7 @@ export default function UploadDocumentsPage() {
 
   useEffect(() => {
     const fetchReport = async () => {
-      if (!clientData || !documents.length || !sessionToken) {
+      if (!clientData || !documents.length || !sessionToken || !clientData.generationId) {
         return;
       }
       try {
@@ -86,6 +70,8 @@ export default function UploadDocumentsPage() {
               (doc) => doc.basicCheckStatus === "Passed"
             ),
             sessionToken,
+            smeCompanyId: clientData.id,
+            generationId: clientData.generationId,
           })
         );
         if (fetchReportData.rejected.match(res)) {
@@ -212,11 +198,11 @@ export default function UploadDocumentsPage() {
             documentProgress.find((p) => p.category === "Overall")
               ?.percentage || 0
           }
-          onComplete={
-            clientData?.eligibilityStatus === "Failed"
-              ? undefined
-              : handleVerificationComplete
-          }
+          // onComplete={
+          //   clientData?.eligibilityStatus === "Failed"
+          //     ? undefined
+          //     : handleVerificationComplete
+          // }
         />
       </div>
     </main>
