@@ -64,30 +64,6 @@ export async function POST(req: NextRequest) {
 
   try {
     // Fetch a single document that matches generation_id and include SME + user info in one go.
-    // const doc = await prisma.document.findFirstOrThrow({
-    //   where: { generationId: generation_id },
-    //   select: {
-    //     id: true,
-    //     smeCompanyId: true,
-    //     // include related SME company -> profile -> user for backend login
-    //     SMECompany: {
-    //       select: {
-    //         id: true,
-    //         SMEProfile: {
-    //           select: {
-    //             User: {
-    //               select: {
-    //                 name: true,
-    //                 email: true,
-    //                 role: true,
-    //               },
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    // });
     const smeCompany = await prisma.sMECompany.findFirstOrThrow({
       where: {
         generationId: generation_id,
