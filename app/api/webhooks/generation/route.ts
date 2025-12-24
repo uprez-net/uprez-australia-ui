@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Call backend to get reports and compute compliance score
-    const reportData = await getReportsFromBackend(documents, sessionData.access_token);
+    const reportData = await getReportsFromBackend(documents, smeCompany.id, generation_id, sessionData.access_token);
     const scores = calculateComplianceScore(reportData, documents);
     const finalCompliance = bucketComplianceFromScore(scores.overallScore);
 

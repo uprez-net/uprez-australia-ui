@@ -60,7 +60,7 @@ export default function UploadDocumentsPage() {
 
   useEffect(() => {
     const fetchReport = async () => {
-      if (!clientData || !documents.length || !sessionToken) {
+      if (!clientData || !documents.length || !sessionToken || !clientData.generationId) {
         return;
       }
       try {
@@ -70,6 +70,8 @@ export default function UploadDocumentsPage() {
               (doc) => doc.basicCheckStatus === "Passed"
             ),
             sessionToken,
+            smeCompanyId: clientData.id,
+            generationId: clientData.generationId,
           })
         );
         if (fetchReportData.rejected.match(res)) {

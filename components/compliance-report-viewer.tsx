@@ -398,6 +398,8 @@ export function ComplianceReportViewer() {
               await downloadReports(
                 sessionToken!,
                 documents!.filter((doc) => doc.basicCheckStatus === "Passed"),
+                clientData!.id,
+                clientData!.generationId!,
                 clientData!.companyName!,
                 iconUrl
               );

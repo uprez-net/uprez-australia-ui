@@ -19,14 +19,14 @@ interface DocumentReport {
 
 export const getReportsFromBackend = async (
   documents: Document[],
+  smeCompanyId: string,
+  generationId: string,
   sessionToken: string,
 ) => {
-  const lastDoc = documents?.at(-1);
-
   const cacheKey = [
     "compliance_report",
-    lastDoc?.smeCompanyId ?? "no_company",
-    lastDoc?.generationId ?? "no_gen",
+    smeCompanyId,
+    generationId,
   ].join("_");
 
   /**
@@ -122,14 +122,15 @@ export const getReportsFromBackend = async (
 
 export const getReports = async (
   documents: Document[],
+  smeCompanyId: string,
+  generationId: string,
   sessionToken: string
 ) => {
-  const lastDoc = documents?.at(-1);
 
   const cacheKey = [
     "compliance_reports_data",
-    lastDoc?.smeCompanyId ?? "no_company",
-    lastDoc?.generationId ?? "no_gen"
+    smeCompanyId,
+    generationId,
   ].join("_");
   const reports = await unstable_cache(async () => {
     const fetchPromises = documents.map(async (doc) => {

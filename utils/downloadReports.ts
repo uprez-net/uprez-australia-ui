@@ -12,13 +12,15 @@ function stripMarkdownCodeBlock(report: string): string {
 export async function downloadReports(
   sessionToken: string,
   documents: Document[],
+  smeCompanyId: string,
+  generationId: string,
   clientName: string,
   iconUrl?: string
 ) {
 
   // Convert All these MD strings to PDF and push them to zip and download them
   const zip = new JSZip();
-  const reports = await getReports(documents, sessionToken);
+  const reports = await getReports(documents, smeCompanyId, generationId, sessionToken);
   console.log(`Icon URL in downloadReports: ${iconUrl}`);
 
   await Promise.all(
