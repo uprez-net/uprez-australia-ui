@@ -460,7 +460,7 @@ export function ClientDashboard({
             )
           }
           disabled={
-            ["pending", "failed"].includes(valuationStatus.toLowerCase()) ||
+            ["pending", "processing"].includes(valuationStatus.toLowerCase()) ||
             ["pending", "failed"].includes(clientData!.complianceStatus)
           }
         />
