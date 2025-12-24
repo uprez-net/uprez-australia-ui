@@ -11,7 +11,7 @@ import { google } from "@ai-sdk/google";
 
 
 
-export async function fetchOrCreateClientProspectus(clientId: string, offset?: number): Promise<{ data: Prospectus[]; hasMore: boolean }> {
+export async function fetchOrCreateClientProspectus(clientId: string, generationId: string, offset?: number): Promise<{ data: Prospectus[]; hasMore: boolean }> {
     try {
         const user = await currentUser();
         if (!user) {
@@ -23,7 +23,7 @@ export async function fetchOrCreateClientProspectus(clientId: string, offset?: n
             },
         });
         if (prospectusCount === 0) {
-            const prospectusContent: ProspectusSection[] = await generateProspectusBatch(clientId, 3);
+            const prospectusContent: ProspectusSection[] = await generateProspectusBatch(clientId, generationId, 3);
             const newProspectus = await prisma.clientProspectus.create({
                 data: {
                     smeCompanyId: clientId,
@@ -209,7 +209,7 @@ export async function createNewProspectusVersion(clientId: string, content: Pros
     }
 }
 
-export async function generateNewProspectusVersion(clientId: string): Promise<Prospectus> {
+export async function generateNewProspectusVersion(clientId: string, generationId: string): Promise<Prospectus> {
     try {
         const user = await currentUser();
         if (!user) {
@@ -227,7 +227,7 @@ export async function generateNewProspectusVersion(clientId: string): Promise<Pr
             throw new Error("No existing prospectus found to base the new version on");
         }
         const newVersionNumber = latestProspectus.version + 1;
-        const prospectusContent: ProspectusSection[] = await generateProspectusBatch(clientId, 3);
+        const prospectusContent: ProspectusSection[] = await generateProspectusBatch(clientId, generationId, 3);
         const newProspectus = await prisma.clientProspectus.create({
             data: {
                 smeCompanyId: clientId,
@@ -275,24 +275,27 @@ const getClientRelatedData = tool({
     description: "Fetch data related to a specific client based on client ID",
     inputSchema: z.object({
         clientId: z.string().describe("The ID of the client to fetch related data for"),
+        generationId: z.string().describe("Generation ID for fetching specific data version"),
         query: z.string().describe(
-            "Natural language description of the client information to retrieve. " +
-            "This query is embedded and matched against client data using semantic similarity. " +
-            "Be specific about attributes, time periods, or criteria needed. " +
-            "Example: 'active clients in New York who purchased in Q4 2024'"
+            "Natural language query used for hybrid search combining semantic similarity and structured filtering. " +
+            "The query is embedded for vector-based semantic matching and also parsed for keywords, attributes, and constraints " +
+            "(e.g., status, location, dates, numeric ranges). " +
+            "Be explicit about entities, time periods, and conditions. " +
+            "Example: 'active clients in New York with purchases over $10k between Oct–Dec 2024'"
         )
     }),
-    execute: async ({ clientId, query }) => {
-        const report = await getClientData(clientId, 7, query);
+    execute: async ({ clientId, generationId, query }) => {
+        const report = await getClientData(clientId, generationId, 7, query);
         return report?.length
-            ? report
-            : ["No relevant client data was found for this query."];
+            ? report.join("\n\n")
+            : "No relevant client data was found for this query.";
     },
 });
 
 // Alternative version with batch processing for better performance
 async function generateProspectusBatch(
     clientId: string,
+    generationId: string,
     batchSize: number = 3
 ): Promise<ProspectusSection[]> {
     try {
@@ -313,8 +316,8 @@ async function generateProspectusBatch(
                     }
 
                     const result = await generateText({
-                        model: google("gemini-2.0-flash"),
-                        prompt: `${promptTemplate} \n\n CLIENT ID: ${clientId}`,
+                        model: google("gemini-2.5-flash"),
+                        prompt: `${promptTemplate} \n\n CLIENT ID: ${clientId} \n\n GENERATION ID: ${generationId}`,
                         temperature: 0.7,
                         tools: {
                             getClientRelatedData: getClientRelatedData,

@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     description: "Fetch data related to a specific client based on client ID and generate content using the most relevant information about the client.",
     inputSchema: z.object({
       clientId: z.string().describe("The ID of the client to fetch related data for"),
+      generationId: z.string().describe("Generation ID for fetching specific data version"),
       query: z.string().describe(
         "Natural language description of the client information to retrieve. " +
         "This query is embedded and matched against client data using semantic similarity. " +
@@ -58,8 +59,8 @@ export async function POST(req: NextRequest) {
         "Example: 'active clients in New York who purchased in Q4 2024'"
       )
     }),
-    execute: async ({ clientId, query }) => {
-      const report = await getClientData(clientId, 7, query);
+    execute: async ({ clientId, generationId, query }) => {
+      const report = await getClientData(clientId, generationId, 7, query);
       return report?.length
         ? report
         : ["No relevant client data was found for this query."];

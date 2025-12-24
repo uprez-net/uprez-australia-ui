@@ -41,7 +41,8 @@ export function GenerationModal({ isOpen, onClose }: GenerationModalProps) {
     
     try {
       const clientId = clientData?.id!
-      const res = await dispatch(generateProspectus({ clientId }))
+      const generationId = clientData?.generationId!
+      const res = await dispatch(generateProspectus({ clientId, generationId }))
       if (generateProspectus.rejected.match(res)) {
         throw new Error(res.payload as string)
       }

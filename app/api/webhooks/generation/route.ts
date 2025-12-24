@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Fetch a single document that matches generation_id and include SME + user info in one go.
-    const smeCompany = await prisma.sMECompany.findFirstOrThrow({
+    const smeCompany = await prisma.sMECompany.findFirst({
       where: {
         generationId: generation_id,
       },
@@ -85,8 +85,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (!smeCompany) {
-      console.error("No document found for generationId:", generation_id);
-      return new NextResponse("Document/SME not found", { status: 404 });
+      console.error("No SME found for generationId:", generation_id);
+      return new NextResponse("Document/SME not found", { status: 200 });
     }
 
     const intermediateCompliance = mapIntermediateComplianceStatus(status);
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         data: { basicCheckStatus: "Passed", generationId: generation_id },
       }),
       prisma.document.updateMany({
-        where: { smeCompanyId: smeCompany.id, id: { notIn: document_ids } },
+        where: { smeCompanyId: smeCompany.id, generationId: generation_id, id: { notIn: document_ids } },
         data: { basicCheckStatus: "Failed" },
       }),
       prisma.sMECompany.update({

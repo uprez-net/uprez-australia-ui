@@ -65,10 +65,10 @@ export default function ProspectusEditor() {
 
   useEffect(() => {
     let mounted = true;
-    const fetchData = async (clientId: string) => {
+    const fetchData = async (clientId: string, generationId: string) => {
       const toastId = toast.loading("Loading prospectus data...");
       try {
-        const res = await dispatch(loadProspectusData({ clientId }));
+        const res = await dispatch(loadProspectusData({ clientId, generationId }));
         if (loadProspectusData.rejected.match(res)) {
           throw new Error(res.payload as string);
         }
@@ -88,7 +88,7 @@ export default function ProspectusEditor() {
     };
 
     if (!clientData) return;
-    fetchData(clientData.id);
+    fetchData(clientData.id, clientData.generationId!);
 
     return () => {
       mounted = false;
