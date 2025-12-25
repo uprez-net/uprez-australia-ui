@@ -264,28 +264,29 @@ export const deleteDocument = async (documentId: string) => {
 
 export const triggerGeneration = async (
   sessionToken: string,
-  Document: Document
+  smeCompanyId: string,
+  // Document: Document
 ) => {
   try {
     // Only process new/pending docs; avoid starting a new generation while one is in-flight.
     const [pendingUnassignedCount, pendingAssignedCount, failedDocumentCount] = await Promise.all([
       prisma.document.count({
         where: {
-          smeCompanyId: Document.smeCompanyId,
+          smeCompanyId: smeCompanyId,
           basicCheckStatus: BasicCheckStatus.Pending,
           generationId: null,
         },
       }),
       prisma.document.count({
         where: {
-          smeCompanyId: Document.smeCompanyId,
+          smeCompanyId: smeCompanyId,
           basicCheckStatus: BasicCheckStatus.Pending,
           generationId: { not: null },
         },
       }),
       prisma.document.count({
         where: {
-          smeCompanyId: Document.smeCompanyId,
+          smeCompanyId: smeCompanyId,
           basicCheckStatus: BasicCheckStatus.Failed,
           generationId: { not: null },
         },
@@ -307,14 +308,7 @@ export const triggerGeneration = async (
         Authorization: `Bearer ${sessionToken}`,
       },
       body: JSON.stringify({
-        // id: Document.id,
-        client_account_id: Document.smeCompanyId,
-        // frontend_document_id: Document.id,
-        // upload_thing_key: Document.uploadThingKey,
-        // period_year: Document.periodYear,
-        // file_name: Document.fileName,
-        // document_type: getAllLabelsForDocumentType(Document.documentType),
-        // copy_status: "Pending",
+        client_account_id: smeCompanyId,
         callback_url: `${process.env.BASE_URL ?? "http://localhost:3000"
           }/api/webhooks/generation`,
       }),
@@ -334,7 +328,7 @@ export const triggerGeneration = async (
     console.log("Generation Data:", generationData);
 
     await prisma.sMECompany.update({
-      where: { id: Document.smeCompanyId },
+      where: { id: smeCompanyId },
       data: {
         eligibilityStatus: "Pending",
         complianceStatus: "pending",

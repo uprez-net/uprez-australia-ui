@@ -35,21 +35,10 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { documentCategories } from "@/app/interface/interface";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { set } from "zod";
-import { se } from "date-fns/locale";
-
-// interface VerificationResult {
-//   category: string;
-//   uploaded: number;
-//   required: number;
-//   status: "complete" | "partial" | "missing";
-//   missingDocuments: string[];
-// }
 
 interface DocumentVerificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // verificationResults: VerificationResult[]
   overallScore: number;
   onComplete?: () => void;
 }
@@ -57,7 +46,6 @@ interface DocumentVerificationDialogProps {
 export function DocumentVerificationDialog({
   open,
   onOpenChange,
-  // verificationResults,
   overallScore,
   onComplete,
 }: DocumentVerificationDialogProps) {
@@ -72,7 +60,6 @@ export function DocumentVerificationDialog({
   const [isVerifying, setIsVerifying] = useState(
     clientData!.eligibilityStatus === "Pending" &&
       clientData!.generationId !== null
-    // && true
   );
   const verificationComplete = useMemo(() => {
     return (
@@ -143,11 +130,10 @@ export function DocumentVerificationDialog({
       onOpenChange(false);
       return;
     }
-    // Simulate verification process
-    const doc = documents.length > 0 ? documents[0] : null; // Assuming we have at least one document
-    if (!doc || !sessionToken) {
-      console.error("No documents available for verification");
-      toast.error("No documents available for verification", {
+
+    if (!sessionToken || !clientData) {
+      console.error("Missing session token or client data");
+      toast.error("Session Token or client data missing", {
         icon: <XCircle className="notification-icon" />,
       });
       setIsVerifying(false);
@@ -156,7 +142,7 @@ export function DocumentVerificationDialog({
     const toastId = toast.loading("Starting document verification...");
     setIsTriggered(true);
     try {
-      const res = await triggerGeneration(sessionToken, doc);
+      const res = await triggerGeneration(sessionToken, clientData!.id);
       console.log("Generation triggered successfully:", res);
       dispatch(setGenerationId(res.generationId));
       dispatch(setGenerationNumber(res.generationNumber)); //Add after migrating to new schema
@@ -249,77 +235,6 @@ export function DocumentVerificationDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {!verificationComplete && !isVerifying && (
-            <div className="text-center py-8">
-              {!documentProgress.some((p) => p.percentage < 100) && (
-                <>
-                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium mb-2">
-                    Ready to Verify Documents
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Click the button below to start the verification process.
-                    This will check document completeness and generate your
-                    compliance score.
-                  </p>
-                </>
-              )}
-              {/* Category Breakdown */}
-              {documentProgress.some((p) => p.percentage < 100) && (
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle>Missing Documents</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {verificationResults.map((result, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-2">
-                              {getStatusIcon(result.status)}
-                              <span className="font-medium">
-                                {result.category}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-muted-foreground">
-                                {result.uploaded}/{result.required} documents
-                              </span>
-                              {getStatusBadge(result.status)}
-                            </div>
-                          </div>
-
-                          {result.missingDocuments.length > 0 && (
-                            <div className="ml-7 text-sm text-red-600 text-start">
-                              <p className="font-medium">Missing documents:</p>
-                              <ul className="list-disc list-inside ml-2">
-                                {result.missingDocuments.map(
-                                  (doc, docIndex) => (
-                                    <li key={docIndex}>{doc}</li>
-                                  )
-                                )}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              <Button
-                disabled={
-                  // documentProgress.some((p) => p.percentage < 100) ||
-                  isLoading
-                }
-                onClick={() => handleVerification(false)}
-                className="bg-[#027055] hover:bg-[#025a44]"
-                size="lg"
-              >
-                Start Verification
-              </Button>
-            </div>
-          )}
 
           {isVerifying && !verificationComplete && !isFailed && (
             <DocumentVerificationTimer updatedAt={clientData!.updatedAt} />
@@ -339,7 +254,7 @@ export function DocumentVerificationDialog({
             </div>
           )}
 
-          {verificationComplete && (
+          {!isVerifying && (
             <div className="space-y-6">
               {/* Overall Score */}
               <Card>
@@ -439,7 +354,7 @@ export function DocumentVerificationDialog({
         </div>
 
         <DialogFooter>
-          {verificationComplete ? (
+          {!isVerifying ? (
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close
@@ -456,7 +371,7 @@ export function DocumentVerificationDialog({
                 className="bg-[#027055] hover:bg-[#025a44]"
                 disabled={isTriggered}
               >
-                {onComplete ? "Continue to Next Step" : "Re-Verify Documents"}
+                {onComplete ? "Start Verification" : "Re-Verify Documents"}
               </Button>
             </div>
           ) : (

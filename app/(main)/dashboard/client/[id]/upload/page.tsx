@@ -193,16 +193,15 @@ export default function UploadDocumentsPage() {
         <DocumentVerificationDialog
           open={verificationDialogOpen}
           onOpenChange={setVerificationDialogOpen}
-          // verificationResults={verificationResults}
           overallScore={
             documentProgress.find((p) => p.category === "Overall")
               ?.percentage || 0
           }
-          // onComplete={
-          //   clientData?.eligibilityStatus === "Failed"
-          //     ? undefined
-          //     : handleVerificationComplete
-          // }
+          onComplete={
+            clientData?.eligibilityStatus !== "Pending"
+              ? undefined
+              : handleVerificationComplete
+          }
         />
       </div>
     </main>
