@@ -285,9 +285,13 @@ const getClientRelatedData = tool({
         )
     }),
     execute: async ({ clientId, generationId, query }) => {
-        const report = await getClientData(clientId, generationId, 7, query);
-        return report?.length
-            ? report.join("\n\n")
+        const results = await getClientData(clientId, generationId, query, {
+            batchSize: 3,
+            subQueryTopK: 3,
+            maxTotalResults: 12,
+        });
+        return results.length
+            ? results.join("\n\n")
             : "No relevant client data was found for this query.";
     },
 });

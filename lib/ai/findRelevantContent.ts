@@ -2,6 +2,7 @@
 import { createEmbedding } from "./createEmbeddings";
 import pinecone from "../pinecone";
 import { encodeBM25 } from "@/utils/getEncoding";
+import { text } from "stream/consumers";
 
 export async function getRelevantContent(query: string, topK: number = 5) {
   try {
@@ -68,44 +69,82 @@ export async function getRelevantContent(query: string, topK: number = 5) {
   }
 }
 
-export async function getClientData(clientId: string, generationId: string, topK: number = 5, query: string) {
-  try {
-    console.log(`Fetching data for clientId: ${clientId} with query: ${query}`);
-    const clientIndex = pinecone.Index("hybrid-search-index");
-    const embedding = await createEmbedding(query);
-    const sparseVector = encodeBM25(query);
-    // Fetch client data with clientId as namespace
-    const namespace = clientIndex.namespace(`${clientId}:${generationId}`);
-    const results = await namespace.query({
-      vector: embedding,
-      sparseVector,
-      topK,
-      includeValues: true,
-      includeMetadata: true,
-    });
-
-    const allTexts = results.matches
-      .map((match) => {
-        try {
-          const metadataContent = match.metadata;
-          // console.log("Match metadata:", metadataContent);
-          // Check if context exists
-          if(!metadataContent) {
-            return null;
-          }
-          return metadataContent.context as string;
-        } catch (error) {
-          console.error("Failed to parse metadataContent:", error);
-          return null;
-        }
-      })
-      .filter(m => m !== null);
-
-    console.log(`Retrived Results`, allTexts);
-    return allTexts;
+export async function getClientData(
+  clientId: string,
+  generationId: string,
+  query: string,
+  options?: {
+    batchSize?: number;
+    subQueryTopK?: number;
+    maxTotalResults?: number;
   }
-  catch (error) {
-    console.error("Error in getClientData:", error);
-    throw new Error("Failed to fetch client data");
+) {
+  const {
+    batchSize = 3,
+    subQueryTopK = 3,
+    maxTotalResults = 12,
+  } = options ?? {};
+
+  try {
+    console.log(`Hybrid search for clientId=${clientId}, query="${query}"`);
+
+    const clientIndex = pinecone.Index("hybrid-search-index");
+    const namespace = clientIndex.namespace(`${clientId}:${generationId}`);
+
+    // 1️⃣ Split query into sub-queries
+    const subQueries = query
+      .split(",")
+      .map(q => q.trim())
+      .filter(Boolean);
+
+    if (subQueries.length === 0) return [];
+
+    const collectedResults: string[] = [];
+    const seen = new Set<string>();
+
+    // 2️⃣ Process in batches
+    for (let i = 0; i < subQueries.length; i += batchSize) {
+      const batch = subQueries.slice(i, i + batchSize);
+
+      const batchResults = await Promise.all(
+        batch.map(async (subQuery) => {
+          const embedding = await createEmbedding(subQuery);
+          const sparseVector = encodeBM25(subQuery);
+
+          const result = await namespace.query({
+            vector: embedding,
+            sparseVector,
+            topK: subQueryTopK,
+            includeMetadata: true,
+          });
+
+          return result.matches
+            .map(m => m?.metadata?.context as string | undefined)
+            .filter(text => text !== undefined) as string[];
+        })
+      );
+
+      // 3️⃣ Combine + dedupe
+      for (const results of batchResults) {
+        for (const text of results) {
+          if (!seen.has(text)) {
+            seen.add(text);
+            collectedResults.push(text);
+
+            // 4️⃣ Hard stop to protect context window
+            if (collectedResults.length >= maxTotalResults) {
+              console.log("Reached maxTotalResults cap");
+              return collectedResults;
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`Retrieved ${collectedResults.length} unique contexts`);
+    return collectedResults;
+  } catch (error) {
+    console.error("Hybrid search failed:", error);
+    throw error;
   }
 }
